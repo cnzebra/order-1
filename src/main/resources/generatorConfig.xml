@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+
+<generatorConfiguration >
+    <classPathEntry location="/Users/imacyf0012/.m2/repository/org/postgresql/postgresql/9.2-1004-jdbc41/postgresql-9.2-1004-jdbc41.jar" />
+    <context id="context1" >
+        <commentGenerator >
+            <property name="suppressAllComments" value="true"/><!-- 是否取消注释 -->
+            <property name="suppressDate" value="true" /> <!-- 是否生成注释代时间戳-->
+        </commentGenerator>
+        <jdbcConnection
+                driverClass="org.postgresql.Driver"
+                connectionURL="jdbc:postgresql://10.0.1.105:5432/windmission?charSet=utf-8"
+                userId="postgres"
+                password="postgres" >
+        </jdbcConnection>
+        <javaModelGenerator
+                targetPackage="com.mrwind.order.entity"
+                targetProject="/Users/imacyf0012/Documents/workspace/order/src/main/java" >
+            <property name="trimStrings" value="true"/>
+            <property name="enableSubPackages" value="true"/>
+        </javaModelGenerator>
+        <sqlMapGenerator
+                targetPackage="com.mrwind.order.mapper"
+                targetProject="/Users/imacyf0012/Documents/workspace/order/src/main/java" >
+            <property name="enableSubPackages" value="true"/>
+        </sqlMapGenerator>
+        <javaClientGenerator
+                targetPackage="com.mrwind.order.dao"
+                targetProject="/Users/imacyf0012/Documents/workspace/order/src/main/java"
+                type="XMLMAPPER" >
+            <property name="enableSubPackages" value="true"/>
+        </javaClientGenerator>
+        <table 
+	        tableName="t_log" 
+	        domainObjectName="Log" 
+	        enableUpdateByExample="false" 
+	        enableDeleteByExample="false" 
+	        enableSelectByExample="false" 
+	        selectByExampleQueryId="false" 
+	        enableCountByExample="false" /> 
+    </context>
+</generatorConfiguration>
