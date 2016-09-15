@@ -11,13 +11,25 @@
 	<url>http://maven.apache.org</url>
 
 	<properties>
-		<org.springframework.version>4.1.6.RELEASE</org.springframework.version>
+		<org.springframework.version>4.1.7.RELEASE</org.springframework.version>
 		<slf4j.version>1.7.12</slf4j.version>
 		<project.build.sourceEncoding>
 			UTF-8
 		</project.build.sourceEncoding>
+		<spring-data.version>Gosling-RELEASE</spring-data.version>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.springframework.data</groupId>
+				<artifactId>spring-data-releasetrain</artifactId>
+				<version>${spring-data.version}</version>
+				<scope>import</scope>
+				<type>pom</type>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 	<dependencies>
 		<dependency>
 			<groupId>junit</groupId>
@@ -25,14 +37,19 @@
 			<version>4.11</version>
 		</dependency>
 
+		<!--spring 依赖begin -->
+		<dependency>
+			<groupId>org.springframework.data</groupId>
+			<artifactId>spring-data-mongodb</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>4.1.6.RELEASE</version>
+			<version>${org.springframework.version}</version>
 			<scope>test</scope>
 		</dependency>
 
-		<!--spring 依赖begin -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
@@ -68,8 +85,6 @@
 			<artifactId>spring-context-support</artifactId>
 			<version>${org.springframework.version}</version>
 		</dependency>
-		<!--spring 依赖 end -->
-
 
 		<!--日志依赖begin -->
 		<dependency>

@@ -33,11 +33,11 @@
 		方式引用 -->
 	<util:properties id="APP_PROP" location="classpath:common.properties"
 		local-override="true" />
-	<aop:aspectj-autoproxy />
 
 	<bean class="com.mrwind.common.framework.spring.SpringContextHolder" />
 
 	<import resource="spring-application-db.xml" />
+	<import resource="spring-application-mongo.xml" />
 	<import resource="spring-application-redis.xml" />
 	<import resource="spring-application-task.xml" />
 </beans>

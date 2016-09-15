@@ -83,7 +83,7 @@
     <!-- 自定义spring mvc的配置文件名称和路径 -->
     <init-param>
       <param-name>contextConfigLocation</param-name>
-      <param-value>classpath:pring-mvc.xml</param-value>
+      <param-value>classpath:spring-mvc.xml</param-value>
     </init-param>
     <load-on-startup>1</load-on-startup>
   </servlet>

@@ -27,7 +27,7 @@ public class CacheAspect {
     /**          
     * 定义缓存逻辑                    
     */
-    @Around("@annotation(com.mrwind.common.annotation.Cacheable")
+    @Around("@annotation(com.mrwind.common.annotation.Cacheable)")
     public Object cache(ProceedingJoinPoint pjp ) {
         Object result=null;
         
