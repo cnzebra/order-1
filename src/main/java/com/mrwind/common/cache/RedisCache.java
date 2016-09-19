@@ -56,6 +56,16 @@ public class RedisCache {
 		return pk;
 	}
 	
+	public Long getTestPK(String tableName, int interval) {
+		long pk = this.incr("PK"+tableName, interval);
+		if(pk<900000000){
+			this.set("PK"+tableName, Integer.MAX_VALUE, 900000000+"");
+			pk=900000000;
+		}
+		return pk;
+	}
+	
+	
 	public Object set(String key, int expire, byte[] value) {
 		redis =jedisPool.getResource(); 
 		String msg = redis.set(SafeEncoder.encode(key), value);

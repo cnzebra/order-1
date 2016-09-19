@@ -42,7 +42,7 @@ public class CommonAspect {
 				.getRequest();
 		HttpServletResponse response = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
 				.getResponse();
-		String authorizationToken = request.getHeader("AuthorizationFilter");
+		String authorizationToken = request.getHeader("Authorization");
 		if (StringUtils.isEmpty(authorizationToken)) {
 			response.setStatus(401);
 			return Result.error("权限错误，已被服务器拒绝");

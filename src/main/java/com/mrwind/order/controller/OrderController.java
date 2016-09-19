@@ -1,57 +1,76 @@
 package com.mrwind.order.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
+import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.service.OrderService;
 
 @Controller
 @RequestMapping("admin")
 public class OrderController {
-	
+
 	@Autowired
 	private OrderService orderService;
 
 	@ResponseBody
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public Result create(@RequestBody JSONObject json) {
-		 Order order = JSONObject.toJavaObject(json, Order.class);
-		 orderService.insert(order);
+		Order order = JSONObject.toJavaObject(json, Order.class);
+		orderService.insert(order);
 		return Result.success();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/close", method = RequestMethod.GET)
-	public Result close(@RequestBody JSONObject json){
+	public Result close(@RequestBody JSONObject json) {
 		return Result.success();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.POST)
-	public Result select(@RequestBody JSONObject json){
+	public Result select(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
 		Order order2 = orderService.select(order);
 		return Result.success(order2);
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.GET)
-	public Result update(@RequestBody JSONObject json){
+	public Result update(@RequestBody JSONObject json) {
 		return Result.success();
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/call", method = RequestMethod.POST)
+	public Result call(@RequestBody JSONObject json) {
+		Call call = JSONObject.toJavaObject(json, Call.class);
+		Call res = orderService.saveCall(call);
+		return Result.success(res);
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/queryCall", method = RequestMethod.GET)
+	public Result queryCall(@RequestParam("id")Long id) {
+		Call callInfo = orderService.queryCallInfo(id);
+		return Result.success(callInfo);
 	}
 	
 	@ResponseBody
-	@RequestMapping(value="/call", method = RequestMethod.POST)
-	public Result call (@RequestBody JSONObject json){
-		
-		return Result.error("参数解析错误，无法呼叫");
+	@RequestMapping(value = "/queryCallList", method = RequestMethod.GET)
+	public Result queryCallList(@RequestParam("pageSize")Integer pageSize,@RequestParam("pageIndex")Integer pageIndex) {
+		PageRequest page=new PageRequest(pageIndex+1, pageSize);
+		Page<Call> callInfo = orderService.queryCallList(page);
+		return Result.success(callInfo);
 	}
-
 }
