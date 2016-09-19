@@ -19,6 +19,7 @@ public class OrderService {
 	public Order select(Order order){
 		Order findOne = orderRepository.findOne(order.getId());
 		Order findByType = orderRepository.findByType(order.getType());
+		orderRepository.countById(order.getId());
 		return findByType;
 	}
 

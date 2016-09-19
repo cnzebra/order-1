@@ -46,5 +46,12 @@ public class OrderController {
 	public Result update(@RequestBody JSONObject json){
 		return Result.success();
 	}
+	
+	@ResponseBody
+	@RequestMapping(value="/call", method = RequestMethod.POST)
+	public Result call (@RequestBody JSONObject json){
+		
+		return Result.error("参数解析错误，无法呼叫");
+	}
 
 }
