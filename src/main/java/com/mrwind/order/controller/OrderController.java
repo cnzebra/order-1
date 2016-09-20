@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
+import com.mrwind.common.util.JsonUtil;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.service.OrderService;
@@ -61,16 +62,19 @@ public class OrderController {
 
 	@ResponseBody
 	@RequestMapping(value = "/queryCall", method = RequestMethod.GET)
-	public Result queryCall(@RequestParam("id")Long id) {
+	public Result queryCall(@RequestParam("id") Long id) {
 		Call callInfo = orderService.queryCallInfo(id);
 		return Result.success(callInfo);
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/queryCallList", method = RequestMethod.GET)
-	public Result queryCallList(@RequestParam("pageSize")Integer pageSize,@RequestParam("pageIndex")Integer pageIndex) {
-		PageRequest page=new PageRequest(pageIndex+1, pageSize);
+	public Result queryCallList(@RequestParam("pageSize") Integer pageSize,
+			@RequestParam("pageIndex") Integer pageIndex,
+			@RequestParam(value = "only", defaultValue = "") String only) {
+		PageRequest page = new PageRequest(pageIndex - 1, pageSize);
 		Page<Call> callInfo = orderService.queryCallList(page);
-		return Result.success(callInfo);
+		Object res = JsonUtil.filterProperty(callInfo.getContent(), only);
+		return Result.success(res);
 	}
 }

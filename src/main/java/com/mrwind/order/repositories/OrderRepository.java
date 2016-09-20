@@ -7,7 +7,7 @@ import com.mrwind.order.entity.Order;
 
 public interface OrderRepository extends CrudRepository<Order, Long>{
 
-	Long countById(Long id);
+	Order findByNumber(Long Number);
 	
 	Order findByType(String type);
 }

@@ -3,18 +3,23 @@ package com.mrwind.order.entity;
 import java.util.Date;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class Call {
 
 	@Id
-	private Long id;
+	private String id;
+	@Indexed
+	@DBRef
 	private User sender;
 	private Integer count;
 	private String status;
 	private Date createTime;
 	private Date updateTime;
+	@DBRef
 	private Shop shopInfo;
 
 	public User getSender() {
@@ -31,14 +36,6 @@ public class Call {
 
 	public void setCount(Integer count) {
 		this.count = count;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getStatus() {
@@ -73,4 +70,17 @@ public class Call {
 		this.shopInfo = shopInfo;
 	}
 
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	@Override
+	public String toString() {
+		return "Call [id=" + id + ", sender=" + sender + ", count=" + count + ", status=" + status + ", createTime="
+				+ createTime + ", updateTime=" + updateTime + ", shopInfo=" + shopInfo + "]";
+	}
 }

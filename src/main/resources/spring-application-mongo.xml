@@ -19,13 +19,32 @@
 			auto-connect-retry="${mvn.mongo.autoConnectRetry}" slave-ok="${mvn.mongo.slaveOk}"
 			write-number="1" write-timeout="0" write-fsync="true" />
 	</mongo:mongo>
-	
-	<mongo:db-factory dbname="${mvn.mongo.dbname}" mongo-ref="mongo" />
-		
-	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/> 
+
+	<mongo:db-factory dbname="${mvn.mongo.dbname}"
+		mongo-ref="mongo" />
+
+	<bean id="mappingContext"
+		class="org.springframework.data.mongodb.core.mapping.MongoMappingContext" />
+
+	<bean id="defaultMongoTypeMapper"
+		class="org.springframework.data.mongodb.core.convert.DefaultMongoTypeMapper">
+		<constructor-arg name="typeKey">
+			<null />
+		</constructor-arg>
 	</bean>
-	
-	<mongo:mapping-converter base-package="com.mrwind.order.entity" />  
+
+	<bean id="mappingMongoConverter"
+		class="org.springframework.data.mongodb.core.convert.MappingMongoConverter">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mappingContext" ref="mappingContext" />
+		<property name="typeMapper" ref="defaultMongoTypeMapper" />
+	</bean>
+
+	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
+		<constructor-arg name="mongoConverter" ref="mappingMongoConverter" />
+	</bean>
+
+	<mongo:mapping-converter base-package="com.mrwind.order.entity" />
 	<mongo:repositories base-package="com.mrwind.order.repositories" />
 </beans>
