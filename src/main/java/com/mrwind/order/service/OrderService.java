@@ -24,7 +24,7 @@ public class OrderService {
 	private OrderRepository orderRepository;
 	
 	@Autowired
-	private UserRepository UserRepository;
+	private UserRepository userRepository;
 
 	@Autowired
 	private RedisCache redisCache;
@@ -46,9 +46,8 @@ public class OrderService {
 		Date sysDate = Calendar.getInstance().getTime();
 		call.setCreateTime(sysDate);
 		call.setStatus(App.CALL_CREATE);
-		User user = UserRepository.save(call.getSender());
-		call.setSender(user);
 		Call save = callRepository.save(call);
+		
 		return save;
 	}
 

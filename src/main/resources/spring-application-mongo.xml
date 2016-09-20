@@ -45,6 +45,6 @@
 		<constructor-arg name="mongoConverter" ref="mappingMongoConverter" />
 	</bean>
 
-	<mongo:mapping-converter base-package="com.mrwind.order.entity" />
-	<mongo:repositories base-package="com.mrwind.order.repositories" />
+	<mongo:mapping-converter base-package="com.mrwind.*.entity" />
+	<mongo:repositories base-package="com.mrwind.*.repositories" />
 </beans>

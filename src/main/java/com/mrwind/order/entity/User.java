@@ -71,4 +71,10 @@ public class User {
 		this.id = id;
 	}
 
+	@Override
+	public String toString() {
+		return "User [id=" + id + ", name=" + name + ", tel=" + tel + ", addr=" + addr + ", lng=" + lng + ", lat=" + lat
+				+ ", fence=" + fence + "]";
+	}
+
 }

@@ -1,9 +1,9 @@
 package com.mrwind.order.repositories;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import com.mrwind.order.entity.User;
 
-public interface UserRepository extends CrudRepository<User, String> {
+public interface UserRepository extends PagingAndSortingRepository<User, String> {
 	
 }
