@@ -1,16 +1,16 @@
 package com.mrwind.order.entity;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class Order {
 
+	@Id
 	private Long number;
 	private Status status;
-	@DBRef
 	private User sender;
-	@DBRef
 	private User receiver;
 	private String remark;
 	private String type;

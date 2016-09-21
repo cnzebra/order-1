@@ -13,13 +13,11 @@ public class Call {
 	@Id
 	private String id;
 	@Indexed
-	@DBRef
 	private User sender;
 	private Integer count;
 	private String status;
 	private Date createTime;
 	private Date updateTime;
-	@DBRef
 	private Shop shopInfo;
 
 	public User getSender() {
