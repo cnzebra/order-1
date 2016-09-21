@@ -62,7 +62,7 @@ public class OrderController {
 
 	@ResponseBody
 	@RequestMapping(value = "/queryCall", method = RequestMethod.GET)
-	public Result queryCall(@RequestParam("id") Long id) {
+	public Result queryCall(@RequestParam("id") String id) {
 		Call callInfo = orderService.queryCallInfo(id);
 		return Result.success(callInfo);
 	}

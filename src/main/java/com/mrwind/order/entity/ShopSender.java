@@ -4,30 +4,28 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Shop {
-
+public class ShopSender {
+	
 	@Id
 	private String id;
-	private String Name;
-	private String Tel;
+	private Shop shop;
+	private User sender;
 	public String getId() {
 		return id;
 	}
 	public void setId(String id) {
 		this.id = id;
 	}
-	public String getName() {
-		return Name;
+	public Shop getShop() {
+		return shop;
 	}
-	public void setName(String name) {
-		Name = name;
+	public void setShop(Shop shop) {
+		this.shop = shop;
 	}
-	public String getTel() {
-		return Tel;
+	public User getSender() {
+		return sender;
 	}
-	public void setTel(String tel) {
-		Tel = tel;
+	public void setSender(User sender) {
+		this.sender = sender;
 	}
-
-
 }

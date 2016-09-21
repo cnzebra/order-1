@@ -4,7 +4,6 @@ import java.util.Date;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
@@ -12,6 +11,7 @@ public class Call {
 
 	@Id
 	private String id;
+	private Product product;
 	@Indexed
 	private User sender;
 	private Integer count;
@@ -80,5 +80,13 @@ public class Call {
 	public String toString() {
 		return "Call [id=" + id + ", sender=" + sender + ", count=" + count + ", status=" + status + ", createTime="
 				+ createTime + ", updateTime=" + updateTime + ", shopInfo=" + shopInfo + "]";
+	}
+
+	public Product getProduct() {
+		return product;
+	}
+
+	public void setProduct(Product product) {
+		this.product = product;
 	}
 }

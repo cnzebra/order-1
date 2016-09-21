@@ -12,7 +12,6 @@ import com.mrwind.common.cache.RedisCache;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.User;
 import com.mrwind.order.repositories.CallRepository;
 import com.mrwind.order.repositories.OrderRepository;
 import com.mrwind.order.repositories.UserRepository;
@@ -33,7 +32,6 @@ public class OrderService {
 	private CallRepository callRepository;
 
 	public void insert(Order order) {
-		
 		orderRepository.save(order);
 	}
 
@@ -51,7 +49,7 @@ public class OrderService {
 		return save;
 	}
 
-	public Call queryCallInfo(Long id){
+	public Call queryCallInfo(String id){
 		return callRepository.findOne(id);
 	}
 	
