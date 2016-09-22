@@ -22,6 +22,10 @@ public class CategoryAdditionService {
         if(categoryAddition==null || StringUtils.isBlank(categoryAddition.getName())) {
             return JSONFactory.getfailJSON("请输入特殊要求");
         }
+        Long count = categoryAdditionRepository.countByName(categoryAddition.getName());
+        if(count!=null && count>0) {
+            return JSONFactory.getfailJSON("当前特殊要求已经存在");
+        }
         categoryAdditionRepository.save(categoryAddition);
         return JSONFactory.getSuccessJSON();
     }

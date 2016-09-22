@@ -23,4 +23,10 @@ public class CategoryController {
     public JSON insert(@RequestBody Category category) {
         return categoryService.newCategory(category);
     }
+    
+    @ResponseBody
+    @RequestMapping(value="find", method = RequestMethod.GET)
+    public Long find(String name, Double fromDistance, Double toDistance) {
+        return categoryService.countByModel(name, fromDistance, toDistance);
+    }
 }
