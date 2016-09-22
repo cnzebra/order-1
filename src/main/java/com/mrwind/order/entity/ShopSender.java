@@ -5,27 +5,61 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
 public class ShopSender {
-	
 	@Id
 	private String id;
-	private Shop shop;
-	private User sender;
+	private String name;
+	private String tel;
+	private String addr;
+	private Double lng;
+	private Double lat;
+	private Fence fence;
+	private Shop shopInfo;
 	public String getId() {
 		return id;
 	}
 	public void setId(String id) {
 		this.id = id;
 	}
-	public Shop getShop() {
-		return shop;
+	public String getName() {
+		return name;
 	}
-	public void setShop(Shop shop) {
-		this.shop = shop;
+	public void setName(String name) {
+		this.name = name;
 	}
-	public User getSender() {
-		return sender;
+	public String getTel() {
+		return tel;
 	}
-	public void setSender(User sender) {
-		this.sender = sender;
+	public void setTel(String tel) {
+		this.tel = tel;
+	}
+	public String getAddr() {
+		return addr;
+	}
+	public void setAddr(String addr) {
+		this.addr = addr;
+	}
+	public Double getLng() {
+		return lng;
+	}
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+	public Double getLat() {
+		return lat;
+	}
+	public void setLat(Double lat) {
+		this.lat = lat;
+	}
+	public Fence getFence() {
+		return fence;
+	}
+	public void setFence(Fence fence) {
+		this.fence = fence;
+	}
+	public Shop getShopInfo() {
+		return shopInfo;
+	}
+	public void setShopInfo(Shop shopInfo) {
+		this.shopInfo = shopInfo;
 	}
 }

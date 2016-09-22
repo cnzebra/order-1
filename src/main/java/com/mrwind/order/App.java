@@ -11,5 +11,7 @@ public class App
         System.out.println( "Hello World!" );
     }
     
+    public static String ORDER_MQ_3001="3001";
+    
     public static String CALL_CREATE="create";
 }

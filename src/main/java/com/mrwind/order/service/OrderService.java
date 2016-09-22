@@ -6,12 +6,19 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.CriteriaDefinition;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.Shop;
+import com.mrwind.order.entity.User;
 import com.mrwind.order.repositories.CallRepository;
 import com.mrwind.order.repositories.OrderRepository;
 import com.mrwind.order.repositories.UserRepository;
@@ -27,6 +34,10 @@ public class OrderService {
 
 	@Autowired
 	private RedisCache redisCache;
+	
+	@Autowired
+	private MongoTemplate mongoTemplate;
+	
 
 	@Autowired
 	private CallRepository callRepository;
@@ -45,7 +56,6 @@ public class OrderService {
 		call.setCreateTime(sysDate);
 		call.setStatus(App.CALL_CREATE);
 		Call save = callRepository.save(call);
-		
 		return save;
 	}
 

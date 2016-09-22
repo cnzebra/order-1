@@ -17,7 +17,7 @@ public class UserService {
 
 	public List<ShopSender> queryShopSenderInfo(String shopId, PageRequest page) {
 		
-		List<ShopSender> res= shopSenderRepository.findByShopId(shopId,page);
+		List<ShopSender> res= shopSenderRepository.findByShopInfoId(shopId,page);
 		return res;
 	}
 	
@@ -36,5 +36,4 @@ public class UserService {
 	
 	public void update( ){
 	}
-	
 }

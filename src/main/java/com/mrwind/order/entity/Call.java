@@ -18,6 +18,7 @@ public class Call {
 	private String status;
 	private Date createTime;
 	private Date updateTime;
+	@Indexed
 	private Shop shopInfo;
 
 	public User getSender() {

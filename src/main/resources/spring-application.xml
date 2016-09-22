@@ -40,4 +40,5 @@
 	<import resource="spring-application-mongo.xml" />
 	<import resource="spring-application-redis.xml" />
 	<import resource="spring-application-task.xml" />
+	<import resource="spring-application-amqp.xml" />
 </beans>

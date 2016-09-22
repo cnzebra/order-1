@@ -13,9 +13,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.util.JsonUtil;
+import com.mrwind.order.amqp.OrderMqServer;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.ShopSender;
 import com.mrwind.order.service.OrderService;
+import com.mrwind.order.service.UserService;
 
 @Controller
 @RequestMapping("admin")
@@ -23,6 +26,12 @@ public class OrderController {
 
 	@Autowired
 	private OrderService orderService;
+	
+	@Autowired
+	private OrderMqServer orderMqServer;
+	
+	@Autowired
+	private UserService userService;
 
 	@ResponseBody
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -56,7 +65,11 @@ public class OrderController {
 	@RequestMapping(value = "/call", method = RequestMethod.POST)
 	public Result call(@RequestBody JSONObject json) {
 		Call call = JSONObject.toJavaObject(json, Call.class);
+		ShopSender shopSender = JSONObject.toJavaObject(json.getJSONObject("sender"), ShopSender.class);
+		shopSender.setShopInfo(call.getShopInfo());
+		userService.save(shopSender);
 		Call res = orderService.saveCall(call);
+		orderMqServer.sendDataToCrQueue(call);
 		return Result.success(res);
 	}
 
