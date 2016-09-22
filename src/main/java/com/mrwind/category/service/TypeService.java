@@ -17,7 +17,7 @@ public class TypeService {
     public JSON newCategoryType(String name) {
         Long count = typeRepository.countByName(name);
         if(count!=null && count>0) {
-            return JSONFactory.getfailJSON("当前品类已经存在");
+            return JSONFactory.getfailJSON("当前品类类型已经存在");
         }
         CategoryType categoryType = new CategoryType();
         categoryType.setName(name);
