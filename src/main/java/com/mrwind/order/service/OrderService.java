@@ -7,18 +7,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.CriteriaDefinition;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.Shop;
-import com.mrwind.order.entity.User;
 import com.mrwind.order.repositories.CallRepository;
 import com.mrwind.order.repositories.OrderRepository;
 import com.mrwind.order.repositories.UserRepository;
@@ -42,8 +37,10 @@ public class OrderService {
 	@Autowired
 	private CallRepository callRepository;
 
-	public void insert(Order order) {
-		orderRepository.save(order);
+	public Order insert(Order order) {
+		Long pk = redisCache.getPK("order", 1);
+		order.setNumber(pk);
+		return orderRepository.save(order);
 	}
 
 	public Order select(Order order) {
@@ -63,7 +60,15 @@ public class OrderService {
 		return callRepository.findOne(id);
 	}
 	
+	public boolean existsCall(String id){
+		return callRepository.exists(id);
+	}
+	
 	public Page<Call> queryCallList(Pageable pageable){
 		return callRepository.findAll(pageable);
+	}
+
+	public void cancelOrder(JSONObject json) {
+		
 	}
 }

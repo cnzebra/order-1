@@ -37,13 +37,24 @@ public class OrderController {
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public Result create(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
-		orderService.insert(order);
-		return Result.success();
+		
+//		String callId = order.getCallId();
+//		if(StringUtils.isEmpty(callId)){
+//			return Result.error("呼叫信息不能为空");
+//		}
+//		boolean bool = orderService.existsCall(callId);
+//		if(!bool){
+//			return  Result.error("找不到这次呼叫信息");
+//		}
+		
+		Order res = orderService.insert(order);
+		return Result.success(res);
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/close", method = RequestMethod.GET)
+	@RequestMapping(value = "/close", method = RequestMethod.POST)
 	public Result close(@RequestBody JSONObject json) {
+		orderService.cancelOrder(json);
 		return Result.success();
 	}
 

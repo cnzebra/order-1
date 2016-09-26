@@ -16,10 +16,10 @@ public class TestMq {
 	public static void main(String[] args) throws IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException {
 		// TODO Auto-generated method stub
 		com.rabbitmq.client.ConnectionFactory factory = new com.rabbitmq.client.ConnectionFactory();
-		   factory.setHost("http://10.0.1.105");
+		   factory.setHost("10.0.1.105");
 		   factory.setPort(5672);
-		   factory.setUsername("123feng");
-		   factory.setPassword("123feng");
+		   factory.setUsername("mrwind");
+		   factory.setPassword("mrwind");
 		   Connection connection = null;
 		try {
 			connection = factory.newConnection();

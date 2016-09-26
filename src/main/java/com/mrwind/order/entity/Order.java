@@ -8,6 +8,7 @@ public class Order {
 
 	@Id
 	private Long number;
+	private String callId;
 	private Status status;
 	private User sender;
 	private User receiver;
@@ -60,6 +61,14 @@ public class Order {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public String getCallId() {
+		return callId;
+	}
+
+	public void setCallId(String callId) {
+		this.callId = callId;
 	}
 
 }

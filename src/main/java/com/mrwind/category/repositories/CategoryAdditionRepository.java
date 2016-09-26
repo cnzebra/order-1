@@ -3,7 +3,6 @@ package com.mrwind.category.repositories;
 import java.util.List;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 
 import com.mrwind.category.entity.CategoryAddition;
 
