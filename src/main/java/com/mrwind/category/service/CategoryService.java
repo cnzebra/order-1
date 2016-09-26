@@ -14,6 +14,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.category.dao.CategoryDao;
 import com.mrwind.category.entity.Category;
+import com.mrwind.category.entity.CategoryAddition;
+import com.mrwind.category.entity.Distance;
 import com.mrwind.category.repositories.CategoryRepository;
 import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.factory.JSONFactory;
@@ -78,5 +80,25 @@ public class CategoryService {
             categoryDao.updateById(id, body, Category.class);
         }
         return JSONFactory.getSuccessJSON();
+    }
+    
+    public JSON findByDistance(Double fromDistance, Double toDistance) {
+        List<Category> data = categoryDao.findByNameAndDistance(fromDistance, toDistance);
+        if(data==null) {
+            return JSONFactory.getfailJSON("未找到品类");
+        }
+        JSONObject jsonObject = JSONFactory.getSuccessJSON();
+        jsonObject.put("data", data);
+        return jsonObject;
+    }
+    
+    public JSON findAdditionsByCategoryId(String id) {
+        Category data = categoryRepository.findOne(id);
+        if(data==null) {
+            return JSONFactory.getfailJSON("未找到品类");
+        }
+        JSONObject jsonObject = JSONFactory.getSuccessJSON();
+        jsonObject.put("data", data.getAddition());
+        return jsonObject;
     }
 }
