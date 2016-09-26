@@ -38,6 +38,17 @@ public class CategoryDao extends BaseDao{
         return mongoTemplate.count(query, "category");
     }
     
+    public List<Category> findByNameAndDistance(Double fromDistance, Double toDistance) {
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        criteria.andOperator(
+                Criteria.where("distance.a").is(fromDistance),
+                Criteria.where("distance.b").is(toDistance)
+                );
+        query.addCriteria(criteria);
+        return mongoTemplate.find(query, Category.class, "category");
+    }
+    
     /**
      * 分页查询
      */

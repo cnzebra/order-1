@@ -44,4 +44,24 @@ public class CategoryController {
             @RequestBody String body) {
         return categoryService.updateDetailById(id, body);
     }
+    
+    /**
+     * 根据距离跨度查找品类
+     */
+    @ResponseBody
+    @RequestMapping(value="findCategoryByDistance", method = RequestMethod.GET)
+    public JSON getAdditionsByCategory(
+            @RequestParam(value="fromDistance", required=true) Double fromDistance,
+            @RequestParam(value="toDistance", required=true) Double toDistance) {
+        return categoryService.findByDistance(fromDistance, toDistance);
+    }
+    
+    /**
+     * 根据ID获得品类的特殊要求
+     */
+    @ResponseBody
+    @RequestMapping(value="findAdditionsByCategoryId", method = RequestMethod.GET)
+    public JSON findAdditionsByCategoryId(@RequestParam(value="id", required=true) String id) {
+        return categoryService.findAdditionsByCategoryId(id);
+    }
 }
