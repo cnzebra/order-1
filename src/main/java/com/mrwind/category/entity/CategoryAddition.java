@@ -10,6 +10,7 @@ public class CategoryAddition {
     private String id;
     private String name;
     private BigDecimal price;
+    private String picturePath;
     private Boolean delFlag = Boolean.FALSE;
     
     public String getId() {
@@ -36,6 +37,12 @@ public class CategoryAddition {
     }
     public void setDelFlag(Boolean delFlag) {
         this.delFlag = delFlag;
+    }
+    public String getPicturePath() {
+        return picturePath;
+    }
+    public void setPicturePath(String picturePath) {
+        this.picturePath = picturePath;
     }
 
 }
