@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.mrwind.common.bean.Result;
+import com.mrwind.order.entity.ShopReceiver;
 import com.mrwind.order.entity.ShopSender;
 import com.mrwind.order.service.UserService;
 
@@ -30,4 +31,15 @@ public class UserController {
 		List<ShopSender> list=userService.queryShopSenderInfo(shopId, page);
 		return Result.success(list);
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/queryReceiverInfo", method = RequestMethod.GET)
+	public Result queryReceiverInfo(@RequestParam("shopId") String shopId,
+			@RequestParam("pageSize") Integer pageSize,
+			@RequestParam("pageIndex") Integer pageIndex) {
+		PageRequest page = new PageRequest(pageIndex - 1, pageSize);
+		List<ShopReceiver> list=userService.queryShopReceiverInfo(shopId, page);
+		return Result.success(list);
+	}
+	
 }

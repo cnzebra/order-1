@@ -1,5 +1,8 @@
 package com.mrwind.order.controller;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -10,12 +13,16 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.util.JsonUtil;
 import com.mrwind.order.amqp.OrderMqServer;
 import com.mrwind.order.entity.Call;
+import com.mrwind.order.entity.Fence;
 import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.Shop;
+import com.mrwind.order.entity.ShopReceiver;
 import com.mrwind.order.entity.ShopSender;
 import com.mrwind.order.service.OrderService;
 import com.mrwind.order.service.UserService;
@@ -37,33 +44,67 @@ public class OrderController {
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public Result create(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
+		Shop shopInfo =JSONObject.toJavaObject( json.getJSONObject("shop"),Shop.class);
+		ShopSender shopSender = JSONObject.toJavaObject(json.getJSONObject("sender"), ShopSender.class);
+		shopSender.setShopInfo(shopInfo);
+		userService.saveSender(shopSender);
 		
-//		String callId = order.getCallId();
-//		if(StringUtils.isEmpty(callId)){
-//			return Result.error("呼叫信息不能为空");
-//		}
-//		boolean bool = orderService.existsCall(callId);
-//		if(!bool){
-//			return  Result.error("找不到这次呼叫信息");
-//		}
-		
+		ShopReceiver shopReceiver = JSONObject.toJavaObject(json.getJSONObject("receiver"), ShopReceiver.class);
+		shopReceiver.setShopInfo(shopInfo);
+		userService.saveReceiver(shopReceiver);
 		Order res = orderService.insert(order);
 		return Result.success(res);
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/createList", method = RequestMethod.POST)
+	public Result createList(@RequestBody JSONArray jsonArray) {
+		List<Order> list=new ArrayList<>();
+		for (int i=0;i<jsonArray.size();i++){
+			JSONObject json = jsonArray.getJSONObject(i);
+			Order order = JSONObject.toJavaObject(json, Order.class);
+			Order res = orderService.insert(order);
+			list.add(res);
+		}
+		return Result.success(list);
+	}
 
 	@ResponseBody
-	@RequestMapping(value = "/close", method = RequestMethod.POST)
-	public Result close(@RequestBody JSONObject json) {
-		orderService.cancelOrder(json);
+	@RequestMapping(value = "/cancel", method = RequestMethod.PATCH)
+	public Result cancel(@RequestParam("orderNumber")Long orderNumber,@RequestParam("subStatus")String subStatus) {
+		orderService.cancelOrder(orderNumber,subStatus);
+		return Result.success();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value="/pricing",method=RequestMethod.POST)
+	public Result pricing(@RequestBody JSONObject json){
+		Long orderNumber = json.getLong("orderNumber");
+		Fence fence = JSONObject.toJavaObject(json, Fence.class);
+		orderService.submitOrderPriced(orderNumber, fence);
+		return Result.success();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value="/complete",method=RequestMethod.PATCH)
+	public Result complete(@RequestParam("orderNumber")Long orderNumber){
+		orderService.completeOrder(orderNumber);
+		return Result.success();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value="/errorComplete",method=RequestMethod.PATCH)
+	public Result errorComplete(@RequestParam("orderNumber")Long orderNumber,@RequestParam("subStatus")String subStatus){
+		orderService.errorCompleteOrder(orderNumber,subStatus);
 		return Result.success();
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/select", method = RequestMethod.POST)
-	public Result select(@RequestBody JSONObject json) {
-		Order order = JSONObject.toJavaObject(json, Order.class);
-		Order order2 = orderService.select(order);
-		return Result.success(order2);
+	@RequestMapping(value = "/select", method = RequestMethod.GET)
+	public Result select(@RequestParam("orderNumber")Long orderNumber,@RequestParam(value="only",defaultValue="")String only) {
+		Order order = orderService.selectById(orderNumber);
+		Object res = JsonUtil.filterProperty(order, only);
+		return Result.success(res);
 	}
 
 	@ResponseBody
@@ -78,7 +119,7 @@ public class OrderController {
 		Call call = JSONObject.toJavaObject(json, Call.class);
 		ShopSender shopSender = JSONObject.toJavaObject(json.getJSONObject("sender"), ShopSender.class);
 		shopSender.setShopInfo(call.getShopInfo());
-		userService.save(shopSender);
+		userService.saveSender(shopSender);
 		Call res = orderService.saveCall(call);
 		orderMqServer.sendDataToCrQueue(call);
 		return Result.success(res);

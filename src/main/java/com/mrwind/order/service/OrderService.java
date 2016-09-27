@@ -6,17 +6,17 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Service;
 
-import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.order.App;
+import com.mrwind.order.dao.OrderDao;
 import com.mrwind.order.entity.Call;
+import com.mrwind.order.entity.Fence;
 import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.Status;
 import com.mrwind.order.repositories.CallRepository;
 import com.mrwind.order.repositories.OrderRepository;
-import com.mrwind.order.repositories.UserRepository;
 
 @Service
 public class OrderService {
@@ -25,14 +25,10 @@ public class OrderService {
 	private OrderRepository orderRepository;
 	
 	@Autowired
-	private UserRepository userRepository;
-
-	@Autowired
 	private RedisCache redisCache;
 	
 	@Autowired
-	private MongoTemplate mongoTemplate;
-	
+	private OrderDao orderDao;
 
 	@Autowired
 	private CallRepository callRepository;
@@ -40,11 +36,16 @@ public class OrderService {
 	public Order insert(Order order) {
 		Long pk = redisCache.getPK("order", 1);
 		order.setNumber(pk);
+		Status status = new Status();
+		status.setStatus(App.ORDER_BEGIN);
+		status.setSubStatus(App.ORDER_PRE_CREATED);
+		order.setStatus(status);
+		
 		return orderRepository.save(order);
 	}
 
-	public Order select(Order order) {
-		Order findOne = orderRepository.findOne(order.getNumber());
+	public Order selectById(Long orderNumber) {
+		Order findOne = orderRepository.findOne(orderNumber);
 		return findOne;
 	}
 
@@ -67,8 +68,33 @@ public class OrderService {
 	public Page<Call> queryCallList(Pageable pageable){
 		return callRepository.findAll(pageable);
 	}
+	
+	public void submitOrderPriced(Long orderNumber,Fence fence){
+		Status status = new Status();
+		status.setStatus(App.ORDER_BEGIN);
+		status.setSubStatus(App.ORDER_BEGIN);
+		orderDao.updateOrderStatusFence(orderNumber, status, fence);
+	}
 
-	public void cancelOrder(JSONObject json) {
-		
+	public void completeOrder(Long orderNumber) {
+		Status status = new Status();
+		status.setStatus(App.ORDER_COMPLETE);
+		status.setSubStatus(App.ORDER_FINISHED);
+		orderDao.updateOrderStatus(orderNumber, status);
+	}
+	
+	public void errorCompleteOrder(Long orderNumber,String subStatus) {
+		Status status = new Status();
+		status.setStatus(App.ORDER_COMPLETE);
+		status.setSubStatus(subStatus);
+		orderDao.updateOrderStatus(orderNumber, status);
+	}
+
+	public boolean cancelOrder(Long orderNumber, String subStatus) {
+		Status status = new Status();
+		status.setStatus(App.ORDER_CANCLE);
+		status.setSubStatus(subStatus);
+		orderDao.updateOrderStatus(orderNumber, status);
+		return true;
 	}
 }

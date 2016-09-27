@@ -45,7 +45,7 @@ public class CommonAspect {
 		String authorizationToken = request.getHeader("Authorization");
 		if (StringUtils.isEmpty(authorizationToken)) {
 			response.setStatus(401);
-			return Result.error("权限错误，已被服务器拒绝");
+			return Result.error("该接口需要登录的token");
 		}
 
 		authorizationToken = authorizationToken.substring(6);

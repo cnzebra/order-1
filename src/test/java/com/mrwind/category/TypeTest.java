@@ -5,7 +5,6 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 
-import com.mrwind.category.repositories.TypeRepository;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.service.OrderService;
 
@@ -19,6 +18,6 @@ public class TypeTest {
     @Test
     public void save() {
         Order order = new Order();
-        orderService.select(order);
+        orderService.selectById(order.getNumber());
     }
 }
