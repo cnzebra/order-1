@@ -22,7 +22,7 @@ public class Category {
     private Double bottomPriceVolume;
     private Date createTime;
     private List<DiscountPlan> discountPlan;//折扣方案
-    private List<RaisePrice> weighLevel;//重量加价
+    private List<RaisePrice> weightLevel;//重量加价
     private List<RaisePrice> volumeLevel;//体积加价
     private List<String> shops;//绑定商户
     private List<CategoryAddition> addition;//特殊要求
@@ -93,11 +93,11 @@ public class Category {
     public void setDiscountPlan(List<DiscountPlan> discountPlan) {
         this.discountPlan = discountPlan;
     }
-    public List<RaisePrice> getWeighLevel() {
-        return weighLevel;
+    public List<RaisePrice> getWeightLevel() {
+        return weightLevel;
     }
-    public void setWeighLevel(List<RaisePrice> weighLevel) {
-        this.weighLevel = weighLevel;
+    public void setWeightLevel(List<RaisePrice> weightLevel) {
+        this.weightLevel = weightLevel;
     }
     public List<RaisePrice> getVolumeLevel() {
         return volumeLevel;
