@@ -83,7 +83,7 @@ public class CategoryService {
     }
     
     public JSON findByDistance(Double fromDistance, Double toDistance) {
-        List<Category> data = categoryDao.findByNameAndDistance(fromDistance, toDistance);
+        List<Category> data = categoryDao.findByDistance(fromDistance, toDistance);
         if(data==null) {
             return JSONFactory.getfailJSON("未找到品类");
         }
