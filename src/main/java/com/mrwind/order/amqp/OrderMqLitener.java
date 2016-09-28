@@ -10,7 +10,8 @@ public class OrderMqLitener implements MessageListener {
 	@Override
 	public void onMessage(Message message) {
 		// TODO Auto-generated method stub
-		System.out.println(message.getBody().toString());
+		
+		System.out.println();
 	}
 
 }

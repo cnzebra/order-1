@@ -35,7 +35,7 @@
 	<!-- queue litener 观察 监听模式 当有消息到达时会通知监听在对应的队列上的监听对象 -->
 	<rabbit:listener-container
 		connection-factory="connectionFactory" acknowledge="auto">
-		<rabbit:listener queues="queue_order" ref="orderMqLitener" />
+		<rabbit:listener queues="queue_order" ref="orderMqLitener" method="listen" />
 	</rabbit:listener-container>
 
 	<!-- spring amqp默认的是jackson 的一个插件,目的将生产者生产的数据转换为json存入消息队列，由于fastjson的速度快于jackson,这里替换为fastjson的一个实现 -->
