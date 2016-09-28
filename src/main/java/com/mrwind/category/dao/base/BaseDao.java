@@ -23,7 +23,7 @@ public class BaseDao {
                 entityClass);
     }
     
-    protected void setUpdateByJSON(String body, Update update) {
+    protected void setUpdateByJSON(final String body, final Update update) {
         JSONObject jsonObject = JSONObject.parseObject(body) ;  
         if(jsonObject!=null) {
             for(Entry<String, Object> entry : jsonObject.entrySet()) {

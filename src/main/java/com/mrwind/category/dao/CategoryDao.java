@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.mrwind.category.dao.base.BaseDao;
 import com.mrwind.category.entity.Category;
+import com.mrwind.category.entity.CategoryAddition;
 import com.mrwind.common.bean.SpringDataPageable;
 
 @Repository
@@ -38,7 +39,7 @@ public class CategoryDao extends BaseDao{
         return mongoTemplate.count(query, "category");
     }
     
-    public List<Category> findByNameAndDistance(Double fromDistance, Double toDistance) {
+    public List<Category> findByDistance(Double fromDistance, Double toDistance) {
         Query query = new Query();
         Criteria criteria = new Criteria();
         criteria.andOperator(
@@ -59,4 +60,14 @@ public class CategoryDao extends BaseDao{
         return data;
     }
     
+    public List<Category> findAdditionsById(String id) {
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        criteria.andOperator(
+                Criteria.where("id").is(id)
+                );
+        query.addCriteria(criteria);
+        query.fields().include("addition");
+        return mongoTemplate.find(query, Category.class, "category");
+    }
 }
