@@ -1,5 +1,6 @@
 package com.mrwind.category.controller;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -9,8 +10,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.mrwind.category.entity.Category;
 import com.mrwind.category.service.CategoryService;
+import com.mrwind.common.factory.JSONFactory;
 
 @Controller
 @RequestMapping("category/")
@@ -39,10 +42,17 @@ public class CategoryController {
     
     @ResponseBody
     @RequestMapping(value="update", method = RequestMethod.PUT)
-    public JSON update(
-            @RequestParam(value="id", required=true) String id, 
-            @RequestBody String body) {
-        return categoryService.updateDetailById(id, body);
+    public JSON update(@RequestBody String body) {
+        if(body==null) {
+            return JSONFactory.getfailJSON("参数错误");
+        }
+        JSONObject data = JSON.parseObject(body);
+        String id = data.getString("id");
+        String updata = data.getString("operation_set");
+        if(StringUtils.isBlank(id) || StringUtils.isBlank(updata)) {
+            return JSONFactory.getfailJSON("参数错误");
+        }
+        return categoryService.updateDetailById(id, updata);
     }
     
     /**
@@ -63,5 +73,13 @@ public class CategoryController {
     @RequestMapping(value="findAdditionsByCategoryId", method = RequestMethod.GET)
     public JSON findAdditionsByCategoryId(@RequestParam(value="id", required=true) String id) {
         return categoryService.findAdditionsByCategoryId(id);
+    }
+    
+    @ResponseBody
+    @RequestMapping(value="calculateWeightPrice", method = RequestMethod.GET)
+    public JSON calculateWeightPrice(
+            @RequestParam(value="id", required=true) String id,
+            Double weight) {
+        return categoryService.calculateWeightPrice(id, weight);
     }
 }

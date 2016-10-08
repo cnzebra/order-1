@@ -70,4 +70,23 @@ public class CategoryDao extends BaseDao{
         query.fields().include("addition");
         return mongoTemplate.find(query, Category.class, "category");
     }
+    
+    public Category findWeightPriceRuleById(String id, double weight) {
+        Query query = new Query();
+        Criteria criteria = new Criteria();
+        Criteria ora = new Criteria();
+        Criteria orb = new Criteria();
+        criteria.andOperator(
+                Criteria.where("id").is(id),
+                ora.orOperator(
+                        Criteria.where("weightLevel.a").is(null),
+                        Criteria.where("weightLevel.a").lte(weight)),
+                orb.orOperator(
+                        Criteria.where("weightLevel.b").is(null),
+                        Criteria.where("weightLevel.b").gt(weight))
+                );
+        query.fields().include("weightLevel.priceDelta");
+        query.addCriteria(criteria);
+        return mongoTemplate.findOne(query, Category.class, "category");
+    }
 }

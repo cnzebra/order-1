@@ -1,5 +1,6 @@
 package com.mrwind.category.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.mrwind.category.dao.CategoryDao;
 import com.mrwind.category.entity.Category;
 import com.mrwind.category.entity.CategoryAddition;
 import com.mrwind.category.entity.Distance;
+import com.mrwind.category.entity.RaisePrice;
 import com.mrwind.category.repositories.CategoryRepository;
 import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.factory.JSONFactory;
@@ -75,9 +77,9 @@ public class CategoryService {
         return jsonObject;
     }
     
-    public JSON updateDetailById(String id, String body) {
-        if(body!=null) {
-            categoryDao.updateById(id, body, Category.class);
+    public JSON updateDetailById(String id, String update) {
+        if(update!=null) {
+            categoryDao.updateById(id, update, Category.class);
         }
         return JSONFactory.getSuccessJSON();
     }
@@ -100,5 +102,22 @@ public class CategoryService {
         JSONObject jsonObject = JSONFactory.getSuccessJSON();
         jsonObject.put("data", data.getAddition());
         return jsonObject;
+    }
+    
+    public JSON calculateWeightPrice(String id, Double weight) {
+        BigDecimal price = BigDecimal.ZERO;
+        JSONObject json = JSONFactory.getSuccessJSON();
+        if(weight==null) {
+           json.put("data", price);
+           return json;
+        }
+        Category category = categoryDao.findWeightPriceRuleById(id, weight);
+        if(category!=null && category.getWeightLevel()!=null
+                && category.getWeightLevel().size()>0) {
+            List<RaisePrice> weights = category.getWeightLevel();
+            price = weights.get(0).getPriceDelta();
+        }
+        json.put("data", price);
+        return json;
     }
 }
