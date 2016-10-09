@@ -38,7 +38,7 @@ public class ShopCategoryDao extends BaseDao {
         Update update = new Update();
         update.set("categorys", categorys);
         mongoTemplate.upsert(Query.query(Criteria.where("shopId").is(shopId)), 
-                update, ShopCategory.class, "category");
+                update, ShopCategory.class, "shopCategory");
         
     }
 }

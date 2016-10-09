@@ -15,13 +15,13 @@ import com.sun.jersey.api.client.WebResource;
 @Service
 public class WindCloudBaseApi {
 
-    @Value("#{SERVICE_PROP['windCloud.ip']}")
+    @Value("#{APP_PROP['windCloud.ip']}")
     protected String IP;
     
-    @Value("#{SERVICE_PROP['windCloud.port']}")
+    @Value("#{APP_PROP['windCloud.port']}")
     protected String port;
     
-    @Value("#{SERVICE_PROP['windCloud.product']}")
+    @Value("#{APP_PROP['windCloud.product']}")
     protected String product;
 
     public String getIP() {
