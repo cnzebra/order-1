@@ -14,8 +14,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.category.dao.CategoryDao;
 import com.mrwind.category.entity.Category;
-import com.mrwind.category.entity.CategoryAddition;
-import com.mrwind.category.entity.Distance;
 import com.mrwind.category.repositories.CategoryRepository;
 import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.factory.JSONFactory;

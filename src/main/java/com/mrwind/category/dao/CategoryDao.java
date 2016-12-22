@@ -10,7 +10,6 @@ import org.springframework.stereotype.Repository;
 
 import com.mrwind.category.dao.base.BaseDao;
 import com.mrwind.category.entity.Category;
-import com.mrwind.category.entity.CategoryAddition;
 import com.mrwind.common.bean.SpringDataPageable;
 
 @Repository

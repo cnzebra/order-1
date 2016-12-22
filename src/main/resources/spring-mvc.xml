@@ -24,8 +24,8 @@
 		content-negotiation-manager="contentNegotiationManager">
 
 		<mvc:argument-resolvers>
-			<bean
-				class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" />
+			<bean class="com.mrwind.common.spring.JsonHandlerMethodArgumentResolver" />
+			<bean class="com.mrwind.common.spring.JsonParamArgumentResolver" />
 		</mvc:argument-resolvers>
 		<mvc:message-converters register-defaults="true">
 			<!-- 将Jackson2HttpMessageConverter的默认格式化输出为true -->
@@ -79,18 +79,6 @@
 
 	<context:annotation-config />
 	<context:component-scan base-package="com.mrwind" />
-
-	<!-- ：启动Spring MVC的注解功能，完成请求和注解POJO的映射 -->
-	<bean
-		class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
-		<property name="customArgumentResolvers">
-			<list>
-				<bean
-					class="org.springframework.data.web.PageableHandlerMethodArgumentResolver" />
-			</list>
-		</property>
-	</bean>
-
 
 	<!-- 打开aop 注解 -->
 	<aop:aspectj-autoproxy proxy-target-class="true" />
