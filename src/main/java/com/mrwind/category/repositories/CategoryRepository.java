@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
 import com.mrwind.category.entity.Category;
-import com.mrwind.category.entity.Distance;
 
 public interface CategoryRepository extends MongoRepository<Category, String> {
  

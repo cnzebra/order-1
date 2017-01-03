@@ -17,7 +17,6 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.util.JsonUtil;
-import com.mrwind.order.amqp.OrderMqServer;
 import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Fence;
 import com.mrwind.order.entity.Order;
@@ -34,8 +33,8 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 	
-	@Autowired
-	private OrderMqServer orderMqServer;
+//	@Autowired
+//	private OrderMqServer orderMqServer;
 	
 	@Autowired
 	private UserService userService;
@@ -121,7 +120,7 @@ public class OrderController {
 		shopSender.setShopInfo(call.getShopInfo());
 		userService.saveSender(shopSender);
 		Call res = orderService.saveCall(call);
-		orderMqServer.sendDataToCrQueue(call);
+//		orderMqServer.sendDataToCrQueue(call);
 		return Result.success(res);
 	}
 

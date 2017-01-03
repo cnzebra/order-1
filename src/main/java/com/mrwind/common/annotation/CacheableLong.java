@@ -7,14 +7,15 @@ import java.lang.annotation.Target;
 
 /**
  * 缓存注解 存入数据近缓存
+ * 此注解只能用于做long类型
  * @author 周杰
  *
  */
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Cacheable {
+public @interface CacheableLong {
     String key();
-    String fieldKey() default "" ;
+    String fieldKey() ;
     int expireTime() default 3600;
     public KeyMode keyMode() default KeyMode.DEFAULT;       //key的后缀模式  
     
