@@ -1,16 +1,16 @@
 package com.mrwind.order.entity;
 
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.index.Indexed;
 
-@Document
 public class User {
 
 	@Id
 	private String id;
 	private String name;
+	@Indexed
 	private String tel;
-	private String addr;
+	private String address;
 	private Double lng;
 	private Double lat;
 	private Fence fence;
@@ -31,14 +31,6 @@ public class User {
 		this.tel = tel;
 	}
 
-	public String getAddr() {
-		return addr;
-	}
-
-	public void setAddr(String addr) {
-		this.addr = addr;
-	}
-
 	public Double getLng() {
 		return lng;
 	}
@@ -55,14 +47,6 @@ public class User {
 		this.lat = lat;
 	}
 
-	public Fence getFence() {
-		return fence;
-	}
-
-	public void setFence(Fence fence) {
-		this.fence = fence;
-	}
-
 	public String getId() {
 		return id;
 	}
@@ -71,10 +55,19 @@ public class User {
 		this.id = id;
 	}
 
-	@Override
-	public String toString() {
-		return "User [id=" + id + ", name=" + name + ", tel=" + tel + ", addr=" + addr + ", lng=" + lng + ", lat=" + lat
-				+ ", fence=" + fence + "]";
+	public String getAddress() {
+		return address;
 	}
 
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public Fence getFence() {
+		return fence;
+	}
+
+	public void setFence(Fence fence) {
+		this.fence = fence;
+	}
 }

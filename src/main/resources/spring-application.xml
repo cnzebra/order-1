@@ -36,7 +36,7 @@
 
 	<bean class="com.mrwind.common.framework.spring.SpringContextHolder" />
 
-	<import resource="spring-application-db.xml" />
+	<!-- <import resource="spring-application-db.xml" /> -->
 	<import resource="spring-application-mongo.xml" />
 	<import resource="spring-application-redis.xml" />
 	<import resource="spring-application-task.xml" />

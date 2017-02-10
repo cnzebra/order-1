@@ -2,9 +2,6 @@ package com.mrwind;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
-
-import com.mrwind.order.entity.Call;
 
 public class Test {
 

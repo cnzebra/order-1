@@ -1,74 +1,30 @@
 package com.mrwind.order.entity;
 
-import org.springframework.data.annotation.Id;
+import java.util.Date;
+import java.util.List;
+
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Order {
-
-	@Id
-	private Long number;
-	private String callId;
-	private Status status;
-	private User sender;
-	private User receiver;
-	private String remark;
-	private String type;
-
-	public String getType() {
-		return type;
+public class Order extends OrderBase {
+	
+	
+	private List<Date> duiTimes;
+	
+	private List<Date> unDuiTimes;
+	public List<Date> getDuiTimes() {
+		return duiTimes;
 	}
 
-	public void setType(String type) {
-		this.type = type;
+	public void setDuiTimes(List<Date> duiTimes) {
+		this.duiTimes = duiTimes;
 	}
 
-	public User getSender() {
-		return sender;
+	public List<Date> getUnDuiTimes() {
+		return unDuiTimes;
 	}
 
-	public void setSender(User sender) {
-		this.sender = sender;
+	public void setUnDuiTimes(List<Date> unDuiTimes) {
+		this.unDuiTimes = unDuiTimes;
 	}
-
-	public User getReceiver() {
-		return receiver;
-	}
-
-	public void setReceiver(User receiver) {
-		this.receiver = receiver;
-	}
-
-	public String getRemark() {
-		return remark;
-	}
-
-	public void setRemark(String remark) {
-		this.remark = remark;
-	}
-
-	public Long getNumber() {
-		return number;
-	}
-
-	public void setNumber(Long number) {
-		this.number = number;
-	}
-
-	public Status getStatus() {
-		return status;
-	}
-
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-
-	public String getCallId() {
-		return callId;
-	}
-
-	public void setCallId(String callId) {
-		this.callId = callId;
-	}
-
 }

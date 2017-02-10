@@ -1,8 +1,5 @@
 package com.mrwind.order.entity;
 
-import org.springframework.data.mongodb.core.mapping.Document;
-
-@Document
 public class Fence {
 
 	private String name;

@@ -1,21 +1,17 @@
 package com.mrwind.order.service;
 
 import java.util.Calendar;
-import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
-import com.mrwind.common.cache.RedisCache;
+import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.OrderDao;
-import com.mrwind.order.entity.Call;
 import com.mrwind.order.entity.Fence;
 import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.Status;
-import com.mrwind.order.repositories.CallRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
 @Service
@@ -24,77 +20,49 @@ public class OrderService {
 	@Autowired
 	private OrderRepository orderRepository;
 	
-	@Autowired
-	private RedisCache redisCache;
+	@Autowired ExpressService express;
 	
 	@Autowired
 	private OrderDao orderDao;
 
-	@Autowired
-	private CallRepository callRepository;
-
-	public Order insert(Order order) {
-		Long pk = redisCache.getPK("order", 1);
-		order.setNumber(pk);
-		Status status = new Status();
-		status.setStatus(App.ORDER_BEGIN);
-		status.setSubStatus(App.ORDER_PRE_CREATED);
-		order.setStatus(status);
+	public JSONObject insert(Order order) {
+		order.setStatus(App.ORDER_CREATE);
+		order.setSubStatus(App.ORDER_PRE_CREATED);
 		
-		return orderRepository.save(order);
+		order.setUpdateTime(Calendar.getInstance().getTime());
+		if(order.getDuiTimes()==null||order.getDuiTimes().size()==0){
+			express.initExpress(order);
+			order.setStatus(App.ORDER_BEGIN);
+		}
+		orderRepository.save(order);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		return successJSON;
 	}
 
 	public Order selectById(Long orderNumber) {
 		Order findOne = orderRepository.findOne(orderNumber);
 		return findOne;
 	}
-
-	public Call saveCall(Call call) {
-		Date sysDate = Calendar.getInstance().getTime();
-		call.setCreateTime(sysDate);
-		call.setStatus(App.CALL_CREATE);
-		Call save = callRepository.save(call);
-		return save;
-	}
-
-	public Call queryCallInfo(String id){
-		return callRepository.findOne(id);
-	}
-	
-	public boolean existsCall(String id){
-		return callRepository.exists(id);
-	}
-	
-	public Page<Call> queryCallList(Pageable pageable){
-		return callRepository.findAll(pageable);
-	}
 	
 	public void submitOrderPriced(Long orderNumber,Fence fence){
-		Status status = new Status();
-		status.setStatus(App.ORDER_BEGIN);
-		status.setSubStatus(App.ORDER_BEGIN);
-		orderDao.updateOrderStatusFence(orderNumber, status, fence);
+		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
 	}
 
 	public void completeOrder(Long orderNumber) {
-		Status status = new Status();
-		status.setStatus(App.ORDER_COMPLETE);
-		status.setSubStatus(App.ORDER_FINISHED);
-		orderDao.updateOrderStatus(orderNumber, status);
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_FINISHED);
 	}
 	
 	public void errorCompleteOrder(Long orderNumber,String subStatus) {
-		Status status = new Status();
-		status.setStatus(App.ORDER_COMPLETE);
-		status.setSubStatus(subStatus);
-		orderDao.updateOrderStatus(orderNumber, status);
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
 	}
 
 	public boolean cancelOrder(Long orderNumber, String subStatus) {
-		Status status = new Status();
-		status.setStatus(App.ORDER_CANCLE);
-		status.setSubStatus(subStatus);
-		orderDao.updateOrderStatus(orderNumber, status);
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
 		return true;
+	}
+
+	public Order selectByOrder(Order order) {
+		Example<Order> example=Example.of(order);
+		return orderRepository.findOne(example);
 	}
 }

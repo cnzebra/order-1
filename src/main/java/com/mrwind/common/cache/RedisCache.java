@@ -1,5 +1,6 @@
 package com.mrwind.common.cache;
 
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,8 +65,9 @@ public class RedisCache {
 	public Long getPK(String tableName, int interval) {
 		long pk = this.incr("PK" + tableName, interval);
 		if (pk < 10000000) {
-			this.set("PK" + tableName, Integer.MAX_VALUE, 10000000 + "");
-			pk = 10000000;
+			Calendar instance = Calendar.getInstance();
+			this.set("PK" + tableName, Integer.MAX_VALUE,instance.getWeekYear()+"00000000");
+			pk =Long.valueOf(instance.getWeekYear()+"00000000");
 		}
 		return pk;
 	}

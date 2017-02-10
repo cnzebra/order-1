@@ -13,9 +13,9 @@ public class App
     
     public static String ORDER_MQ_3001="3001";  
     
-    public static String CALL_CREATE="create";  
+    public static String ORDER_CREATE="create";    //未发单
     
-    public static String ORDER_BEGIN="begin";
+    public static String ORDER_BEGIN="begin";   //已经发单
     
     public static String ORDER_COMPLETE="complete";
     

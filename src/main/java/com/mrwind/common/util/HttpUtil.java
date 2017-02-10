@@ -53,6 +53,20 @@ public class HttpUtil {
 		return null;
 	}
 	
+	public static JSONObject getUserInfoByToken(String token) {
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindCloud/account/baseInfo/token");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED)
+				.header("Authorization", "token " + token).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject json = JSONObject.parseObject(textEntity);
+			return json;
+		} else {
+			return null;
+		}
+	}
+	
 	public static JSONArray findUserGPS(String userId) {
 		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "gps/api/query";
 		Client client = Client.create();
