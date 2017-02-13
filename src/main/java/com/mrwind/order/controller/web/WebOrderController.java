@@ -27,9 +27,19 @@ public class WebOrderController {
 	public JSONObject create(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
 		JSONObject res = orderService.insert(order);
+		return res;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/create/list", method = RequestMethod.POST)
+	public JSONObject createList(@RequestBody JSONObject json) {
+		Order order = JSONObject.toJavaObject(json, Order.class);
+		JSONObject res = orderService.insert(order);
 		
 		return res;
 	}
+	
+	
 
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.GET)

@@ -80,4 +80,5 @@ public class Express extends OrderBase {
 	public void setCurrentLine(Integer currentLine) {
 		this.currentLine = currentLine;
 	}
+
 }

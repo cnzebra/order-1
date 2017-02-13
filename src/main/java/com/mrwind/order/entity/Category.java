@@ -14,43 +14,9 @@ public class Category {
 	private BigDecimal insuredRates;
 	private List<ProtectType> protectTypes;
 	private BigDecimal protectPrice;
-	private List<ServiceType> serviceTypes;
+	private ServiceType serviceType;
 	private BigDecimal servicePrice;
 	private BigDecimal totalPrice;
-
-	public class ProtectType {
-		private String name;
-		private BigDecimal price;
-		public String getName() {
-			return name;
-		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		public BigDecimal getPrice() {
-			return price;
-		}
-		public void setPrice(BigDecimal price) {
-			this.price = price;
-		}
-	}
-	
-	public class ServiceType{
-	    private String name;
-	    private BigDecimal price;
-		public String getName() {
-			return name;
-		}
-		public void setName(String name) {
-			this.name = name;
-		}
-		public BigDecimal getPrice() {
-			return price;
-		}
-		public void setPrice(BigDecimal price) {
-			this.price = price;
-		}
-	}
 
 	public String getId() {
 		return id;
@@ -108,28 +74,12 @@ public class Category {
 		this.insuredRates = insuredRates;
 	}
 
-	public List<ProtectType> getProtectTypes() {
-		return protectTypes;
-	}
-
-	public void setProtectTypes(List<ProtectType> protectTypes) {
-		this.protectTypes = protectTypes;
-	}
-
 	public BigDecimal getProtectPrice() {
 		return protectPrice;
 	}
 
 	public void setProtectPrice(BigDecimal protectPrice) {
 		this.protectPrice = protectPrice;
-	}
-
-	public List<ServiceType> getServiceTypes() {
-		return serviceTypes;
-	}
-
-	public void setServiceTypes(List<ServiceType> serviceTypes) {
-		this.serviceTypes = serviceTypes;
 	}
 
 	public BigDecimal getServicePrice() {
@@ -146,5 +96,21 @@ public class Category {
 
 	public void setTotalPrice(BigDecimal totalPrice) {
 		this.totalPrice = totalPrice;
+	}
+
+	public List<ProtectType> getProtectTypes() {
+		return protectTypes;
+	}
+
+	public void setProtectTypes(List<ProtectType> protectTypes) {
+		this.protectTypes = protectTypes;
+	}
+
+	public ServiceType getServiceType() {
+		return serviceType;
+	}
+
+	public void setServiceType(ServiceType serviceType) {
+		this.serviceType = serviceType;
 	}
 }

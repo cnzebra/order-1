@@ -25,7 +25,7 @@
 	<!-- redis的连接池pool，不是必选项：timeout/password -->
 	<bean id="redisPool" class="redis.clients.jedis.JedisPool">
 		<constructor-arg index="0" ref="jedisPoolConfig" />
-		<constructor-arg index="1" value="${mvn.redis.host}" />
+		<constructor-arg index="1" value="${mvn.redis.host}" type="java.lang.String"/>
 		<constructor-arg index="2" value="${mvn.redis.port}" type="int" />
 		<constructor-arg index="3" value="${mvn.redis.timeout}"
 			type="int" />

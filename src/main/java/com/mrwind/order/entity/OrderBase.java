@@ -59,12 +59,6 @@ public class OrderBase {
 		this.shop = shop;
 	}
 
-	public Category getCategory() {
-		return category;
-	}
-	public void setCategory(Category category) {
-		this.category = category;
-	}
 	public String getOrderUserType() {
 		return orderUserType;
 	}
@@ -82,5 +76,17 @@ public class OrderBase {
 	}
 	public void setSubStatus(String subStatus) {
 		this.subStatus = subStatus;
+	}
+	public ObjectId getId() {
+		return id;
+	}
+	public void setId(ObjectId id) {
+		this.id = id;
+	}
+	public Category getCategory() {
+		return category;
+	}
+	public void setCategory(Category category) {
+		this.category = category;
 	}
 }

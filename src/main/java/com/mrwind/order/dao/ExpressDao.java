@@ -16,4 +16,10 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("currentLine", lineIndex);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+
+	public int updateCategory(Express express) {
+		Query query=Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
+		Update update = Update.update("category", express.getCategory());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 }

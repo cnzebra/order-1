@@ -5,7 +5,10 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
@@ -15,6 +18,7 @@ import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Order;
@@ -29,6 +33,8 @@ public class ExpressService {
 
 	@Autowired
 	ExpressRepository expressRepository;
+	
+	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
 	@Autowired
 	ExpressDao expressDao;
@@ -40,6 +46,8 @@ public class ExpressService {
 		express.setDuiTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
 		sendExpressLog21010(express);
+		
+		
 		return express;
 	}
 
@@ -161,6 +169,82 @@ public class ExpressService {
 		// TODO Auto-generated method stub
 		List<Express> list= expressRepository.findByExpressNoIn(express);
 		return list;
+	}
+
+	public JSONObject updateCategory(Express express) {
+		Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
+		if(firstExpress==null){
+			return JSONFactory.getErrorJSON("查无该订单");
+		}
+		firstExpress.setCategory(express.getCategory());
+		firstExpress.setStatus(App.ORDER_BEGIN);
+		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
+		updateExpress(express);
+		return JSONFactory.getSuccessJSON();
+	}
+
+	public synchronized JSONObject updateExpress(final Express express) {
+		Runnable runnable = new Runnable() {
+			public void run() {
+				Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
+				if(firstExpress==null){
+					return ;
+				}
+				if(express.getCategory()!=null){
+					firstExpress.setCategory(express.getCategory());
+				}
+				
+				if(StringUtils.isNotBlank(express.getStatus()))
+				{
+					firstExpress.setStatus(App.ORDER_BEGIN);
+				}
+				
+				if(StringUtils.isNotBlank(express.getSubStatus())){
+					firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
+				}
+				
+				if(StringUtils.isNotBlank(express.getOrderUserType())){
+					firstExpress.setOrderUserType(express.getOrderUserType());
+				}
+				
+				if(StringUtils.isNotBlank(express.getRemark())){
+					firstExpress.setRemark(express.getRemark());
+				}
+				
+				if(express.getBindExpressNo()!=null){
+					firstExpress.setBindExpressNo(express.getBindExpressNo());
+				}
+				
+				if(express.getCurrentLine()!=null){
+					firstExpress.setCurrentLine(express.getCurrentLine());
+				}
+				
+				if(express.getLines()!=null){
+					firstExpress.setLines(express.getLines());
+				}
+				
+				if(express.getDuiTime()!=null){
+					firstExpress.setDuiTime(express.getDuiTime());
+				}
+				
+				if(express.getReceiver()!=null){
+					firstExpress.setReceiver(express.getReceiver());
+				}
+				
+				if(express.getShop()!=null){
+					firstExpress.setShop(express.getShop());
+				}
+				
+				if(express.getSender()!=null){
+					firstExpress.setSender(express.getSender());
+				}
+				
+				firstExpress.setUpdateTime(Calendar.getInstance().getTime());
+				expressRepository.save(firstExpress);
+			}
+		};
+		newSingleThreadExecutor.execute(runnable);
+		return JSONFactory.getSuccessJSON();
 	}
 
 }
