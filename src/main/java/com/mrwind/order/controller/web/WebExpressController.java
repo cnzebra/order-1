@@ -3,6 +3,7 @@ package com.mrwind.order.controller.web;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,7 +28,16 @@ public class WebExpressController {
 		Express res = expressService.selectByExpressNo(expressNo);
 		Object filterProperty = JsonUtil.filterProperty(res, only);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("content", filterProperty);
+		successJSON.put("data", filterProperty);
+		return successJSON;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/shop", method = RequestMethod.GET)
+	public JSONObject select(String shopId,Integer pageIndex,Integer pageSize) {
+		Page<Express> selectByShop = expressService.selectByShop(shopId,pageIndex,pageSize);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", selectByShop);
 		return successJSON;
 	}
 	
@@ -37,7 +47,7 @@ public class WebExpressController {
 		List<Express> res = expressService.selectByExpressNo(express);
 		Object filterProperty = JsonUtil.filterProperty(res, "");
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("content", filterProperty);
+		successJSON.put("data", filterProperty);
 		return successJSON;
 	}
 }

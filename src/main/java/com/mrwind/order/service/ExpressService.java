@@ -9,8 +9,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
@@ -21,8 +24,11 @@ import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.Express;
+import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.OrderBase;
+import com.mrwind.order.entity.User;
 import com.mrwind.order.repositories.ExpressRepository;
 
 @Service
@@ -64,10 +70,11 @@ public class ExpressService {
 		Thread thread = new Thread() {
 			public void run() {
 				JSONObject param = new JSONObject();
-				if (express.getCurrentLineDetail() == null) {
+				Line currentLine = LineUtil.getLine(express.getLines(), express.getCurrentLine());
+				if (currentLine == null) {
 					return;
 				}
-				param.put("creatorId", express.getCurrentLineDetail().getExecutorUser().getId());
+				param.put("creatorId", currentLine.getExecutorUser().getId());
 				param.put("createTime", DateUtils.convertToUtcTime(Calendar.getInstance().getTime()));
 				param.put("type", "21003");
 				param.put("orderId", express.getExpressNo());
@@ -121,12 +128,10 @@ public class ExpressService {
 
 	}
 
-	public JSONObject selectByExpress(Express express) {
+	public Iterable<Express> selectByExpress(Express express) {
 		Example<Express> example = Example.of(express);
 		Iterable<Express> all = expressRepository.findAll(example);
-		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("data", all);
-		return successJSON;
+		return all;
 	}
 
 	public void sendExpressLog21010(List<Express> express) {
@@ -247,4 +252,46 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
+	public JSONObject errorComplete(List<Long> list, JSONObject userInfo) {
+		Iterator<Long> iterator = list.iterator();
+		User user = JSONObject.toJavaObject(userInfo, User.class);
+		
+		while(iterator.hasNext()){
+			Long expressNo = iterator.next();
+			Express express = expressRepository.findFirstByExpressNo(expressNo);
+			List<Line> lines = express.getLines();
+			
+			Line line = new Line();
+			line.setExecutorUser(user);
+			line.setBeginTime(Calendar.getInstance().getTime());
+			line.setTitle(user.getName()+"异常妥投了订单");
+			line.setIndex(lines.size());
+			lines.add(line);
+			express.setCurrentLine(lines.size());
+			express.setLines(lines);
+			express.setStatus(App.ORDER_COMPLETE);
+			express.setSubStatus(App.ORDER_ERROR_COMPLETE);
+			updateExpress(express);
+		}
+		return JSONFactory.getSuccessJSON();
+	}
+
+	public void addLine(Long expressNo, List<Line> list) {
+		expressDao.addLines(expressNo, list);
+	}
+	
+	public void removeLine(Long expressNo ,Integer lineIndex){
+		expressDao.removeLine(expressNo, lineIndex);
+	}
+
+	public void updateLine(Long expressNo, List<Line> list) {
+		expressDao.updateLines(expressNo, list);
+	}
+
+	public Page<Express> selectByShop(String shopId, Integer pageIndex, Integer pageSize) {
+		// TODO Auto-generated method stub
+		PageRequest pageRequest = new PageRequest(pageIndex, pageSize);
+		ObjectId objectId = new ObjectId(shopId);
+		return expressRepository.findByShopId(objectId, pageRequest);
+	}
 }

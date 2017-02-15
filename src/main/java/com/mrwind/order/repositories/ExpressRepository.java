@@ -17,5 +17,5 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 
 	List<Express> findByExpressNoIn(List<Long> express);
 	
-	Page<Express> findByShopId(String shopId,Pageable pageable);
+	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 }

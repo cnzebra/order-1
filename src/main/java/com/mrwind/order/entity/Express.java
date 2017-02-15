@@ -1,5 +1,6 @@
 package com.mrwind.order.entity;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -15,7 +16,8 @@ public class Express extends OrderBase {
 	private Long bindExpressNo;
 	private Date duiTime;
 	private List<Line> lines;
-	private Integer currentLine;
+	private Integer currentLine=1;
+	private BigDecimal downMoney;
 
 	public List<Line> getLines() {
 		return lines;
@@ -39,13 +41,6 @@ public class Express extends OrderBase {
 
 	public void setLines(List<Line> lines) {
 		this.lines = lines;
-	}
-
-	public Line getCurrentLineDetail(){
-		if(lines!=null&&lines.size()>=currentLine){
-			return lines.get(currentLine-1);
-		}
-		return null;
 	}
 
 	public Long getExpressNo() {
@@ -79,6 +74,14 @@ public class Express extends OrderBase {
 
 	public void setCurrentLine(Integer currentLine) {
 		this.currentLine = currentLine;
+	}
+
+	public BigDecimal getDownMoney() {
+		return downMoney;
+	}
+
+	public void setDownMoney(BigDecimal downMoney) {
+		this.downMoney = downMoney;
 	}
 
 }

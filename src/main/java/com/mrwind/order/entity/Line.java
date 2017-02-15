@@ -1,6 +1,7 @@
 package com.mrwind.order.entity;
 
 import java.util.Date;
+import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
 
@@ -12,6 +13,7 @@ public class Line {
 	private Date beginTime;
 	private Date endTime;
 	private User executorUser;
+	private String title;
 	
 	public Line(){
 		
@@ -56,5 +58,25 @@ public class Line {
 	}
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+	
+	public static class LineUtil{
+		
+		public static Line getLine(List<Line> list,Integer index){
+			for(Line line :list){
+				if(line.getIndex()==index){
+					return line;
+				}
+			}
+			return null;
+		}
 	}
 }

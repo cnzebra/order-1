@@ -8,15 +8,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.entity.Express;
@@ -28,61 +27,79 @@ import com.mrwind.order.service.ExpressService;
 @RequestMapping("express")
 public class ExpressController {
 
-	@Autowired ExpressService expressService;
-	
+	@Autowired
+	ExpressService expressService;
+
 	@ResponseBody
-	@RequestMapping(value = "/line", method = RequestMethod.POST)
-	public Result line(Express express) {
-		JSONObject res = expressService.selectByExpress(express);
-		return Result.success(res);
+	@RequestMapping(value = "/line", method = RequestMethod.GET)
+	public JSONObject line(String expressNo) {
+		Express resExpress = expressService.selectByExpressNo(expressNo);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", resExpress.getLines());
+		return successJSON;
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/line/complete", method = RequestMethod.POST)
-	public JSONObject completeLine(String expressNo,Integer lineIndex){
-		
-		expressService.completeLine(expressNo,lineIndex);
+	public JSONObject completeLine(@RequestBody JSONObject param) {
+		String expressNo = param.getString("expressNo");
+		Integer lineIndex = param.getInteger("lineIndex");
+		expressService.completeLine(expressNo, lineIndex);
+		return JSONFactory.getSuccessJSON();
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/line/add/{expressNo}", method = RequestMethod.PUT)
+	public JSONObject addLine(@RequestBody List<Line> list,@PathVariable("expressNo")Long expressNo) {
+		if(list.size()==0||list==null){
+			return JSONFactory.getErrorJSON("参数数据不正确");
+		}
+		expressService.addLine(expressNo,list);
 		return JSONFactory.getSuccessJSON();
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/line/add", method = RequestMethod.POST)
-	public JSONObject addLine(JSONArray jsonArray){
-		
+	@RequestMapping(value = "/line/remove", method = RequestMethod.DELETE)
+	public JSONObject deleteLine(Long expressNo,Integer lineIndex) {
+		if(expressNo==null){
+			return JSONFactory.getErrorJSON("参数数据不正确");
+		}
+		expressService.removeLine(expressNo, lineIndex);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
-	@RequestMapping(value = "/line/update", method = RequestMethod.POST)
-	public JSONObject updateLine(JSONArray jsonArray){
+	@RequestMapping(value = "/line/update/{expressNo}", method = RequestMethod.POST)
+	public JSONObject updateLine(@RequestBody List<Line> list,@PathVariable("expressNo")Long expressNo) {
+		expressService.updateLine(expressNo,list);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public JSONObject create(@RequestBody JSONObject expressJson) {
 		Express express = JSONObject.toJavaObject(expressJson, Express.class);
-		
+
 		List<Line> lines = new ArrayList<>();
-		
-		User executorUser= JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
+
+		User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
 		Line line = new Line();
 		line.setBeginTime(express.getCreateTime());
 		line.setExecutorUser(executorUser);
 		line.setFromAddress(express.getSender().getAddress());
 		line.setIndex(1);
 		lines.add(line);
-		
+
 		express.setLines(lines);
 		expressService.initExpress(express);
 		return JSONFactory.getSuccessJSON();
 	}
-	
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/update/pricing", method = RequestMethod.POST)
-	public JSONObject updatePrice(@RequestBody JSONObject json,@RequestHeader("Authorization") String token, HttpServletResponse response){
-		
+	public JSONObject updatePrice(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
 		if (StringUtils.isEmpty(token)) {
 			JSONFactory.getErrorJSON("没有登录信息");
 		}
@@ -92,20 +109,21 @@ public class ExpressController {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
 		}
-		
+
 		Express express = JSONObject.toJavaObject(json, Express.class);
-		if(express.getExpressNo()==null){
+		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
-		
+
 		expressService.updateCategory(express);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
-	public JSONObject update(@RequestBody JSONObject json,@RequestHeader("Authorization") String token, HttpServletResponse response){
-		
+	public JSONObject update(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
 		if (StringUtils.isEmpty(token)) {
 			JSONFactory.getErrorJSON("没有登录信息");
 		}
@@ -117,17 +135,18 @@ public class ExpressController {
 		}
 
 		Express express = JSONObject.toJavaObject(json, Express.class);
-		if(express.getExpressNo()==null){
+		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
 		expressService.updateExpress(express);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/cancel", method = RequestMethod.POST)
-	public JSONObject cancel(@RequestBody JSONObject json,@RequestHeader("Authorization") String token, HttpServletResponse response){
-		
+	public JSONObject cancel(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
 		if (StringUtils.isEmpty(token)) {
 			JSONFactory.getErrorJSON("没有登录信息");
 		}
@@ -139,17 +158,18 @@ public class ExpressController {
 		}
 
 		Express express = JSONObject.toJavaObject(json, Express.class);
-		if(express.getExpressNo()==null){
+		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
 		expressService.updateExpress(express);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
-	public JSONObject complete(@RequestBody JSONObject json,@RequestHeader("Authorization") String token, HttpServletResponse response){
-		
+	public JSONObject complete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
 		if (StringUtils.isEmpty(token)) {
 			JSONFactory.getErrorJSON("没有登录信息");
 		}
@@ -161,32 +181,33 @@ public class ExpressController {
 		}
 
 		Express express = JSONObject.toJavaObject(json, Express.class);
-		if(express.getExpressNo()==null){
+		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
 		expressService.updateExpress(express);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/error/complete", method = RequestMethod.POST)
-	public JSONObject errorComplete(@RequestBody JSONObject json,@RequestHeader("Authorization") String token, HttpServletResponse response){
-		
+	public JSONObject errorComplete(@RequestBody List<Long> list, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
 		if (StringUtils.isEmpty(token)) {
-			JSONFactory.getErrorJSON("没有登录信息");
+			 return JSONFactory.getErrorJSON("没有登录信息");
+		}
+
+		if (list == null || list.size() == 0) {
+			return JSONFactory.getErrorJSON("参数订单号不能为空");
 		}
 		token = token.substring(6);
-		String adminUserId = HttpUtil.getUserIdByToken(token);
-		if (StringUtils.isEmpty(adminUserId)) {
+		JSONObject userInfo = HttpUtil.getUserInfoByToken(token);
+		if (userInfo == null) {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		Express express = JSONObject.toJavaObject(json, Express.class);
-		if(express.getExpressNo()==null){
-			return JSONFactory.getErrorJSON("运单号不能为空");
-		}
-		expressService.updateExpress(express);
-		return JSONFactory.getSuccessJSON();
+		return expressService.errorComplete(list,userInfo);
+
 	}
 }
