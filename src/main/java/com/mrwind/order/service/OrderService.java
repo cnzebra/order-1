@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
@@ -65,7 +66,7 @@ public class OrderService {
 	}
 
 	public void completeOrder(Long orderNumber) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_FINISHED);
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
 	}
 	
 	public void errorCompleteOrder(Long orderNumber,String subStatus) {
@@ -98,6 +99,9 @@ public class OrderService {
 			Express next = iterator.next();
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
 				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，订单单号为:"+next.getBindExpressNo());
+			}
+			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){
+				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
 			}
 			if(next.getShop()!=null){
 				if(shopId.equals("")){
@@ -133,5 +137,31 @@ public class OrderService {
 			return JSONFactory.getErrorJSON("交易号已经超时，请重新发起交易！");
 		}
 		return JSONObject.parseObject(successJSON);
+	}
+
+
+	public JSONObject lockOrder(String tranNo) {
+		String res = redisCache.getString("transaction_"+tranNo);
+		if(StringUtils.isEmpty(res)){
+			return JSONFactory.getErrorJSON("不用锁单了，请求号已经无效");
+		}
+		JSONObject jsonObject = JSONObject.parseObject(res);
+		JSONArray items = jsonObject.getJSONArray("content");
+		Iterator<Object> iterator = items.iterator();
+		while(iterator.hasNext()){
+			OrderReceipt next =JSONObject.toJavaObject((JSONObject) iterator.next(),OrderReceipt.class);
+			redisCache.hset(App.RDKEY_PAY_ORDER, next.getExpressNo().toString(), 1);
+		}
+		return JSONFactory.getSuccessJSON();
+	}
+
+
+	public String payCallback(String tranNo) {
+		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
+		for (OrderReceipt orderReceipt : list){
+			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_COMPLETE);
+			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
+		}
+		return null;
 	}
 }

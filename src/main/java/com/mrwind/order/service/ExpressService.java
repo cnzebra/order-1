@@ -297,4 +297,8 @@ public class ExpressService {
 		}
 		return expressRepository.findByShopId(shopId, pageRequest);
 	}
+
+	public int udpateExpressStatus(Long expressNo,String status, String subStatus) {
+		return expressDao.updateStatus(expressNo,status,subStatus);
+	}
 }

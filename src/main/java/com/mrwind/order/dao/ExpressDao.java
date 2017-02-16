@@ -45,4 +45,10 @@ public class ExpressDao extends BaseDao {
 		update.pull("lines","index:{$gt:"+lineIndex+"}");
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+
+	public int updateStatus(Long expressNo,String status, String subStatus) {
+		Query query=Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("status", status).set("subStatus", subStatus);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 }
