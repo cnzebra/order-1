@@ -291,7 +291,10 @@ public class ExpressService {
 	public Page<Express> selectByShop(String shopId, Integer pageIndex, Integer pageSize) {
 		// TODO Auto-generated method stub
 		PageRequest pageRequest = new PageRequest(pageIndex, pageSize);
-		ObjectId objectId = new ObjectId(shopId);
-		return expressRepository.findByShopId(objectId, pageRequest);
+		if(ObjectId.isValid(shopId)){
+			ObjectId objectId = new ObjectId(shopId);
+			return expressRepository.findByShopId(objectId, pageRequest);
+		}
+		return expressRepository.findByShopId(shopId, pageRequest);
 	}
 }

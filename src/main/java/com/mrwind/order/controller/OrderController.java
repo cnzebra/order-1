@@ -31,7 +31,17 @@ public class OrderController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/request/tran", method = RequestMethod.GET)
-	public JSONObject pay(String tranNo) {
+	public JSONObject requestTran(String tranNo) {
 		return orderService.queryTranSactionDetail(tranNo);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/request/tran/money", method = RequestMethod.GET)
+	public String requestTranMoney(String tranNo) {
+		JSONObject tranSactionDetail = orderService.queryTranSactionDetail(tranNo);
+		if(tranSactionDetail.getString("code").equals("1")){
+			return tranSactionDetail.getString("totalPrice");
+		}
+		return "-1";
 	}
 }

@@ -93,12 +93,20 @@ public class OrderService {
 		String tranNo = UUIDUtils.create().toString();
 		BigDecimal totalPrice=BigDecimal.ZERO;
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
+		String shopId="";
 		while(iterator.hasNext()){
 			Express next = iterator.next();
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
 				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，订单单号为:"+next.getBindExpressNo());
 			}
-
+			if(next.getShop()!=null){
+				if(shopId.equals("")){
+					shopId= next.getShop().getId();
+				}
+				if(!shopId.equals(next.getShop().getId())){
+					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
+				}
+			}
 			OrderReceipt orderReceipt = new OrderReceipt(next);
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
 			totalDownPrice=totalDownPrice.add(next.getDownMoney());
@@ -113,6 +121,7 @@ public class OrderService {
 		successJSON.put("totalPrice", totalPrice.subtract(totalDownPrice));
 		successJSON.put("totalDownPrice", totalDownPrice);
 		successJSON.put("tranNo", tranNo);
+		successJSON.put("shopId", shopId);
 		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
 		return successJSON;
 	}
@@ -125,5 +134,4 @@ public class OrderService {
 		}
 		return JSONObject.parseObject(successJSON);
 	}
-	
 }

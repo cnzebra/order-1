@@ -178,4 +178,19 @@ public class HttpUtil {
 			return "";
 		}
 	}
+	
+	public static Boolean selectUserProtocol(String uid, String protocolNumber) {
+		// TODO Auto-generated method stub
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/protocol/findByShopIdAndProtocolNum?shopId="+uid+"&protocolNum="+protocolNumber);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject json = JSONObject.parseObject(textEntity);
+			if(json.getString("code").equals("1")){
+				return true;
+			}
+		} 
+		return false;
+	}
 }

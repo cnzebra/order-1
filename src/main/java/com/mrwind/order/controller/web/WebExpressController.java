@@ -35,7 +35,7 @@ public class WebExpressController {
 	@ResponseBody
 	@RequestMapping(value = "/select/shop", method = RequestMethod.GET)
 	public JSONObject select(String shopId,Integer pageIndex,Integer pageSize) {
-		Page<Express> selectByShop = expressService.selectByShop(shopId,pageIndex,pageSize);
+		Page<Express> selectByShop = expressService.selectByShop(shopId,pageIndex+1,pageSize);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", selectByShop);
 		return successJSON;

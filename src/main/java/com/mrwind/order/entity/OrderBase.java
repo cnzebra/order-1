@@ -2,15 +2,15 @@ package com.mrwind.order.entity;
 
 import java.util.Date;
 
-import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
 public class OrderBase {
-	@Id
+
 	@JSONField(serialize=false)
-	protected ObjectId id;
+	@Id
+	protected String id;
 	protected String status;
 	protected String subStatus;
 	protected ShopUser shop;
@@ -77,16 +77,16 @@ public class OrderBase {
 	public void setSubStatus(String subStatus) {
 		this.subStatus = subStatus;
 	}
-	public ObjectId getId() {
-		return id;
-	}
-	public void setId(ObjectId id) {
-		this.id = id;
-	}
 	public Category getCategory() {
 		return category;
 	}
 	public void setCategory(Category category) {
 		this.category = category;
+	}
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
 	}
 }
