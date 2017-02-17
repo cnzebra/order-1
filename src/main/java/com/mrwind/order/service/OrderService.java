@@ -40,17 +40,13 @@ public class OrderService {
 	@Autowired
 	private OrderDao orderDao;
 
-	public Order insert(Order order) {
+	public List<Express> insert(Order order) {
 		order.setStatus(App.ORDER_CREATE);
 		order.setSubStatus(App.ORDER_PRE_CREATED);
-		
 		order.setUpdateTime(Calendar.getInstance().getTime());
-		if(order.getDuiTimes()==null||order.getDuiTimes().size()==0){
-			expressService.initExpress(order);
-			order.setStatus(App.ORDER_BEGIN);
-		}
-		Order res = orderRepository.save(order);
-		return res;
+		orderRepository.save(order);
+		List<Express> list = expressService.createExpress(order);
+		return list;
 	}
 	
 
@@ -164,7 +160,7 @@ public class OrderService {
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
 		for (OrderReceipt orderReceipt : list){
-			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_COMPLETE);
+			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 		}
 		return null;

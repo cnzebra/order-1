@@ -10,9 +10,4 @@ public class BaseDao  {
 	@Autowired
 	protected MongoTemplate mongoTemplate;
 	
-	
-	
-	public Object query(){
-		return null;
-	}
 }

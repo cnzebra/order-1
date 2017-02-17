@@ -29,7 +29,7 @@ public class App
     
     public static String ORDER_PRE_PRICED="pre_priced";//已确认运费
     
-    public static String ORDER_PRE_COMPLETE="pre_priced_complete";//已确认运费
+    public static String ORDER_PRE_PAY_PRICED="pre_pay_priced";//已确认运费
     
     public static String ORDER_CANCLE="cancle";  //取消
     

@@ -1,5 +1,6 @@
 package com.mrwind.order.dao;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -7,6 +8,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 
@@ -48,5 +50,12 @@ public class ExpressDao extends BaseDao {
 		Query query=Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+	
+	public List<Express> findUnBegin(Date date){
+		Query query=new Query();
+		query.addCriteria(Criteria.where("status").is(App.ORDER_CREATE));
+		query.addCriteria(Criteria.where("duiTime").gte(date));
+		return mongoTemplate.find(query, Express.class);
 	}
 }

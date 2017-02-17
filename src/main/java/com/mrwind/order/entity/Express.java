@@ -14,6 +14,7 @@ public class Express extends OrderBase {
 	private Long expressNo;
 	@Indexed
 	private Long bindExpressNo;
+	@Indexed
 	private Date duiTime;
 	private List<Line> lines;
 	private Integer currentLine=1;

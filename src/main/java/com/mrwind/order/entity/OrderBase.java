@@ -3,6 +3,7 @@ package com.mrwind.order.entity;
 import java.util.Date;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
@@ -11,6 +12,7 @@ public class OrderBase {
 	@JSONField(serialize=false)
 	@Id
 	protected String id;
+	@Indexed
 	protected String status;
 	protected String subStatus;
 	protected ShopUser shop;

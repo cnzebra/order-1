@@ -19,7 +19,6 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
-import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.DateUtils;
@@ -30,7 +29,6 @@ import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.OrderBase;
 import com.mrwind.order.entity.User;
 import com.mrwind.order.repositories.ExpressRepository;
 
@@ -42,22 +40,24 @@ public class ExpressService {
 
 	@Autowired
 	ExpressRepository expressRepository;
-	
+
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
 	@Autowired
 	ExpressDao expressDao;
 
-	public Express initExpress(OrderBase order) {
-		Express express = new Express(order);
-		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk);
-		express.setDuiTime(Calendar.getInstance().getTime());
-		expressRepository.save(express);
-		sendExpressLog21010(express);
-		
-		
-		return express;
+	public List<Express> createExpress(Order order) {
+		List<Express> list = new ArrayList<>();
+		if (order.getDuiTimes() == null || order.getDuiTimes().size() == 0) {
+			list.add(initExpress(order, null));
+			return list;
+		}
+		List<Date> duiTimes = order.getDuiTimes();
+		System.out.println("这里需要一个人!");
+		for (Date duiTime : duiTimes) {
+			list.add(initExpress(order, duiTime));
+		}
+		return list;
 	}
 
 	public Express initExpress(Express express) {
@@ -99,9 +99,16 @@ public class ExpressService {
 		Express express = new Express(order);
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk);
+		if (duiDate == null) {
+			duiDate = Calendar.getInstance().getTime();
+		}
 		express.setDuiTime(duiDate);
+		if (DateUtils.pastMinutes(duiDate) >= -60 * 2) {
+			express.setStatus(App.ORDER_BEGIN);
+			express.setSubStatus(App.ORDER_PRE_CREATED);
+			sendExpressLog21010(express);
+		}
 		expressRepository.save(express);
-		sendExpressLog21010(express);
 		return express;
 	}
 
@@ -137,31 +144,35 @@ public class ExpressService {
 		return all;
 	}
 
-	public void sendExpressLog21010(List<Express> express) {
-
+	public void sendExpressLog21010(final List<Express> express) {
 		if (express == null || express.size() < 1)
 			return;
-		JSONObject json = new JSONObject();
-		json.put("type", "21010");
-		json.put("createTime", Calendar.getInstance().getTime());
-		json.put("shopId", express.get(0).getShop().getId());
-		Iterator<Express> iterator = express.iterator();
-		List<JSONObject> caseDetailList = new ArrayList<>();
-		while (iterator.hasNext()) {
-			Express next = iterator.next();
-			JSONObject caseDetail = new JSONObject();
-			caseDetail.put("orderId", next.getExpressNo());
-			caseDetail.put("shopId", next.getShop().getId());
-			caseDetail.put("shopName", next.getShop().getName());
-			caseDetail.put("shopTel", next.getShop().getTel());
-			caseDetail.put("receiver", next.getReceiver());
-			caseDetail.put("orderUserType", next.getOrderUserType());
-			caseDetail.put("dueTime", next.getDuiTime());
-			caseDetail.put("sender", next.getSender());
-			caseDetailList.add(caseDetail);
-		}
-		json.put("caseDetail", caseDetailList);
-		HttpUtil.sendWindDataLog(json);
+		Thread thread = new Thread() {
+			public void run() {
+				JSONObject json = new JSONObject();
+				json.put("type", "21010");
+				json.put("createTime", Calendar.getInstance().getTime());
+				json.put("shopId", express.get(0).getShop().getId());
+				Iterator<Express> iterator = express.iterator();
+				List<JSONObject> caseDetailList = new ArrayList<>();
+				while (iterator.hasNext()) {
+					Express next = iterator.next();
+					JSONObject caseDetail = new JSONObject();
+					caseDetail.put("orderId", next.getExpressNo());
+					caseDetail.put("shopId", next.getShop().getId());
+					caseDetail.put("shopName", next.getShop().getName());
+					caseDetail.put("shopTel", next.getShop().getTel());
+					caseDetail.put("receiver", next.getReceiver());
+					caseDetail.put("orderUserType", next.getOrderUserType());
+					caseDetail.put("dueTime", next.getDuiTime());
+					caseDetail.put("sender", next.getSender());
+					caseDetailList.add(caseDetail);
+				}
+				json.put("caseDetail", caseDetailList);
+				HttpUtil.sendWindDataLog(json);
+			}
+		};
+		thread.start();
 	}
 
 	public Integer completeLine(String expressNo, Integer lineIndex) {
@@ -169,19 +180,19 @@ public class ExpressService {
 	}
 
 	public Express selectByExpressNo(String expressNo) {
-		Express express=expressRepository.findFirstByExpressNo(Long.valueOf(expressNo));
+		Express express = expressRepository.findFirstByExpressNo(Long.valueOf(expressNo));
 		return express;
 	}
 
 	public List<Express> selectByExpressNo(List<Long> express) {
 		// TODO Auto-generated method stub
-		List<Express> list= expressRepository.findByExpressNoIn(express);
+		List<Express> list = expressRepository.findByExpressNoIn(express);
 		return list;
 	}
 
 	public JSONObject updateCategory(Express express) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
-		if(firstExpress==null){
+		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
 		}
 		firstExpress.setCategory(express.getCategory());
@@ -195,58 +206,57 @@ public class ExpressService {
 		Runnable runnable = new Runnable() {
 			public void run() {
 				Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
-				if(firstExpress==null){
-					return ;
+				if (firstExpress == null) {
+					return;
 				}
-				if(express.getCategory()!=null){
+				if (express.getCategory() != null) {
 					firstExpress.setCategory(express.getCategory());
 				}
-				
-				if(StringUtils.isNotBlank(express.getStatus()))
-				{
+
+				if (StringUtils.isNotBlank(express.getStatus())) {
 					firstExpress.setStatus(App.ORDER_BEGIN);
 				}
-				
-				if(StringUtils.isNotBlank(express.getSubStatus())){
+
+				if (StringUtils.isNotBlank(express.getSubStatus())) {
 					firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 				}
-				
-				if(StringUtils.isNotBlank(express.getOrderUserType())){
+
+				if (StringUtils.isNotBlank(express.getOrderUserType())) {
 					firstExpress.setOrderUserType(express.getOrderUserType());
 				}
-				
-				if(StringUtils.isNotBlank(express.getRemark())){
+
+				if (StringUtils.isNotBlank(express.getRemark())) {
 					firstExpress.setRemark(express.getRemark());
 				}
-				
-				if(express.getBindExpressNo()!=null){
+
+				if (express.getBindExpressNo() != null) {
 					firstExpress.setBindExpressNo(express.getBindExpressNo());
 				}
-				
-				if(express.getCurrentLine()!=null){
+
+				if (express.getCurrentLine() != null) {
 					firstExpress.setCurrentLine(express.getCurrentLine());
 				}
-				
-				if(express.getLines()!=null){
+
+				if (express.getLines() != null) {
 					firstExpress.setLines(express.getLines());
 				}
-				
-				if(express.getDuiTime()!=null){
+
+				if (express.getDuiTime() != null) {
 					firstExpress.setDuiTime(express.getDuiTime());
 				}
-				
-				if(express.getReceiver()!=null){
+
+				if (express.getReceiver() != null) {
 					firstExpress.setReceiver(express.getReceiver());
 				}
-				
-				if(express.getShop()!=null){
+
+				if (express.getShop() != null) {
 					firstExpress.setShop(express.getShop());
 				}
-				
-				if(express.getSender()!=null){
+
+				if (express.getSender() != null) {
 					firstExpress.setSender(express.getSender());
 				}
-				
+
 				firstExpress.setUpdateTime(Calendar.getInstance().getTime());
 				expressRepository.save(firstExpress);
 			}
@@ -258,16 +268,16 @@ public class ExpressService {
 	public JSONObject errorComplete(List<Long> list, JSONObject userInfo) {
 		Iterator<Long> iterator = list.iterator();
 		User user = JSONObject.toJavaObject(userInfo, User.class);
-		
-		while(iterator.hasNext()){
+
+		while (iterator.hasNext()) {
 			Long expressNo = iterator.next();
 			Express express = expressRepository.findFirstByExpressNo(expressNo);
 			List<Line> lines = express.getLines();
-			
+
 			Line line = new Line();
 			line.setExecutorUser(user);
 			line.setBeginTime(Calendar.getInstance().getTime());
-			line.setTitle(user.getName()+"异常妥投了订单");
+			line.setTitle(user.getName() + "异常妥投了订单");
 			line.setIndex(lines.size());
 			lines.add(line);
 			express.setCurrentLine(lines.size());
@@ -284,8 +294,8 @@ public class ExpressService {
 		System.out.println(beginTime);
 		expressDao.addLines(expressNo, list);
 	}
-	
-	public void removeLine(Long expressNo ,Integer lineIndex){
+
+	public void removeLine(Long expressNo, Integer lineIndex) {
 		expressDao.removeLine(expressNo, lineIndex);
 	}
 
@@ -296,15 +306,15 @@ public class ExpressService {
 	public Page<Express> selectByShop(String shopId, Integer pageIndex, Integer pageSize) {
 		// TODO Auto-generated method stub
 		Sort sort = new Sort(Direction.DESC, "createTime");
-		PageRequest pageRequest = new PageRequest(pageIndex, pageSize,sort);
-		if(ObjectId.isValid(shopId)){
+		PageRequest pageRequest = new PageRequest(pageIndex, pageSize, sort);
+		if (ObjectId.isValid(shopId)) {
 			ObjectId objectId = new ObjectId(shopId);
 			return expressRepository.findByShopId(objectId, pageRequest);
 		}
 		return expressRepository.findByShopId(shopId, pageRequest);
 	}
 
-	public int udpateExpressStatus(Long expressNo,String status, String subStatus) {
-		return expressDao.updateStatus(expressNo,status,subStatus);
+	public int udpateExpressStatus(Long expressNo, String status, String subStatus) {
+		return expressDao.updateStatus(expressNo, status, subStatus);
 	}
 }
