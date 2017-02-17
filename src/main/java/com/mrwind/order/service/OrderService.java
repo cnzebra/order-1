@@ -9,6 +9,10 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -79,9 +83,12 @@ public class OrderService {
 		return orderRepository.findOne(example);
 	}
 	
-	public Iterable<Order> selectAllByOrder(Order order) {
+	public Page<Order> selectAllByOrder(Order order, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC,"createTime");
+		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
+
 		Example<Order> example=Example.of(order);
-		return orderRepository.findAll(example);
+		return orderRepository.findAll(example,page);
 	}
 
 	public JSONObject pay(List<Long> listExpress) {

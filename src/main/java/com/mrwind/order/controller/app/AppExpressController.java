@@ -5,13 +5,16 @@ import java.util.Calendar;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
@@ -46,4 +49,18 @@ public class AppExpressController {
 		expressService.initExpress(express);
 		return JSONFactory.getSuccessJSON();
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select", method = RequestMethod.POST)
+	public Result select(@RequestBody Express express) {
+		Express res = expressService.selectByExpress(express);
+		return Result.success(res);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
+	public Result selectAll(@RequestBody Express express,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
+		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express,pageIndex-1,pageSize);
+		return Result.success(selectAllByExpress);
+	}  
 }

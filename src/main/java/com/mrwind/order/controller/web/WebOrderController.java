@@ -6,7 +6,9 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -73,15 +75,15 @@ public class WebOrderController {
 
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.POST)
-	public Result select(Order order) {
+	public Result select(@RequestBody Order order) {
 		Order res = orderService.selectByOrder(order);
 		return Result.success(res);
 	}
 	
 	@ResponseBody
-	@RequestMapping(value = "/select/all", method = RequestMethod.POST)
-	public Result selectAll(Order order) {
-		Order res = orderService.selectByOrder(order);
-		return Result.success(res);
+	@RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
+	public Result selectAll(@RequestBody Order order,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
+		Page<Order> selectAllByOrder = orderService.selectAllByOrder(order,pageIndex-1,pageSize);
+		return Result.success(selectAllByOrder);
 	}  
 }

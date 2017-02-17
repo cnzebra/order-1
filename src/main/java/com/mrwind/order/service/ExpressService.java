@@ -138,10 +138,9 @@ public class ExpressService {
 
 	}
 
-	public Iterable<Express> selectByExpress(Express express) {
+	public Express selectByExpress(Express express) {
 		Example<Express> example = Example.of(express);
-		Iterable<Express> all = expressRepository.findAll(example);
-		return all;
+		return expressRepository.findOne(example);
 	}
 
 	public void sendExpressLog21010(final List<Express> express) {
@@ -316,5 +315,12 @@ public class ExpressService {
 
 	public int udpateExpressStatus(Long expressNo, String status, String subStatus) {
 		return expressDao.updateStatus(expressNo, status, subStatus);
+	}
+
+	public Page<Express> selectAllByExpress(Express express, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC,"createTime");
+		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
+		Example<Express> example=Example.of(express);
+		return expressRepository.findAll(example,page);
 	}
 }
