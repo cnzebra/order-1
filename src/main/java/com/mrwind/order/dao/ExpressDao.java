@@ -12,8 +12,6 @@ import com.mrwind.order.entity.Line;
 
 @Repository
 public class ExpressDao extends BaseDao {
-
-	
 	public Integer updateExpressLineIndex(String expressNo,Integer lineIndex){
 		Query query=Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("currentLine", lineIndex);
@@ -35,7 +33,7 @@ public class ExpressDao extends BaseDao {
 	public int addLines(Long expressNo, List<Line> list) {
 		Query query=Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = new Update();
-		update.push("lines", list);
+		update.pushAll("lines", list.toArray());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 	

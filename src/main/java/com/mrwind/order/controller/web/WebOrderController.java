@@ -71,8 +71,15 @@ public class WebOrderController {
 	
 
 	@ResponseBody
-	@RequestMapping(value = "/select", method = RequestMethod.GET)
+	@RequestMapping(value = "/select", method = RequestMethod.POST)
 	public Result select(Order order) {
+		Order res = orderService.selectByOrder(order);
+		return Result.success(res);
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/all", method = RequestMethod.POST)
+	public Result selectAll(Order order) {
 		Order res = orderService.selectByOrder(order);
 		return Result.success(res);
 	}

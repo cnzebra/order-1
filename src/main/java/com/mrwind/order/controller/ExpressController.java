@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
@@ -34,6 +35,9 @@ public class ExpressController {
 	@RequestMapping(value = "/line", method = RequestMethod.GET)
 	public JSONObject line(String expressNo) {
 		Express resExpress = expressService.selectByExpressNo(expressNo);
+		if(resExpress==null){
+			return JSONFactory.getErrorJSON("没有数据");
+		}
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", resExpress.getLines());
 		return successJSON;
@@ -50,10 +54,11 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/line/add/{expressNo}", method = RequestMethod.PUT)
-	public JSONObject addLine(@RequestBody List<Line> list,@PathVariable("expressNo")Long expressNo) {
-		if(list.size()==0||list==null){
+	public JSONObject addLine(@RequestBody String jsonString,@PathVariable("expressNo")Long expressNo) {
+		if(StringUtils.isBlank(jsonString)){
 			return JSONFactory.getErrorJSON("参数数据不正确");
 		}
+		List<Line> list = JSONArray.parseArray(jsonString, Line.class);
 		expressService.addLine(expressNo,list);
 		return JSONFactory.getSuccessJSON();
 	}

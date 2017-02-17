@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.JsonUtil;
 import com.mrwind.order.entity.Express;
@@ -35,7 +36,7 @@ public class WebExpressController {
 	@ResponseBody
 	@RequestMapping(value = "/select/shop", method = RequestMethod.GET)
 	public JSONObject select(String shopId,Integer pageIndex,Integer pageSize) {
-		Page<Express> selectByShop = expressService.selectByShop(shopId,pageIndex+1,pageSize);
+		Page<Express> selectByShop = expressService.selectByShop(shopId,pageIndex-1,pageSize);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", selectByShop);
 		return successJSON;

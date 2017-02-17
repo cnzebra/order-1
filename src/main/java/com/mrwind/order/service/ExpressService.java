@@ -14,9 +14,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.bean.SpringDataPageable;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.DateUtils;
@@ -277,6 +280,8 @@ public class ExpressService {
 	}
 
 	public void addLine(Long expressNo, List<Line> list) {
+		Date beginTime = list.get(0).getBeginTime();
+		System.out.println(beginTime);
 		expressDao.addLines(expressNo, list);
 	}
 	
@@ -290,7 +295,8 @@ public class ExpressService {
 
 	public Page<Express> selectByShop(String shopId, Integer pageIndex, Integer pageSize) {
 		// TODO Auto-generated method stub
-		PageRequest pageRequest = new PageRequest(pageIndex, pageSize);
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest pageRequest = new PageRequest(pageIndex, pageSize,sort);
 		if(ObjectId.isValid(shopId)){
 			ObjectId objectId = new ObjectId(shopId);
 			return expressRepository.findByShopId(objectId, pageRequest);

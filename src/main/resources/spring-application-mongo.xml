@@ -37,18 +37,19 @@
 		type-mapper-ref="defaultMongoTypeMapper">
 		<mongo:custom-converters>
 			<mongo:converter>
-				<bean class="com.mrwind.common.spring.mongo.converters.BigDecimalToDoubleConverter" />
+				<bean
+					class="com.mrwind.common.spring.mongo.converters.BigDecimalToDoubleConverter" />
 			</mongo:converter>
 			<mongo:converter>
-				<bean class="com.mrwind.common.spring.mongo.converters.DoubleToBigDecimalConverter" />
-			</mongo:converter>
+				<bean
+					class="com.mrwind.common.spring.mongo.converters.DoubleToBigDecimalConverter" />
+			</mongo:converter>		
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
-	
-<!-- 	<mongo:mapping-converter id="mappingConverter2"
-		type-mapper-ref="defaultMongoTypeMapper">
-	  <mongo:custom-converters base-package="com.mrwind.common.spring.mongo.converters" />
-	</mongo:mapping-converter> -->
+
+	<!-- <mongo:mapping-converter id="mappingConverter2" type-mapper-ref="defaultMongoTypeMapper"> 
+		<mongo:custom-converters base-package="com.mrwind.common.spring.mongo.converters" 
+		/> </mongo:mapping-converter> -->
 
 	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
 		<constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />

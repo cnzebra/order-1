@@ -31,10 +31,6 @@ public class App
     
     public static String ORDER_PRE_COMPLETE="pre_priced_complete";//已确认运费
     
-
-    
-    public static String ORDER_DELAY="delay"; //延迟
-    
     public static String ORDER_CANCLE="cancle";  //取消
     
     //支付的订单

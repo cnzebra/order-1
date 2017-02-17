@@ -82,6 +82,11 @@ public class OrderService {
 		Example<Order> example=Example.of(order);
 		return orderRepository.findOne(example);
 	}
+	
+	public Iterable<Order> selectAllByOrder(Order order) {
+		Example<Order> example=Example.of(order);
+		return orderRepository.findAll(example);
+	}
 
 	public JSONObject pay(List<Long> listExpress) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);

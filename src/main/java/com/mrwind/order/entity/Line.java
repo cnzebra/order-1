@@ -3,8 +3,6 @@ package com.mrwind.order.entity;
 import java.util.Date;
 import java.util.List;
 
-import com.alibaba.fastjson.JSONObject;
-
 public class Line {
 	
 	private Integer index;
@@ -16,10 +14,6 @@ public class Line {
 	private String title;
 	
 	public Line(){
-		
-	}
-	
-	public Line(JSONObject json){
 		
 	}
 	
