@@ -13,6 +13,7 @@ public class User {
 	private String address;
 	private Double lng;
 	private Double lat;
+	private String avatar;
 	private Fence fence;
 
 	public String getName() {
@@ -69,5 +70,13 @@ public class User {
 
 	public void setFence(Fence fence) {
 		this.fence = fence;
+	}
+
+	public String getAvatar() {
+		return avatar;
+	}
+
+	public void setAvatar(String avatar) {
+		this.avatar = avatar;
 	}
 }

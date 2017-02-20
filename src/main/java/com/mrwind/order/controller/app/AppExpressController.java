@@ -39,9 +39,9 @@ public class AppExpressController {
 			return JSONFactory.getErrorJSON("找不到配送员信息，无法加单！");
 		}
 		Line line = new Line();
-		line.setBeginTime(express.getCreateTime());
+		line.setPlanTime(express.getCreateTime());
 		line.setExecutorUser(executorUser);
-		line.setFromAddress(express.getSender().getAddress());
+		line.setNode(express.getSender().getAddress());
 		line.setIndex(1);
 		lines.add(line);
 
@@ -62,5 +62,12 @@ public class AppExpressController {
 	public Result selectAll(@RequestBody Express express,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
 		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express,pageIndex-1,pageSize);
 		return Result.success(selectAllByExpress);
+	} 
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
+	public Result selectParamAll(String param,String fenceName,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
+		List<Express> selectAll = expressService.selectAll(param, fenceName);
+		return Result.success(selectAll);
 	}  
 }

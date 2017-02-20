@@ -21,7 +21,7 @@ public class OrderReceipt {
 	@Indexed
 	private String tranNo;
 	@Indexed
-	private Long expressNo;
+	private String expressNo;
 	private BigDecimal price;
 	private Date createTime;
 	private Category category;
@@ -41,12 +41,6 @@ public class OrderReceipt {
 	}
 	public void setId(String id) {
 		this.id = id;
-	}
-	public Long getExpressNo() {
-		return expressNo;
-	}
-	public void setExpressNo(Long expressNo) {
-		this.expressNo = expressNo;
 	}
 	public BigDecimal getPrice() {
 		return price;
@@ -73,6 +67,14 @@ public class OrderReceipt {
 
 	public void setTranNo(String tranNo) {
 		this.tranNo = tranNo;
+	}
+
+	public String getExpressNo() {
+		return expressNo;
+	}
+
+	public void setExpressNo(String expressNo) {
+		this.expressNo = expressNo;
 	}
 	
 	

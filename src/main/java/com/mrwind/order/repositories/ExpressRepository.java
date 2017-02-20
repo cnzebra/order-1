@@ -11,11 +11,11 @@ import org.springframework.data.repository.query.QueryByExampleExecutor;
 
 import com.mrwind.order.entity.Express;
 
-public interface ExpressRepository extends QueryByExampleExecutor<Express>,PagingAndSortingRepository<Express,Long>{
+public interface ExpressRepository extends QueryByExampleExecutor<Express>,PagingAndSortingRepository<Express,String>{
 
-	Express findFirstByExpressNo(Long expressNo);
+	Express findFirstByExpressNo(String expressNo);
 
-	List<Express> findByExpressNoIn(List<Long> express);
+	List<Express> findByExpressNoIn(List<String> express);
 	
 	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 

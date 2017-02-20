@@ -26,7 +26,7 @@ public class OrderController {
 
 	@ResponseBody
 	@RequestMapping(value = "/pay", method = RequestMethod.POST)
-	public JSONObject pay(@RequestBody List<Long> listExpress) {
+	public JSONObject pay(@RequestBody List<String> listExpress) {
 		JSONObject res = orderService.pay(listExpress);
 		return res;
 	}

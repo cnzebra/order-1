@@ -43,7 +43,7 @@ public class WebExpressController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/select/all", method = RequestMethod.POST)
-	public JSONObject selectAll(@RequestBody List<Long> express) {
+	public JSONObject selectAll(@RequestBody List<String> express) {
 		List<Express> res = expressService.selectByExpressNo(express);
 		Object filterProperty = JsonUtil.filterProperty(res, "");
 		JSONObject successJSON = JSONFactory.getSuccessJSON();

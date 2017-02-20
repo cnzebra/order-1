@@ -62,7 +62,7 @@ public class ExpressService {
 
 	public Express initExpress(Express express) {
 		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk);
+		express.setExpressNo(pk.toString());
 		expressRepository.save(express);
 		sendExpressLog21003(express);
 		return express;
@@ -98,7 +98,7 @@ public class ExpressService {
 		// TODO Auto-generated method stub
 		Express express = new Express(order);
 		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk);
+		express.setExpressNo(pk.toString());
 		if (duiDate == null) {
 			duiDate = Calendar.getInstance().getTime();
 		}
@@ -179,11 +179,11 @@ public class ExpressService {
 	}
 
 	public Express selectByExpressNo(String expressNo) {
-		Express express = expressRepository.findFirstByExpressNo(Long.valueOf(expressNo));
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		return express;
 	}
 
-	public List<Express> selectByExpressNo(List<Long> express) {
+	public List<Express> selectByExpressNo(List<String> express) {
 		// TODO Auto-generated method stub
 		List<Express> list = expressRepository.findByExpressNoIn(express);
 		return list;
@@ -264,18 +264,18 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public JSONObject errorComplete(List<Long> list, JSONObject userInfo) {
-		Iterator<Long> iterator = list.iterator();
+	public JSONObject errorComplete(List<String> list, JSONObject userInfo) {
+		Iterator<String> iterator = list.iterator();
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
 		while (iterator.hasNext()) {
-			Long expressNo = iterator.next();
+			String expressNo = iterator.next();
 			Express express = expressRepository.findFirstByExpressNo(expressNo);
 			List<Line> lines = express.getLines();
 
 			Line line = new Line();
 			line.setExecutorUser(user);
-			line.setBeginTime(Calendar.getInstance().getTime());
+			line.setRealTime(Calendar.getInstance().getTime());
 			line.setTitle(user.getName() + "异常妥投了订单");
 			line.setIndex(lines.size());
 			lines.add(line);
@@ -288,17 +288,17 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public void addLine(Long expressNo, List<Line> list) {
-		Date beginTime = list.get(0).getBeginTime();
+	public void addLine(String expressNo, List<Line> list) {
+		Date beginTime = list.get(0).getPlanTime();
 		System.out.println(beginTime);
 		expressDao.addLines(expressNo, list);
 	}
 
-	public void removeLine(Long expressNo, Integer lineIndex) {
+	public void removeLine(String expressNo, Integer lineIndex) {
 		expressDao.removeLine(expressNo, lineIndex);
 	}
 
-	public void updateLine(Long expressNo, List<Line> list) {
+	public void updateLine(String expressNo, List<Line> list) {
 		expressDao.updateLines(expressNo, list);
 	}
 
@@ -313,7 +313,7 @@ public class ExpressService {
 		return expressRepository.findByShopId(shopId, pageRequest);
 	}
 
-	public int udpateExpressStatus(Long expressNo, String status, String subStatus) {
+	public int udpateExpressStatus(String expressNo, String status, String subStatus) {
 		return expressDao.updateStatus(expressNo, status, subStatus);
 	}
 
@@ -322,5 +322,21 @@ public class ExpressService {
 		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
 		Example<Express> example=Example.of(express);
 		return expressRepository.findAll(example,page);
+	}
+	
+	public List<Express> selectAll(String param,String fenceName){
+		return expressDao.findExpress(param, fenceName);
+	}
+
+	public void modifiLine(String expressNo, List<Line> list) {
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		List<Line> lines = express.getLines();
+		List<Line> newList=new ArrayList<>(list.size()+lines.size());
+		newList.addAll(lines);
+		for(Line line : list){
+			newList.set(line.getIndex()-1, line);
+		}
+		newList.remove(null);
+		expressDao.updateLines(expressNo, newList);
 	}
 }

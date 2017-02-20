@@ -91,7 +91,7 @@ public class OrderService {
 		return orderRepository.findAll(example,page);
 	}
 
-	public JSONObject pay(List<Long> listExpress) {
+	public JSONObject pay(List<String> listExpress) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
@@ -121,7 +121,9 @@ public class OrderService {
 			}
 			OrderReceipt orderReceipt = new OrderReceipt(next);
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
-			totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			if(next.getDownMoney()!=null){
+				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			}
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
 		}

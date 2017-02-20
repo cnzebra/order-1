@@ -1,5 +1,7 @@
 package com.mrwind.order.controller;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -20,6 +22,7 @@ import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.service.ExpressService;
 
 @Controller
@@ -52,18 +55,21 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/line/add/{expressNo}", method = RequestMethod.PUT)
-	public JSONObject addLine(@RequestBody String jsonString,@PathVariable("expressNo")Long expressNo) {
-		if(StringUtils.isBlank(jsonString)){
-			return JSONFactory.getErrorJSON("参数数据不正确");
+	public JSONObject addLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
+		JSONArray jsonArray = jsonString.getJSONArray("predict");
+		Iterator<Object> iterator = jsonArray.iterator();
+		List<Line> list =new ArrayList<>(jsonArray.size());
+		while(iterator.hasNext()){
+			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
+			 list.add(line.getIndex()-1,line);
 		}
-		List<Line> list = JSONArray.parseArray(jsonString, Line.class);
 		expressService.addLine(expressNo,list);
 		return JSONFactory.getSuccessJSON();
 	}
 	
 	@ResponseBody
 	@RequestMapping(value = "/line/remove", method = RequestMethod.DELETE)
-	public JSONObject deleteLine(Long expressNo,Integer lineIndex) {
+	public JSONObject deleteLine(String expressNo,Integer lineIndex) {
 		if(expressNo==null){
 			return JSONFactory.getErrorJSON("参数数据不正确");
 		}
@@ -73,30 +79,33 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/line/update/{expressNo}", method = RequestMethod.POST)
-	public JSONObject updateLine(@RequestBody List<Line> list,@PathVariable("expressNo")Long expressNo) {
+	public JSONObject updateLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
+		JSONArray jsonArray = jsonString.getJSONArray("predict");
+		Iterator<Object> iterator = jsonArray.iterator();
+		List<Line> list =new ArrayList<>(jsonArray.size());
+		while(iterator.hasNext()){
+			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
+			 list.add(line.getIndex()-1,line);
+		}
 		expressService.updateLine(expressNo,list);
 		return JSONFactory.getSuccessJSON();
 	}
-
-//	@ResponseBody
-//	@RequestMapping(value = "/create", method = RequestMethod.POST)
-//	public JSONObject create(@RequestBody JSONObject expressJson) {
-//		Express express = JSONObject.toJavaObject(expressJson, Express.class);
-//
-//		List<Line> lines = new ArrayList<>();
-//
-//		User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
-//		Line line = new Line();
-//		line.setBeginTime(express.getCreateTime());
-//		line.setExecutorUser(executorUser);
-//		line.setFromAddress(express.getSender().getAddress());
-//		line.setIndex(1);
-//		lines.add(line);
-//
-//		express.setLines(lines);
-//		expressService.initExpress(express);
-//		return JSONFactory.getSuccessJSON();
-//	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/line/modifi/{expressNo}", method = RequestMethod.POST)
+	public JSONObject modifiLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
+		JSONArray jsonArray = jsonString.getJSONArray("predict");
+		Iterator<Object> iterator = jsonArray.iterator();
+		List<Line> list =new ArrayList<>();
+		while(iterator.hasNext()){
+			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
+			 list.add(line);
+		}
+		expressService.modifiLine(expressNo,list);
+		return JSONFactory.getSuccessJSON();
+	}
+	
+	
 
 	@ResponseBody
 	@RequestMapping(value = "/update/pricing", method = RequestMethod.POST)
@@ -193,7 +202,7 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/error/complete", method = RequestMethod.POST)
-	public JSONObject errorComplete(@RequestBody List<Long> list, @RequestHeader("Authorization") String token,
+	public JSONObject errorComplete(@RequestBody List<String> list, @RequestHeader("Authorization") String token,
 			HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {

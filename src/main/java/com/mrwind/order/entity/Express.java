@@ -11,9 +11,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Express extends OrderBase {
 
 	@Indexed
-	private Long expressNo;
+	private String expressNo;
 	@Indexed
-	private Long bindExpressNo;
+	private String bindExpressNo;
 	@Indexed
 	private Date duiTime;
 	private List<Line> lines;
@@ -44,23 +44,6 @@ public class Express extends OrderBase {
 		this.lines = lines;
 	}
 
-	public Long getExpressNo() {
-		return expressNo;
-	}
-
-
-	public void setExpressNo(Long expressNo) {
-		this.expressNo = expressNo;
-	}
-
-	public Long getBindExpressNo() {
-		return bindExpressNo;
-	}
-
-	public void setBindExpressNo(Long bindExpressNo) {
-		this.bindExpressNo = bindExpressNo;
-	}
-
 	public Date getDuiTime() {
 		return duiTime;
 	}
@@ -83,6 +66,22 @@ public class Express extends OrderBase {
 
 	public void setDownMoney(BigDecimal downMoney) {
 		this.downMoney = downMoney;
+	}
+
+	public String getExpressNo() {
+		return expressNo;
+	}
+
+	public void setExpressNo(String expressNo) {
+		this.expressNo = expressNo;
+	}
+
+	public String getBindExpressNo() {
+		return bindExpressNo;
+	}
+
+	public void setBindExpressNo(String bindExpressNo) {
+		this.bindExpressNo = bindExpressNo;
 	}
 
 }
