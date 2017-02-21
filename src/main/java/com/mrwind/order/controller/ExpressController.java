@@ -16,10 +16,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Line.LineUtil;
@@ -105,7 +107,14 @@ public class ExpressController {
 		return JSONFactory.getSuccessJSON();
 	}
 	
-	
+	@ResponseBody
+	@RequestMapping(value = "/select", method = RequestMethod.GET)
+	public JSONObject select(String expressNo) {
+		Express res = expressService.selectByNo(expressNo);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", res);
+		return successJSON;
+	}
 
 	@ResponseBody
 	@RequestMapping(value = "/update/pricing", method = RequestMethod.POST)
@@ -126,7 +135,10 @@ public class ExpressController {
 		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
-
+		
+		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
+		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(javaObject);
 		expressService.updateCategory(express);
 		return JSONFactory.getSuccessJSON();
 	}

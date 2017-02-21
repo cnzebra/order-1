@@ -32,6 +32,13 @@ public class OrderController {
 	}
 	
 	@ResponseBody
+	@RequestMapping(value = "/query/price", method = RequestMethod.POST)
+	public JSONObject queryPrice(@RequestBody List<String> listExpress) {
+		JSONObject res = orderService.queryPrice(listExpress);
+		return res;
+	}
+	
+	@ResponseBody
 	@RequestMapping(value = "/request/tran", method = RequestMethod.GET)
 	public JSONObject requestTran(String tranNo) {
 		return orderService.queryTranSactionDetail(tranNo);

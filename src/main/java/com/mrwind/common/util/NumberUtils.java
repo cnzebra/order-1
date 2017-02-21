@@ -1,5 +1,7 @@
 package com.mrwind.common.util;
 
+import java.util.regex.Pattern;
+
 /**
  * Created by usj-zhh on 2015/8/6.
  */
@@ -15,4 +17,8 @@ public class NumberUtils {
         return tempInt/tempDouble;
     }
 
+	public static boolean isNumeric1(String str) {
+		Pattern pattern = Pattern.compile("[0-9]*");
+		return pattern.matcher(str).matches();
+	}
 }

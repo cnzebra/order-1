@@ -49,15 +49,68 @@ public class ExpressService {
 	public List<Express> createExpress(Order order) {
 		List<Express> list = new ArrayList<>();
 		if (order.getDuiTimes() == null || order.getDuiTimes().size() == 0) {
-			list.add(initExpress(order, null));
+			list.add(initVIPExpress(order));
 			return list;
 		}
 		List<Date> duiTimes = order.getDuiTimes();
-		System.out.println("这里需要一个人!");
-		for (Date duiTime : duiTimes) {
-			list.add(initExpress(order, duiTime));
+		JSONObject person = findPerson(order);
+		if(person==null){
+			return null;
 		}
+		
+		User user= JSONObject.toJavaObject(person, User.class);
+		for (Date duiTime : duiTimes) {
+			list.add(initVIPExpress(order, duiTime,user));
+		}
+		expressRepository.save(list);
 		return list;
+	}
+
+	private Express initVIPExpress(Order order, Date duiTime,User user) {
+		Express express = new Express(order);
+		Long pk = redisCache.getPK("express", 1);
+		express.setExpressNo(pk.toString());
+		if (DateUtils.pastMinutes(duiTime) >= -60 * 2) {
+			express.setStatus(App.ORDER_BEGIN);
+			express.setSubStatus(App.ORDER_PRE_CREATED);
+			sendExpressLog21010(express);
+		}else{
+			Line line = new Line();
+			line.setExecutorUser(user);
+			line.setFence(order.getSender().getFence());
+			line.setNode(order.getSender().getAddress());
+			line.setIndex(1);
+			line.setPlanTime(duiTime);
+			List<Line> lineList=new ArrayList<>();
+			lineList.add(line);
+			express.setLines(lineList);
+		}
+		return express;
+	}
+
+	private Express initVIPExpress(Order order) {
+		Express express = new Express(order);
+		Long pk = redisCache.getPK("express", 1);
+		express.setExpressNo(pk.toString());
+		express.setDuiTime(Calendar.getInstance().getTime());
+		express.setStatus(App.ORDER_BEGIN);
+		express.setSubStatus(App.ORDER_PRE_CREATED);
+		sendExpressLog21010(express);
+		expressRepository.save(express);
+		return express;
+	}
+
+	private JSONObject findPerson(Order order) {
+		Double lat = order.getSender().getLat();
+		Double lng = order.getSender().getLng();
+		String shopId = order.getShop().getId();
+		String mode = order.getOrderUserType();
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("lat", lat);
+		jsonObject.put("lng", lng);
+		jsonObject.put("shopId", shopId);
+		jsonObject.put("mode", mode);
+		return HttpUtil.findPersion(jsonObject);
 	}
 
 	public Express initExpress(Express express) {
@@ -92,24 +145,6 @@ public class ExpressService {
 			}
 		};
 		thread.start();
-	}
-
-	public Express initExpress(Order order, Date duiDate) {
-		// TODO Auto-generated method stub
-		Express express = new Express(order);
-		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk.toString());
-		if (duiDate == null) {
-			duiDate = Calendar.getInstance().getTime();
-		}
-		express.setDuiTime(duiDate);
-		if (DateUtils.pastMinutes(duiDate) >= -60 * 2) {
-			express.setStatus(App.ORDER_BEGIN);
-			express.setSubStatus(App.ORDER_PRE_CREATED);
-			sendExpressLog21010(express);
-		}
-		expressRepository.save(express);
-		return express;
 	}
 
 	public void sendExpressLog21010(final Express express) {
@@ -177,10 +212,32 @@ public class ExpressService {
 	public Integer completeLine(String expressNo, Integer lineIndex) {
 		return expressDao.updateExpressLineIndex(expressNo, lineIndex);
 	}
+	
+	/**
+	 * 绑定的单号也一起查询
+	 * @param no
+	 * @return
+	 */
+	public Express selectByNo(String no){
+		Express express = selectByExpressNo(no);
+		if(express==null){
+			return selectByBindExpressNo(no);
+		}
+		return express;
+	}
 
 	public Express selectByExpressNo(String expressNo) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		return express;
+	}
+	
+	public Express selectByBindExpressNo(String expressNo) {
+		Express express = expressRepository.findFirstByBindExpressNo(expressNo);
+		return express;
+	}
+	
+	public int updateExpressBindNo(String expressNo,String bindExpressNo){
+		return expressDao.updateExpressBindNo(expressNo,bindExpressNo);
 	}
 
 	public List<Express> selectByExpressNo(List<String> express) {
@@ -331,7 +388,7 @@ public class ExpressService {
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		List<Line> lines = express.getLines();
-		List<Line> newList=new ArrayList<>(list.size()+lines.size());
+		List<Line> newList=new ArrayList<>(list.size()+(lines==null?0:lines.size()));
 		newList.addAll(lines);
 		for(Line line : list){
 			newList.set(line.getIndex()-1, line);

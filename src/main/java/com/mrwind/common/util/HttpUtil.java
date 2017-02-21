@@ -193,4 +193,39 @@ public class HttpUtil {
 		} 
 		return false;
 	}
+
+	/***
+	 * 定价接口
+	 * @param json
+	 * @return 
+	 */
+	public static JSONObject calculatePrice(JSONObject json) {
+		// TODO Auto-generated method stub
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "Category/calculatePrice");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,json.toString());
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if(res.getString("code").equals("1")){
+				return res.getJSONObject("data");
+			}
+		}
+		return null;
+	}
+
+	public static JSONObject findPersion(JSONObject jsonObject) {
+		// TODO Auto-generated method stub
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindData/util/findPerson");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,jsonObject.toString());
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if(res.getString("code").equals("1")){
+				return res.getJSONObject("content");
+			}
+		}
+		return null;
+	}
 }

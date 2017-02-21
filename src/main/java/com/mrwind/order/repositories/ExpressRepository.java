@@ -14,6 +14,8 @@ import com.mrwind.order.entity.Express;
 public interface ExpressRepository extends QueryByExampleExecutor<Express>,PagingAndSortingRepository<Express,String>{
 
 	Express findFirstByExpressNo(String expressNo);
+	
+	Express findFirstByBindExpressNo(String bindExpressNo);
 
 	List<Express> findByExpressNoIn(List<String> express);
 	

@@ -24,11 +24,10 @@ public class WebExpressController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.GET)
-	public JSONObject select(String expressNo,String only) {
+	public JSONObject select(String expressNo) {
 		Express res = expressService.selectByExpressNo(expressNo);
-		Object filterProperty = JsonUtil.filterProperty(res, only);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("data", filterProperty);
+		successJSON.put("data", res);
 		return successJSON;
 	}
 	

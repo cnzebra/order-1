@@ -174,4 +174,31 @@ public class OrderService {
 		}
 		return null;
 	}
+
+
+	public JSONObject queryPrice(List<String> listExpress) {
+		List<Express> list = expressService.selectByExpressNo(listExpress);
+		if(list.size()==0){
+			return JSONFactory.getErrorJSON("查找不到订单!");
+		}
+		
+		Iterator<Express> iterator = list.iterator();
+		BigDecimal totalPrice=BigDecimal.ZERO;
+		BigDecimal totalDownPrice=BigDecimal.ZERO;
+		while(iterator.hasNext()){
+			Express next = iterator.next();
+			if(next.getCategory()!=null){
+				totalPrice=totalPrice.add(next.getCategory().getTotalPrice());
+			}
+			if(next.getDownMoney()!=null){
+				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			}
+		}
+
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("totalPrice", totalPrice);
+		successJSON.put("totalDownPrice", totalDownPrice);
+		successJSON.put("count", list.size());
+		return successJSON;
+	}
 }

@@ -74,4 +74,10 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("duiTime").gte(date));
 		return mongoTemplate.find(query, Express.class);
 	}
+
+	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("bindExpressNo", bindExpressNo);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 }
