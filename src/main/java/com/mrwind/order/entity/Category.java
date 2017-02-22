@@ -12,7 +12,7 @@ public class Category {
 	private BigDecimal distancePrice;
 	private Double estimatedValue;
 	private BigDecimal insuredRates;
-	private List<ProtectType> protectTypes;
+	private List<ProtectType> protectTypeVOs;
 	private BigDecimal protectPrice;
 	private ServiceType serviceType;
 	private BigDecimal servicePrice;
@@ -98,12 +98,12 @@ public class Category {
 		this.totalPrice = totalPrice;
 	}
 
-	public List<ProtectType> getProtectTypes() {
-		return protectTypes;
+	public List<ProtectType> getProtectTypeVOs() {
+		return protectTypeVOs;
 	}
 
-	public void setProtectTypes(List<ProtectType> protectTypes) {
-		this.protectTypes = protectTypes;
+	public void setProtectTypeVOs(List<ProtectType> protectTypeVOs) {
+		this.protectTypeVOs = protectTypeVOs;
 	}
 
 	public ServiceType getServiceType() {
@@ -113,4 +113,5 @@ public class Category {
 	public void setServiceType(ServiceType serviceType) {
 		this.serviceType = serviceType;
 	}
+	
 }

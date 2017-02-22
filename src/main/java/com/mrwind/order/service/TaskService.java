@@ -29,7 +29,7 @@ public class TaskService {
 		
 		List<Express> list = expressDao.findUnBegin(instance.getTime());
 		for(Express express : list){
-			expressDao.updateStatus(express.getExpressNo(), App.ORDER_BEGIN, App.ORDER_PRE_CREATED);
+			expressDao.updateStatus(express.getExpressNo(), App.ORDER_BEGIN, App.ORDER_PRE_CREATED,Calendar.getInstance().getTime());
 			expressService.sendExpressLog21010(express);
 		}
 	}

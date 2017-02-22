@@ -1,5 +1,6 @@
 package com.mrwind.order.service;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,13 @@ public class ExpressBindService {
 		return null;
 	}
 	
-	
+	public boolean checkBind(String bindExpressNo){
+		if(StringUtils.isBlank(bindExpressNo))return true;
+		Express bindExpress = expressService.selectByBindExpressNo(bindExpressNo);
+		if(bindExpress!=null){
+			return false;
+		}
+		return true;
+	}
 
 }

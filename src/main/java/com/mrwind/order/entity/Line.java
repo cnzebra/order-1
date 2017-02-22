@@ -8,6 +8,7 @@ import com.alibaba.fastjson.JSONObject;
 public class Line {
 
 	private Integer index;
+	private String status;
 	private Fence fence;
 	private String node;
 	private Date planTime;
@@ -105,6 +106,14 @@ public class Line {
 
 	public void setRealTime(Date realTime) {
 		this.realTime = realTime;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }

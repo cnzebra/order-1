@@ -67,6 +67,12 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("status", status).set("subStatus", subStatus);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+	
+	public int updateStatus(String expressNo, String status, String subStatus,Date date) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("status", status).set("subStatus", subStatus).set("createTime", date);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 
 	public List<Express> findUnBegin(Date date) {
 		Query query = new Query();
@@ -78,6 +84,13 @@ public class ExpressDao extends BaseDao {
 	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("bindExpressNo", bindExpressNo);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
+	public int updateExpressPlanTime(String expressNo, Date planTime) {
+		// TODO Auto-generated method stub
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("planTime", planTime);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 }

@@ -73,6 +73,7 @@ public class ExpressService {
 		if (DateUtils.pastMinutes(duiTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
+			express.setCreateTime(Calendar.getInstance().getTime());
 			sendExpressLog21010(express);
 		}else{
 			Line line = new Line();
@@ -116,6 +117,7 @@ public class ExpressService {
 	public Express initExpress(Express express) {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
+		express.setCreateTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
 		sendExpressLog21003(express);
 		return express;
@@ -209,8 +211,9 @@ public class ExpressService {
 		thread.start();
 	}
 
-	public Integer completeLine(String expressNo, Integer lineIndex) {
-		return expressDao.updateExpressLineIndex(expressNo, lineIndex);
+	public Integer completeLine(String expressNo) {
+		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
+		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine());
 	}
 	
 	/**
@@ -395,5 +398,10 @@ public class ExpressService {
 		}
 		newList.remove(null);
 		expressDao.updateLines(expressNo, newList);
+	}
+
+	public void updateExpressPlanTime(String expressNo,Date planTime) {
+		// TODO Auto-generated method stub
+		expressDao.updateExpressPlanTime(expressNo,planTime);
 	}
 }

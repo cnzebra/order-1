@@ -22,6 +22,7 @@ import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.service.ExpressBindService;
 import com.mrwind.order.service.ExpressService;
 
 @Controller
@@ -29,6 +30,8 @@ import com.mrwind.order.service.ExpressService;
 public class AppExpressController {
 
 	@Autowired ExpressService expressService;
+	
+	@Autowired ExpressBindService expressBindService;
 	
 	/***
 	 * 配送员加单
@@ -46,6 +49,11 @@ public class AppExpressController {
 		if(executorUser==null){
 			return JSONFactory.getErrorJSON("找不到配送员信息，无法加单！");
 		}
+		
+		if(!expressBindService.checkBind(express.getBindExpressNo())){
+			return JSONFactory.getErrorJSON("该单号已经绑定过其它单号");
+		}
+		
 		Line line = new Line();
 		line.setPlanTime(express.getCreateTime());
 		line.setExecutorUser(executorUser);

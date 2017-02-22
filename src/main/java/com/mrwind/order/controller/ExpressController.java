@@ -1,6 +1,7 @@
 package com.mrwind.order.controller;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -38,7 +39,7 @@ public class ExpressController {
 	@RequestMapping(value = "/line", method = RequestMethod.GET)
 	public JSONObject line(String expressNo) {
 		Express resExpress = expressService.selectByExpressNo(expressNo);
-		if(resExpress==null){
+		if (resExpress == null) {
 			return JSONFactory.getErrorJSON("没有数据");
 		}
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -50,29 +51,23 @@ public class ExpressController {
 	@RequestMapping(value = "/line/complete", method = RequestMethod.POST)
 	public JSONObject completeLine(@RequestBody JSONObject param) {
 		String expressNo = param.getString("expressNo");
-		Integer lineIndex = param.getInteger("lineIndex");
-		expressService.completeLine(expressNo, lineIndex);
+		expressService.completeLine(expressNo);
 		return JSONFactory.getSuccessJSON();
 	}
 
 	@ResponseBody
 	@RequestMapping(value = "/line/add/{expressNo}", method = RequestMethod.PUT)
-	public JSONObject addLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
-		JSONArray jsonArray = jsonString.getJSONArray("predict");
-		Iterator<Object> iterator = jsonArray.iterator();
-		List<Line> list =new ArrayList<>(jsonArray.size());
-		while(iterator.hasNext()){
-			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
-			 list.add(line.getIndex()-1,line);
-		}
-		expressService.addLine(expressNo,list);
+	public JSONObject addLine(@RequestBody String jsonString, @PathVariable("expressNo") String expressNo) {
+		
+		List<Line> list = JSON.parseArray(jsonString, Line.class);
+		expressService.addLine(expressNo, list);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/line/remove", method = RequestMethod.DELETE)
-	public JSONObject deleteLine(String expressNo,Integer lineIndex) {
-		if(expressNo==null){
+	public JSONObject deleteLine(String expressNo, Integer lineIndex) {
+		if (expressNo == null) {
 			return JSONFactory.getErrorJSON("参数数据不正确");
 		}
 		expressService.removeLine(expressNo, lineIndex);
@@ -81,32 +76,35 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/line/update/{expressNo}", method = RequestMethod.POST)
-	public JSONObject updateLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
+	public JSONObject updateLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
 		JSONArray jsonArray = jsonString.getJSONArray("predict");
 		Iterator<Object> iterator = jsonArray.iterator();
-		List<Line> list =new ArrayList<>(jsonArray.size());
-		while(iterator.hasNext()){
-			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
-			 list.add(line.getIndex()-1,line);
+		List<Line> list = new ArrayList<>(jsonArray.size());
+		while (iterator.hasNext()) {
+			Line line = LineUtil.caseToLine((JSONObject) iterator.next());
+			list.add(line.getIndex() - 1, line);
 		}
-		expressService.updateLine(expressNo,list);
+		expressService.updateLine(expressNo, list);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/line/modifi/{expressNo}", method = RequestMethod.POST)
-	public JSONObject modifiLine(@RequestBody JSONObject jsonString,@PathVariable("expressNo")String expressNo) {
+	public JSONObject modifiLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
 		JSONArray jsonArray = jsonString.getJSONArray("predict");
 		Iterator<Object> iterator = jsonArray.iterator();
-		List<Line> list =new ArrayList<>();
-		while(iterator.hasNext()){
-			 Line line = LineUtil.caseToLine((JSONObject) iterator.next());
-			 list.add(line);
+		List<Line> list = new ArrayList<>();
+		while (iterator.hasNext()) {
+			Line line = LineUtil.caseToLine((JSONObject) iterator.next());
+			list.add(line);
 		}
-		expressService.modifiLine(expressNo,list);
+		Date planTime = jsonString.getDate("predict_time");
+		expressService.updateExpressPlanTime(expressNo,planTime);
+		
+		expressService.modifiLine(expressNo, list);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.GET)
 	public JSONObject select(String expressNo) {
@@ -135,7 +133,7 @@ public class ExpressController {
 		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
-		
+
 		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
 		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
 		express.setCategory(javaObject);
@@ -218,7 +216,7 @@ public class ExpressController {
 			HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {
-			 return JSONFactory.getErrorJSON("没有登录信息");
+			return JSONFactory.getErrorJSON("没有登录信息");
 		}
 
 		if (list == null || list.size() == 0) {
@@ -231,7 +229,7 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		return expressService.errorComplete(list,userInfo);
+		return expressService.errorComplete(list, userInfo);
 
 	}
 }
