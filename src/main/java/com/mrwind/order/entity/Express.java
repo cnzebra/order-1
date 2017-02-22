@@ -19,6 +19,8 @@ public class Express extends OrderBase {
 	private List<Line> lines;
 	private Integer currentLine=1;
 	private BigDecimal downMoney;
+	private Date planEndTime;
+	private Date realEndTime;
 
 	public List<Line> getLines() {
 		return lines;
@@ -82,6 +84,22 @@ public class Express extends OrderBase {
 
 	public void setBindExpressNo(String bindExpressNo) {
 		this.bindExpressNo = bindExpressNo;
+	}
+
+	public Date getPlanEndTime() {
+		return planEndTime;
+	}
+
+	public void setPlanEndTime(Date planEndTime) {
+		this.planEndTime = planEndTime;
+	}
+
+	public Date getRealEndTime() {
+		return realEndTime;
+	}
+
+	public void setRealEndTime(Date realEndTime) {
+		this.realEndTime = realEndTime;
 	}
 
 }

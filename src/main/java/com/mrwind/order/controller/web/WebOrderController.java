@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -37,6 +38,9 @@ public class WebOrderController {
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public JSONObject create(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
+		if(order.getShop()==null||StringUtils.isEmpty(order.getShop().getId())){
+			return JSONFactory.getErrorJSON("商户信息不能为空");
+		}
 		List<Express> res = orderService.insert(order);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("content", res);

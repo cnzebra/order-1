@@ -3,6 +3,8 @@ package com.mrwind.order.dao;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
@@ -17,17 +19,22 @@ import com.mrwind.order.entity.Line;
 
 @Repository
 public class ExpressDao extends BaseDao {
+	
+	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+	
 	public Integer updateExpressLineIndex(String expressNo, Integer lineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(lineIndex));
 		Update update = Update.update("currentLine", lineIndex+1);
 		update.set("lines.$.realTime", Calendar.getInstance().getTime());
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
 	public int updateCategory(Express express) {
 		Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
 		Update update = Update.update("category", express.getCategory());
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -65,12 +72,14 @@ public class ExpressDao extends BaseDao {
 	public int updateStatus(String expressNo, String status, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus);
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 	
-	public int updateStatus(String expressNo, String status, String subStatus,Date date) {
+	public int updateStatus(String expressNo, String status, String subStatus,Date createTime) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
-		Update update = Update.update("status", status).set("subStatus", subStatus).set("createTime", date);
+		Update update = Update.update("status", status).set("subStatus", subStatus).set("createTime", createTime);
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -84,13 +93,92 @@ public class ExpressDao extends BaseDao {
 	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("bindExpressNo", bindExpressNo);
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
-	public int updateExpressPlanTime(String expressNo, Date planTime) {
+	public int updateExpressPlanEndTime(String expressNo, Date planEndTime) {
 		// TODO Auto-generated method stub
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
-		Update update = Update.update("planTime", planTime);
+		Update update = Update.update("planEndTime", planEndTime);
+		update.set("updateTime",Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
+	public int updateCategoryAndStatus(Express express) {
+		Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
+		Update update = Update.update("category", express.getCategory());
+		update.set("status", express.getStatus()).set("subStatus", express.getSubStatus());
+		update.set("updateTime",Calendar.getInstance().getTime());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+	
+	public synchronized void updateExpress(final Express express) {
+		if(express==null)return;
+		Runnable runnable = new Runnable() {
+			public void run() {
+				Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
+				Update update =new Update();
+				if (express.getCategory() != null) {
+					update.set("category", express.getCategory());
+				}
+
+				if (StringUtils.isNotBlank(express.getStatus())) {
+					update.set("status", express.getStatus());
+				}
+
+				if (StringUtils.isNotBlank(express.getSubStatus())) {
+					update.set("subStatus", express.getSubStatus());
+				}
+
+				if (StringUtils.isNotBlank(express.getOrderUserType())) {
+					update.set("orderUserType", express.getOrderUserType());
+				}
+
+				if (StringUtils.isNotBlank(express.getRemark())) {
+					update.set("remark", express.getRemark());
+				}
+
+				if (express.getBindExpressNo() != null) {
+					update.set("bindExpressNo", express.getBindExpressNo());
+				}
+
+				if (express.getCurrentLine() != null) {
+					update.set("currentLine", express.getCurrentLine());
+				}
+
+				if (express.getReceiver() != null) {
+					update.set("receiver",express.getReceiver());
+				}
+
+				if (express.getShop() != null) {
+					update.set("shop",express.getShop());
+				}
+
+				if (express.getSender() != null) {
+					update.set("sender",express.getSender());
+				}
+				
+				if(express.getCreateTime()!=null){
+					update.set("createTime",express.getCreateTime());
+				}
+
+				if(express.getDownMoney() !=null){
+					update.set("downMoney", express.getDownMoney() );
+				}
+				
+				if(express.getPlanEndTime() !=null){
+					update.set("planEndTime", express.getPlanEndTime());
+				}
+				
+				if(express.getRealEndTime() != null){
+					update.set("realEntTime", express.getRealEndTime());
+				}
+
+				update.set("updateTime",Calendar.getInstance().getTime());
+				mongoTemplate.updateFirst(query, update, Express.class).getN();
+			}
+		};
+		newSingleThreadExecutor.execute(runnable);
 	}
 }

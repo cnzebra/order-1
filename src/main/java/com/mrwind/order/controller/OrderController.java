@@ -1,5 +1,6 @@
 package com.mrwind.order.controller;
 
+import java.util.Calendar;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +14,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.App;
 import com.mrwind.order.service.OrderService;
 
 @Controller
@@ -52,7 +55,13 @@ public class OrderController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/pay/callback", method = RequestMethod.POST)
-	public JSONObject payCallback(String tranNo) {
+	public JSONObject payCallback(@RequestBody JSONObject json) {
+		String tranNo = json.getString("tranNo");
+		String requestToken = json.getString("requestToken");
+		String token = Md5Util.string2MD5(tranNo+Calendar.getInstance().get(Calendar.HOUR_OF_DAY)+App.SESSION_KEY);
+		if(!requestToken.equals(token)){
+			return JSONFactory.getErrorJSON("请求非法");
+		}
 		String res = orderService.payCallback(tranNo);
 		if(StringUtils.isBlank(res)){
 			return JSONFactory.getSuccessJSON();

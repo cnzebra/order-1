@@ -25,6 +25,7 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
+import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Line.LineUtil;
@@ -117,6 +118,8 @@ public class ExpressService {
 	public Express initExpress(Express express) {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
+		express.setStatus(App.ORDER_BEGIN);
+		express.setSubStatus(App.ORDER_PRE_CREATED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
 		sendExpressLog21003(express);
@@ -249,19 +252,19 @@ public class ExpressService {
 		return list;
 	}
 
-	public JSONObject updateCategory(Express express) {
-		Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
+	public JSONObject updateCategory(String expressNo,Category category) {
+		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
 		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
 		}
-		firstExpress.setCategory(express.getCategory());
+		firstExpress.setCategory(category);
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
-		updateExpress(express);
+		expressDao.updateCategoryAndStatus(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public synchronized JSONObject updateExpress(final Express express) {
+	public synchronized JSONObject saveExpress(final Express express) {
 		Runnable runnable = new Runnable() {
 			public void run() {
 				Express firstExpress = expressRepository.findFirstByExpressNo(express.getExpressNo());
@@ -273,11 +276,11 @@ public class ExpressService {
 				}
 
 				if (StringUtils.isNotBlank(express.getStatus())) {
-					firstExpress.setStatus(App.ORDER_BEGIN);
+					firstExpress.setStatus(express.getStatus());
 				}
 
 				if (StringUtils.isNotBlank(express.getSubStatus())) {
-					firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
+					firstExpress.setSubStatus(express.getSubStatus());
 				}
 
 				if (StringUtils.isNotBlank(express.getOrderUserType())) {
@@ -343,7 +346,7 @@ public class ExpressService {
 			express.setLines(lines);
 			express.setStatus(App.ORDER_COMPLETE);
 			express.setSubStatus(App.ORDER_ERROR_COMPLETE);
-			updateExpress(express);
+			saveExpress(express);
 		}
 		return JSONFactory.getSuccessJSON();
 	}
@@ -401,7 +404,14 @@ public class ExpressService {
 	}
 
 	public void updateExpressPlanTime(String expressNo,Date planTime) {
-		// TODO Auto-generated method stub
-		expressDao.updateExpressPlanTime(expressNo,planTime);
+		expressDao.updateExpressPlanEndTime(expressNo,planTime);
+	}
+
+	public void updateExpress(Express express) {
+		expressDao.updateExpress(express);
+	}
+
+	public void cancelExpress(String expressNo) {
+		expressDao.updateStatus(expressNo, App.ORDER_CANCLE, App.ORDER_CANCLE);
 	}
 }
