@@ -69,6 +69,10 @@ public class ExpressService {
 
 	private Express initVIPExpress(Order order, Date duiTime,User user) {
 		Express express = new Express(order);
+		if(express.getCategory()==null||express.getCategory().getServiceType()==null){
+			return null;
+		}
+		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		if (DateUtils.pastMinutes(duiTime) >= -60 * 2) {
@@ -92,6 +96,10 @@ public class ExpressService {
 
 	private Express initVIPExpress(Order order) {
 		Express express = new Express(order);
+		if(express.getCategory()==null||express.getCategory().getServiceType()==null){
+			return null;
+		}
+		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		express.setDuiTime(Calendar.getInstance().getTime());
@@ -106,7 +114,7 @@ public class ExpressService {
 		Double lat = order.getSender().getLat();
 		Double lng = order.getSender().getLng();
 		String shopId = order.getShop().getId();
-		String mode = order.getOrderUserType();
+		String mode = order.getCategory().getServiceType().getType();
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("lat", lat);
 		jsonObject.put("lng", lng);
@@ -118,6 +126,7 @@ public class ExpressService {
 	public Express initExpress(Express express) {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
+		express.setMode(express.getCategory().getServiceType().getType());
 		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_CREATED);
 		express.setCreateTime(Calendar.getInstance().getTime());
@@ -166,7 +175,7 @@ public class ExpressService {
 				caseDetail.put("shopName", express.getShop().getName());
 				caseDetail.put("shopTel", express.getShop().getTel());
 				caseDetail.put("receiver", express.getReceiver());
-				caseDetail.put("orderUserType", express.getOrderUserType());
+				caseDetail.put("orderUserType", express.getMode());
 				caseDetail.put("dueTime", express.getDuiTime());
 				caseDetail.put("sender", express.getSender());
 				caseDetailList.add(caseDetail);
@@ -202,7 +211,7 @@ public class ExpressService {
 					caseDetail.put("shopName", next.getShop().getName());
 					caseDetail.put("shopTel", next.getShop().getTel());
 					caseDetail.put("receiver", next.getReceiver());
-					caseDetail.put("orderUserType", next.getOrderUserType());
+					caseDetail.put("orderUserType", next.getMode());
 					caseDetail.put("dueTime", next.getDuiTime());
 					caseDetail.put("sender", next.getSender());
 					caseDetailList.add(caseDetail);
@@ -283,8 +292,8 @@ public class ExpressService {
 					firstExpress.setSubStatus(express.getSubStatus());
 				}
 
-				if (StringUtils.isNotBlank(express.getOrderUserType())) {
-					firstExpress.setOrderUserType(express.getOrderUserType());
+				if (StringUtils.isNotBlank(express.getMode())) {
+					firstExpress.setMode(express.getMode());
 				}
 
 				if (StringUtils.isNotBlank(express.getRemark())) {

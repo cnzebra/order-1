@@ -131,8 +131,8 @@ public class ExpressDao extends BaseDao {
 					update.set("subStatus", express.getSubStatus());
 				}
 
-				if (StringUtils.isNotBlank(express.getOrderUserType())) {
-					update.set("orderUserType", express.getOrderUserType());
+				if (StringUtils.isNotBlank(express.getMode())) {
+					update.set("mode", express.getMode());
 				}
 
 				if (StringUtils.isNotBlank(express.getRemark())) {

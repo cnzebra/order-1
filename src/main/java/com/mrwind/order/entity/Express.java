@@ -16,6 +16,7 @@ public class Express extends OrderBase {
 	private String bindExpressNo;
 	@Indexed
 	private Date duiTime;
+	private String mode;
 	private List<Line> lines;
 	private Integer currentLine=1;
 	private BigDecimal downMoney;
@@ -37,7 +38,7 @@ public class Express extends OrderBase {
 		this.receiver = base.receiver;
 		this.category = base.category;
 		this.remark = base.remark;
-		this.orderUserType=base.orderUserType;
+//		this.orderUserType=base.orderUserType;
 		this.createTime = base.createTime;
 		this.updateTime = base.updateTime;
 	}
@@ -100,6 +101,14 @@ public class Express extends OrderBase {
 
 	public void setRealEndTime(Date realEndTime) {
 		this.realEndTime = realEndTime;
+	}
+
+	public String getMode() {
+		return mode;
+	}
+
+	public void setMode(String mode) {
+		this.mode = mode;
 	}
 
 }

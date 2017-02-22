@@ -20,7 +20,7 @@ public class OrderBase {
 	protected User receiver;
 	protected Category category;
 	protected String remark;
-	protected String orderUserType;
+//	protected String orderUserType;
 	protected Date createTime;
 	protected Date updateTime;
 
@@ -61,12 +61,12 @@ public class OrderBase {
 		this.shop = shop;
 	}
 
-	public String getOrderUserType() {
-		return orderUserType;
-	}
-	public void setOrderUserType(String orderUserType) {
-		this.orderUserType = orderUserType;
-	}
+//	public String getOrderUserType() {
+//		return orderUserType;
+//	}
+//	public void setOrderUserType(String orderUserType) {
+//		this.orderUserType = orderUserType;
+//	}
 	public String getStatus() {
 		return status;
 	}

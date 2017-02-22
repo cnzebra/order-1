@@ -7,6 +7,7 @@ public class ServiceType{
 	public ServiceType(){}
 	private String id;
     private String name;
+    private String type;
     private BigDecimal price;
 	public String getName() {
 		return name;
@@ -25,5 +26,11 @@ public class ServiceType{
 	}
 	public void setPrice(BigDecimal price) {
 		this.price = price;
+	}
+	public String getType() {
+		return type;
+	}
+	public void setType(String type) {
+		this.type = type;
 	}
 }
