@@ -99,7 +99,7 @@ public class OrderService {
 		
 		List<OrderReceipt> listReceipt=new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
-		String tranNo = UUIDUtils.create().toString();
+		String tranNo = UUIDUtils.getUUID();
 		BigDecimal totalPrice=BigDecimal.ZERO;
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
 		String shopId="";

@@ -126,7 +126,6 @@ public class ExpressService {
 	public Express initExpress(Express express) {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setMode(express.getCategory().getServiceType().getType());
 		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_CREATED);
 		express.setCreateTime(Calendar.getInstance().getTime());
@@ -176,7 +175,7 @@ public class ExpressService {
 				caseDetail.put("shopTel", express.getShop().getTel());
 				caseDetail.put("receiver", express.getReceiver());
 				caseDetail.put("orderUserType", express.getMode());
-				caseDetail.put("dueTime", express.getDuiTime());
+				caseDetail.put("dueTime", DateUtils.convertToUtcTime(express.getDuiTime()));
 				caseDetail.put("sender", express.getSender());
 				caseDetailList.add(caseDetail);
 				json.put("caseDetail", caseDetailList);
@@ -199,7 +198,7 @@ public class ExpressService {
 			public void run() {
 				JSONObject json = new JSONObject();
 				json.put("type", "21010");
-				json.put("createTime", Calendar.getInstance().getTime());
+				json.put("createTime", DateUtils.convertToUtcTime(Calendar.getInstance().getTime()));
 				json.put("shopId", express.get(0).getShop().getId());
 				Iterator<Express> iterator = express.iterator();
 				List<JSONObject> caseDetailList = new ArrayList<>();
@@ -212,7 +211,7 @@ public class ExpressService {
 					caseDetail.put("shopTel", next.getShop().getTel());
 					caseDetail.put("receiver", next.getReceiver());
 					caseDetail.put("orderUserType", next.getMode());
-					caseDetail.put("dueTime", next.getDuiTime());
+					caseDetail.put("dueTime", DateUtils.convertToUtcTime(next.getDuiTime()));
 					caseDetail.put("sender", next.getSender());
 					caseDetailList.add(caseDetail);
 				}

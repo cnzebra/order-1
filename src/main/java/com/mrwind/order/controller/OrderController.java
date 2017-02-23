@@ -58,7 +58,7 @@ public class OrderController {
 	public JSONObject payCallback(@RequestBody JSONObject json) {
 		String tranNo = json.getString("tranNo");
 		String requestToken = json.getString("requestToken");
-		String token = Md5Util.string2MD5(tranNo+Calendar.getInstance().get(Calendar.HOUR_OF_DAY)+App.SESSION_KEY);
+		String token = Md5Util.string2MD5(tranNo+Calendar.getInstance()+App.SESSION_KEY);
 		if(!requestToken.equals(token)){
 			return JSONFactory.getErrorJSON("请求非法");
 		}
