@@ -148,11 +148,13 @@ public class ExpressService {
 				param.put("type", "21003");
 				param.put("orderId", express.getExpressNo());
 				param.put("orderSum", express.getCategory().getTotalPrice());
+				param.put("orderUserType", express.getMode());
 
 				JSONObject caseDetail = new JSONObject();
 				caseDetail.put("shopId", express.getShop().getId());
 				caseDetail.put("receiver", express.getReceiver());
 				caseDetail.put("sender", express.getSender());
+				
 				param.put("caseDetail", caseDetail);
 				HttpUtil.sendWindDataLog(param);
 			}
