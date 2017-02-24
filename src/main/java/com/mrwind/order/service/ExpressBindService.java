@@ -28,11 +28,11 @@ public class ExpressBindService {
 
 	public String cancelExpressBindNo(String expressNo) {
 		// TODO Auto-generated method stub
-		Express express = expressService.selectByExpressNo(expressNo);
+		Express express = expressService.selectByNo(expressNo);
 		if(express==null){
 			return "要解绑定的运单号不存在";
 		}
-		expressService.updateExpressBindNo(expressNo, null);
+		expressService.updateExpressBindNo(express.getExpressNo(), "");
 		return null;
 	}
 	

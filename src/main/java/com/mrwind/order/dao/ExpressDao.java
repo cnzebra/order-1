@@ -146,6 +146,10 @@ public class ExpressDao extends BaseDao {
 				if (express.getCurrentLine() != null) {
 					update.set("currentLine", express.getCurrentLine());
 				}
+				
+				if(express.getLines()!=null){
+					update.set("lines", express.getLines());
+				}
 
 				if (express.getReceiver() != null) {
 					update.set("receiver",express.getReceiver());

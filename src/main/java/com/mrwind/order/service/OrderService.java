@@ -19,6 +19,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.UUIDUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.OrderDao;
@@ -91,22 +92,28 @@ public class OrderService {
 		return orderRepository.findAll(example,page);
 	}
 
-	public JSONObject pay(List<String> listExpress) {
+	public synchronized JSONObject pay(List<String> listExpress, String userId) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
 		}
+		
 		
 		List<OrderReceipt> listReceipt=new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
 		BigDecimal totalPrice=BigDecimal.ZERO;
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
+		BigDecimal totalServicePrice=BigDecimal.ZERO;
 		String shopId="";
+		int i=0;
 		while(iterator.hasNext()){
 			Express next = iterator.next();
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，订单单号为:"+next.getBindExpressNo());
+				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
+			}
+			if(!next.getStatus().equals(App.ORDER_BEGIN)){
+				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
 			}
 			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){
 				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
@@ -120,6 +127,11 @@ public class OrderService {
 				}
 			}
 			OrderReceipt orderReceipt = new OrderReceipt(next);
+			if(i!=0){
+				totalServicePrice.add(orderReceipt.getCategory().getServicePrice());
+			}else{
+				i++;
+			}
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
 			if(next.getDownMoney()!=null){
 				totalDownPrice=totalDownPrice.add(next.getDownMoney());
@@ -132,10 +144,17 @@ public class OrderService {
 
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("content", listReceipt);
-		successJSON.put("totalPrice", totalPrice.subtract(totalDownPrice));
+		successJSON.put("totalPrice", totalPrice.subtract(totalDownPrice).subtract(totalServicePrice));
+		successJSON.put("expressCount", i);
 		successJSON.put("totalDownPrice", totalDownPrice);
 		successJSON.put("tranNo", tranNo);
 		successJSON.put("shopId", shopId);
+		if(StringUtils.isNoneEmpty(userId)){
+			successJSON.put("executor", HttpUtil.findPrivateUserInfo(userId));
+		}
+		
+		
+
 		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
 		return successJSON;
 	}
@@ -165,13 +184,21 @@ public class OrderService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
+		JSONArray json=new JSONArray();
 		for (OrderReceipt orderReceipt : list){
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
+			JSONObject tmp=new JSONObject();
+			tmp.put("order", orderReceipt.getExpressNo());
+			tmp.put("status", "COMPLETE");
+			tmp.put("orderType", "R");
+			tmp.put("sendLog", true);
+			tmp.put("des", "支付完成");
+			json.add(tmp);
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 		}
+		HttpUtil.compileExpressMission(json);
 		return null;
 	}
 

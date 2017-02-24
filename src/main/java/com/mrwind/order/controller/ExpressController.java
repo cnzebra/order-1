@@ -18,7 +18,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
-import com.mrwind.order.App;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.service.ExpressService;
@@ -114,26 +113,24 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
-	public JSONObject complete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+	public JSONObject complete(@RequestBody List<String> listExpress, @RequestHeader("Authorization") String token,
 			HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {
-			JSONFactory.getErrorJSON("没有登录信息");
+			return JSONFactory.getErrorJSON("没有登录信息");
+		}
+
+		if (listExpress == null || listExpress.size() == 0) {
+			return JSONFactory.getErrorJSON("参数订单号不能为空");
 		}
 		token = token.substring(6);
-		String adminUserId = HttpUtil.getUserIdByToken(token);
-		if (StringUtils.isEmpty(adminUserId)) {
+		JSONObject userInfo = HttpUtil.getUserInfoByToken(token);
+		if (userInfo == null) {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		Express express = JSONObject.toJavaObject(json, Express.class);
-		if (express.getExpressNo() == null) {
-			return JSONFactory.getErrorJSON("运单号不能为空");
-		}
-		express.setStatus(App.ORDER_COMPLETE);
-		express.setSubStatus(App.ORDER_COMPLETE);
-		expressService.updateExpress(express);
+		expressService.completeExpress(listExpress,userInfo);
 		return JSONFactory.getSuccessJSON();
 	}
 

@@ -18,6 +18,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
@@ -127,7 +128,7 @@ public class ExpressService {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		express.setStatus(App.ORDER_BEGIN);
-		express.setSubStatus(App.ORDER_PRE_CREATED);
+		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
 		sendExpressLog21003(express);
@@ -340,7 +341,7 @@ public class ExpressService {
 	public JSONObject errorComplete(List<String> list, JSONObject userInfo) {
 		Iterator<String> iterator = list.iterator();
 		User user = JSONObject.toJavaObject(userInfo, User.class);
-
+		JSONArray json=new JSONArray();
 		while (iterator.hasNext()) {
 			String expressNo = iterator.next();
 			Express express = expressRepository.findFirstByExpressNo(expressNo);
@@ -356,8 +357,16 @@ public class ExpressService {
 			express.setLines(lines);
 			express.setStatus(App.ORDER_COMPLETE);
 			express.setSubStatus(App.ORDER_ERROR_COMPLETE);
-			saveExpress(express);
+			expressDao.updateExpress(express);
+			
+			JSONObject tmp=new JSONObject();
+			tmp.put("order", expressNo);
+			tmp.put("status", "CLOSE");
+			tmp.put("sendLog", false);
+			tmp.put("des", "妥投");
+			json.add(tmp);
 		}
+		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
 	}
 
@@ -422,6 +431,49 @@ public class ExpressService {
 	}
 
 	public void cancelExpress(String expressNo) {
+		JSONArray json=new JSONArray();
+		JSONObject tmp=new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "CLOSE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "取消订单");
+		json.add(tmp);
+		HttpUtil.compileExpressMission(json);
 		expressDao.updateStatus(expressNo, App.ORDER_CANCLE, App.ORDER_CANCLE);
+	}
+
+	public JSONObject completeExpress(List<String> list,JSONObject userInfo) {
+		// TODO Auto-generated method stub
+		Iterator<String> iterator = list.iterator();
+		User user = JSONObject.toJavaObject(userInfo, User.class);
+
+		JSONArray json=new JSONArray();
+		while (iterator.hasNext()) {
+			String expressNo = iterator.next();
+			Express express = expressRepository.findFirstByExpressNo(expressNo);
+			List<Line> lines = express.getLines();
+
+			Line line = new Line();
+			line.setExecutorUser(user);
+			line.setRealTime(Calendar.getInstance().getTime());
+			line.setTitle(user.getName() + "异常妥投了订单");
+			line.setIndex(lines.size());
+			lines.add(line);
+			express.setCurrentLine(lines.size());
+			express.setLines(lines);
+			express.setStatus(App.ORDER_COMPLETE);
+			express.setSubStatus(App.ORDER_COMPLETE);
+			expressDao.updateExpress(express);
+			
+			JSONObject tmp=new JSONObject();
+			tmp.put("order", expressNo);
+			tmp.put("status", "COMPLETE");
+			tmp.put("sendLog", false);
+			tmp.put("des", "妥投");
+			json.add(tmp);
+		}
+		HttpUtil.compileExpressMission(json);
+		
+		return JSONFactory.getSuccessJSON();
 	}
 }

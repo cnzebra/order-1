@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -28,9 +29,9 @@ public class OrderController {
 	private OrderService orderService;
 
 	@ResponseBody
-	@RequestMapping(value = "/pay", method = RequestMethod.POST)
-	public JSONObject pay(@RequestBody List<String> listExpress) {
-		JSONObject res = orderService.pay(listExpress);
+	@RequestMapping(value = "/pay/{userId}", method = RequestMethod.POST)
+	public JSONObject pay(@RequestBody List<String> listExpress,@PathVariable("userId")String userId) {
+		JSONObject res = orderService.pay(listExpress,userId);
 		return res;
 	}
 	
