@@ -1,11 +1,11 @@
 package com.mrwind.common.util;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 public class SetUtil {
 
-	public static String ParseToString(Set<String> set) {
+	public static String ParseToString(Collection<String> set) {
 		if (set == null)
 			return "";
 		StringBuffer sb = new StringBuffer();

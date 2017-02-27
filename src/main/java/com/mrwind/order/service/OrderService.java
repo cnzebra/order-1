@@ -19,14 +19,17 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.UUIDUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.OrderDao;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Fence;
+import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.OrderReceipt;
+import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
@@ -188,6 +191,7 @@ public class OrderService {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_"+tranNo);
 		JSONArray json=new JSONArray();
+		StringBuffer sb=new StringBuffer();
 		for (OrderReceipt orderReceipt : list){
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
 			JSONObject tmp=new JSONObject();
@@ -197,10 +201,33 @@ public class OrderService {
 			tmp.put("sendLog", true);
 			tmp.put("des", "支付完成");
 			json.add(tmp);
+			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
+		}
+		if(sb.length()>0){
+			sb.substring(0, sb.length()-1);
+			sendExpressLog21004(sb.toString());
 		}
 		HttpUtil.compileExpressMission(json);
 		return null;
+	}
+	
+	/***
+	 * 支付完成 发送日志
+	 * @param expressNo
+	 */
+	public void sendExpressLog21004(final String expressNo) {
+		// TODO Auto-generated method stub
+		Thread thread = new Thread() {
+			public void run() {
+				JSONObject param = new JSONObject();
+				param.put("createTime", DateUtils.convertToUtcTime(Calendar.getInstance().getTime()));
+				param.put("type", "21004");
+				param.put("orderId", expressNo);
+				HttpUtil.sendWindDataLog(param);
+			}
+		};
+		thread.start();
 	}
 
 
