@@ -59,7 +59,7 @@ public class OrderController {
 	public JSONObject payCallback(@RequestBody JSONObject json) {
 		String tranNo = json.getString("tranNo");
 		String requestToken = json.getString("requestToken");
-		String token = Md5Util.string2MD5(tranNo+Calendar.getInstance()+App.SESSION_KEY);
+		String token = Md5Util.string2MD5(tranNo+App.SESSION_KEY);
 		if(!requestToken.equals(token)){
 			return JSONFactory.getErrorJSON("请求非法");
 		}
@@ -72,11 +72,11 @@ public class OrderController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/request/tran/money", method = RequestMethod.GET)
-	public String requestTranMoney(String tranNo) {
+	public JSONObject requestTranMoney(String tranNo) {
 		JSONObject tranSactionDetail = orderService.queryTranSactionDetail(tranNo);
 		if(tranSactionDetail.getString("code").equals("1")){
-			return tranSactionDetail.getString("totalPrice");
+			return JSONFactory.getSuccessJSON(tranSactionDetail.getString("totalPrice"));
 		}
-		return "-1";
+		return JSONFactory.getErrorJSON("交易已过期");
 	}
 }

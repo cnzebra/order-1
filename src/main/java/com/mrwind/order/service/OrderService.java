@@ -186,6 +186,7 @@ public class OrderService {
 
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
+		redisCache.delete("transaction_"+tranNo);
 		JSONArray json=new JSONArray();
 		for (OrderReceipt orderReceipt : list){
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
