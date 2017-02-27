@@ -26,10 +26,8 @@ import com.mrwind.order.App;
 import com.mrwind.order.dao.OrderDao;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Fence;
-import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.OrderReceipt;
-import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
@@ -205,8 +203,8 @@ public class OrderService {
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 		}
 		if(sb.length()>0){
-			sb.substring(0, sb.length()-1);
-			sendExpressLog21004(sb.toString());
+			String express = sb.substring(0, sb.length()-1);
+			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
 		return null;

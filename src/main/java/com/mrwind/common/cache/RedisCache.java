@@ -66,8 +66,8 @@ public class RedisCache {
 		long pk = this.incr("PK" + tableName, interval);
 		if (pk < 10000000) {
 			Calendar instance = Calendar.getInstance();
-			this.set("PK" + tableName, Integer.MAX_VALUE,instance.getWeekYear()+"00000000");
-			pk =Long.valueOf(instance.getWeekYear()+"00000000");
+			this.set("PK" + tableName, Integer.MAX_VALUE,instance.getWeekYear()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
+			pk =Long.valueOf(instance.getWeekYear()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
 		}
 		return pk;
 	}
