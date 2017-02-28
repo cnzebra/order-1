@@ -8,14 +8,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Order extends OrderBase {
 	
-	private List<Date> duiTimes;
-	
-	public List<Date> getDuiTimes() {
-		return duiTimes;
+	private List<Date> dueTimes;
+
+	public List<Date> getDueTimes() {
+		return dueTimes;
 	}
 
-	public void setDuiTimes(List<Date> duiTimes) {
-		this.duiTimes = duiTimes;
+	public void setDueTimes(List<Date> dueTimes) {
+		this.dueTimes = dueTimes;
 	}
 
 }

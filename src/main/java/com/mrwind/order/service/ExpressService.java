@@ -50,11 +50,11 @@ public class ExpressService {
 
 	public List<Express> createExpress(Order order) {
 		List<Express> list = new ArrayList<>();
-		if (order.getDuiTimes() == null || order.getDuiTimes().size() == 0) {
+		if (order.getDueTimes() == null || order.getDueTimes().size() == 0) {
 			list.add(initVIPExpress(order));
 			return list;
 		}
-		List<Date> duiTimes = order.getDuiTimes();
+		List<Date> duiTimes = order.getDueTimes();
 		JSONObject person = findPerson(order);
 		if(person==null){
 			return null;
@@ -103,7 +103,7 @@ public class ExpressService {
 		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setDuiTime(Calendar.getInstance().getTime());
+		express.setDueTime(Calendar.getInstance().getTime());
 		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_CREATED);
 		sendExpressLog21010(express);
@@ -178,7 +178,7 @@ public class ExpressService {
 				caseDetail.put("shopTel", express.getShop().getTel());
 				caseDetail.put("receiver", express.getReceiver());
 				caseDetail.put("orderUserType", express.getMode());
-				caseDetail.put("dueTime", DateUtils.convertToUtcTime(express.getDuiTime()));
+				caseDetail.put("dueTime", DateUtils.convertToUtcTime(express.getDueTime()));
 				caseDetail.put("sender", express.getSender());
 				caseDetailList.add(caseDetail);
 				json.put("caseDetail", caseDetailList);
@@ -214,7 +214,7 @@ public class ExpressService {
 					caseDetail.put("shopTel", next.getShop().getTel());
 					caseDetail.put("receiver", next.getReceiver());
 					caseDetail.put("orderUserType", next.getMode());
-					caseDetail.put("dueTime", DateUtils.convertToUtcTime(next.getDuiTime()));
+					caseDetail.put("dueTime", DateUtils.convertToUtcTime(next.getDueTime()));
 					caseDetail.put("sender", next.getSender());
 					caseDetailList.add(caseDetail);
 				}
@@ -314,8 +314,8 @@ public class ExpressService {
 					firstExpress.setLines(express.getLines());
 				}
 
-				if (express.getDuiTime() != null) {
-					firstExpress.setDuiTime(express.getDuiTime());
+				if (express.getDueTime() != null) {
+					firstExpress.setDueTime(express.getDueTime());
 				}
 
 				if (express.getReceiver() != null) {

@@ -15,7 +15,7 @@ public class Express extends OrderBase {
 	@Indexed
 	private String bindExpressNo;
 	@Indexed
-	private Date duiTime;
+	private Date dueTime;
 	private String mode;
 	private List<Line> lines;
 	private Integer currentLine=1;
@@ -45,14 +45,6 @@ public class Express extends OrderBase {
 
 	public void setLines(List<Line> lines) {
 		this.lines = lines;
-	}
-
-	public Date getDuiTime() {
-		return duiTime;
-	}
-
-	public void setDuiTime(Date duiTime) {
-		this.duiTime = duiTime;
 	}
 
 	public Integer getCurrentLine() {
@@ -109,6 +101,14 @@ public class Express extends OrderBase {
 
 	public void setMode(String mode) {
 		this.mode = mode;
+	}
+
+	public Date getDueTime() {
+		return dueTime;
+	}
+
+	public void setDueTime(Date dueTime) {
+		this.dueTime = dueTime;
 	}
 
 }

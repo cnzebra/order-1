@@ -114,7 +114,7 @@ public class ExpressDao extends BaseDao {
 	public List<Express> findUnBegin(Date date) {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("status").is(App.ORDER_CREATE));
-		query.addCriteria(Criteria.where("duiTime").gte(date));
+		query.addCriteria(Criteria.where("dueTime").gte(date));
 		return mongoTemplate.find(query, Express.class);
 	}
 
