@@ -1,7 +1,5 @@
 package com.mrwind.order.controller;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -113,15 +111,16 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
-	public JSONObject complete(@RequestBody List<String> listExpress, @RequestHeader("Authorization") String token,
+	public JSONObject complete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
 			HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {
 			return JSONFactory.getErrorJSON("没有登录信息");
 		}
 
-		if (listExpress == null || listExpress.size() == 0) {
-			return JSONFactory.getErrorJSON("参数订单号不能为空");
+		String expressNo = json.getString("expressNo");
+		if (StringUtils.isEmpty(expressNo)) {
+			return JSONFactory.getErrorJSON("订单号不能为空");
 		}
 		token = token.substring(6);
 		JSONObject userInfo = HttpUtil.getUserInfoByToken(token);
@@ -130,22 +129,24 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		expressService.completeExpress(listExpress,userInfo);
+		expressService.completeExpress(expressNo,userInfo);
 		return JSONFactory.getSuccessJSON();
 	}
 
 	@ResponseBody
 	@RequestMapping(value = "/error/complete", method = RequestMethod.POST)
-	public JSONObject errorComplete(@RequestBody List<String> list, @RequestHeader("Authorization") String token,
+	public JSONObject errorComplete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
 			HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {
 			return JSONFactory.getErrorJSON("没有登录信息");
 		}
 
-		if (list == null || list.size() == 0) {
-			return JSONFactory.getErrorJSON("参数订单号不能为空");
+		String expressNo = json.getString("expressNo");
+		if (StringUtils.isEmpty(expressNo)) {
+			return JSONFactory.getErrorJSON("订单号不能为空");
 		}
+		
 		token = token.substring(6);
 		JSONObject userInfo = HttpUtil.getUserInfoByToken(token);
 		if (userInfo == null) {
@@ -153,7 +154,7 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		return expressService.errorComplete(list, userInfo);
+		return expressService.errorComplete(expressNo, userInfo);
 
 	}
 }

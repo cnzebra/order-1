@@ -108,13 +108,6 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
-	public int updateStatus(String expressNo, String status, String subStatus, Date createTime) {
-		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
-		Update update = Update.update("status", status).set("subStatus", subStatus).set("createTime", createTime);
-		update.set("updateTime", Calendar.getInstance().getTime());
-		return mongoTemplate.updateFirst(query, update, Express.class).getN();
-	}
-
 	public List<Express> findUnBegin(Date date) {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("status").is(App.ORDER_CREATE));

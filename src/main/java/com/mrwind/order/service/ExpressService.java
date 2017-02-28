@@ -54,15 +54,15 @@ public class ExpressService {
 			list.add(initVIPExpress(order));
 			return list;
 		}
-		List<Date> duiTimes = order.getDueTimes();
+		List<Date> dueTimes = order.getDueTimes();
 		JSONObject person = findPerson(order);
 		if (person == null) {
 			return null;
 		}
 
 		User user = JSONObject.toJavaObject(person, User.class);
-		for (Date duiTime : duiTimes) {
-			list.add(initVIPExpress(order, duiTime, user));
+		for (Date dueTime : dueTimes) {
+			list.add(initVIPExpress(order, dueTime, user));
 		}
 		expressRepository.save(list);
 		return list;
@@ -79,7 +79,6 @@ public class ExpressService {
 		if (DateUtils.pastMinutes(dueTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
-			express.setCreateTime(Calendar.getInstance().getTime());
 			sendExpressLog21010(express);
 		} else {
 			Line line = new Line();
@@ -92,6 +91,7 @@ public class ExpressService {
 			lineList.add(line);
 			express.setLines(lineList);
 		}
+		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(dueTime);
 		return express;
 	}
@@ -104,6 +104,7 @@ public class ExpressService {
 		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
+		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(Calendar.getInstance().getTime());
 		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_CREATED);
@@ -408,17 +409,17 @@ public class ExpressService {
 		return expressRepository.findAll(example, page);
 	}
 
-	public List<Express> selectAll(String param, String fenceName, String mode, String status, String day,
-			Date dueTime, Integer pageIndex, Integer pageSize) {
+	public List<Express> selectAll(String param, String fenceName, String mode, String status, String day, Date dueTime,
+			Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.findExpress(param, fenceName, mode, status, day,dueTime, page);
+		return expressDao.findExpress(param, fenceName, mode, status, day, dueTime, page);
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		List<Line> lines = express.getLines();
-		Line[] newArray = new Line[(lines == null ? 0 : lines.size() )+ list.size()];
+		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
 
 		if (lines != null) {
 			for (Line line : lines) {
@@ -433,7 +434,7 @@ public class ExpressService {
 				newArray[line.getIndex() - 1] = line;
 			}
 		}
-		
+
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
@@ -479,7 +480,7 @@ public class ExpressService {
 			Line line = new Line();
 			line.setExecutorUser(user);
 			line.setRealTime(Calendar.getInstance().getTime());
-			line.setTitle(user.getName() + "异常妥投了订单");
+			line.setTitle(user.getName() + "妥投了订单");
 			line.setIndex(lines.size());
 			lines.add(line);
 			express.setCurrentLine(lines.size());
@@ -497,6 +498,65 @@ public class ExpressService {
 		}
 		HttpUtil.compileExpressMission(json);
 
+		return JSONFactory.getSuccessJSON();
+	}
+
+	public JSONObject completeExpress(String expressNo, JSONObject userInfo) {
+		User user = JSONObject.toJavaObject(userInfo, User.class);
+
+		JSONArray json = new JSONArray();
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		if(express==null)return JSONFactory.getErrorJSON("运单不存在");
+		List<Line> lines = express.getLines();
+
+		Line line = new Line();
+		line.setExecutorUser(user);
+		line.setRealTime(Calendar.getInstance().getTime());
+		line.setTitle(user.getName() + "妥投了订单");
+		line.setIndex(lines.size());
+		lines.add(line);
+		express.setCurrentLine(lines.size());
+		express.setLines(lines);
+		express.setStatus(App.ORDER_COMPLETE);
+		express.setSubStatus(App.ORDER_COMPLETE);
+		expressDao.updateExpress(express);
+
+		JSONObject tmp = new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "COMPLETE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "妥投");
+		json.add(tmp);
+
+		HttpUtil.compileExpressMission(json);
+		return JSONFactory.getSuccessJSON();
+	}
+
+	public JSONObject errorComplete(String expressNo, JSONObject userInfo) {
+		User user = JSONObject.toJavaObject(userInfo, User.class);
+		JSONArray json = new JSONArray();
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		List<Line> lines = express.getLines();
+
+		Line line = new Line();
+		line.setExecutorUser(user);
+		line.setRealTime(Calendar.getInstance().getTime());
+		line.setTitle(user.getName() + "异常妥投了订单");
+		line.setIndex(lines.size());
+		lines.add(line);
+		express.setCurrentLine(lines.size());
+		express.setLines(lines);
+		express.setStatus(App.ORDER_COMPLETE);
+		express.setSubStatus(App.ORDER_ERROR_COMPLETE);
+		expressDao.updateExpress(express);
+
+		JSONObject tmp = new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "CLOSE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "妥投");
+		json.add(tmp);
+		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
 	}
 }

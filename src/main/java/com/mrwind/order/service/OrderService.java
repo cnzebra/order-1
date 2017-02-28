@@ -201,12 +201,14 @@ public class OrderService {
 			json.add(tmp);
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
+			expressService.completeLine(orderReceipt.getExpressNo());
 		}
 		if(sb.length()>0){
 			String express = sb.substring(0, sb.length()-1);
 			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
+	
 		return null;
 	}
 	
