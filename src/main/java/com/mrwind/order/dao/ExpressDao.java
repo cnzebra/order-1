@@ -62,7 +62,7 @@ public class ExpressDao extends BaseDao {
 	}
 
 	public List<Express> findExpress(String param, String fenceName, String mode, String status, String day,
-			PageRequest page) {
+			Date dueTime, PageRequest page) {
 		Criteria operator = new Criteria();
 		if (StringUtils.isNotBlank(param)) {
 			operator.orOperator(Criteria.where("bindExpressNo").regex(param), Criteria.where("shop.name").regex(param),
@@ -87,6 +87,10 @@ public class ExpressDao extends BaseDao {
 				list.add(Criteria.where("createTime").lte(toDay).gte(yesterday));
 			}
 		}
+		if(dueTime!=null){
+			list.add(Criteria.where("dueTime").gte(dueTime).lte(DateUtils.addDays(dueTime, 1)));
+		}
+		
 		if (list.size() > 0) {
 			Criteria[] criteria = new Criteria[list.size()];
 			operator.andOperator(list.toArray(criteria));

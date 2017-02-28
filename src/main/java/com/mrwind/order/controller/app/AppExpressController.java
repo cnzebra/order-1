@@ -2,6 +2,7 @@ package com.mrwind.order.controller.app;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,12 +30,15 @@ import com.mrwind.order.service.ExpressService;
 @RequestMapping("app/express")
 public class AppExpressController {
 
-	@Autowired ExpressService expressService;
-	
-	@Autowired ExpressBindService expressBindService;
-	
+	@Autowired
+	ExpressService expressService;
+
+	@Autowired
+	ExpressBindService expressBindService;
+
 	/***
 	 * 配送员加单
+	 * 
 	 * @param expressJson
 	 * @return
 	 */
@@ -46,14 +50,14 @@ public class AppExpressController {
 
 		List<Line> lines = new ArrayList<>();
 		User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
-		if(executorUser==null){
+		if (executorUser == null) {
 			return JSONFactory.getErrorJSON("找不到配送员信息，无法加单！");
 		}
-		
-		if(!expressBindService.checkBind(express.getBindExpressNo())){
+
+		if (!expressBindService.checkBind(express.getBindExpressNo())) {
 			return JSONFactory.getErrorJSON("该单号已经绑定过其它单号");
 		}
-		
+
 		Line line = new Line();
 		line.setPlanTime(express.getCreateTime());
 		line.setExecutorUser(executorUser);
@@ -70,25 +74,28 @@ public class AppExpressController {
 		successJSON.put("data", initExpress);
 		return successJSON;
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.POST)
 	public Result select(@RequestBody Express express) {
 		Express res = expressService.selectByExpress(express);
 		return Result.success(res);
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
-	public Result selectAll(@RequestBody Express express,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
-		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express,pageIndex-1,pageSize);
+	public Result selectAll(@RequestBody Express express, @PathVariable("pageIndex") Integer pageIndex,
+			@PathVariable("pageSize") Integer pageSize) {
+		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express, pageIndex - 1, pageSize);
 		return Result.success(selectAllByExpress);
-	} 
-	
+	}
+
 	@ResponseBody
 	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
-	public Result selectParamAll(String param,String fenceName,String mode,String status,String day,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
-		List<Express> selectAll = expressService.selectAll(param, fenceName,mode,status,day,pageIndex-1,pageSize);
+	public Result selectParamAll(String param, String fenceName, String mode, String status, String day, Date dueTime,
+			@PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) {
+		List<Express> selectAll = expressService.selectAll(param, fenceName, mode, status, day, dueTime, pageIndex - 1,
+				pageSize);
 		return Result.success(selectAll);
-	}  
+	}
 }

@@ -56,48 +56,49 @@ public class ExpressService {
 		}
 		List<Date> duiTimes = order.getDueTimes();
 		JSONObject person = findPerson(order);
-		if(person==null){
+		if (person == null) {
 			return null;
 		}
-		
-		User user= JSONObject.toJavaObject(person, User.class);
+
+		User user = JSONObject.toJavaObject(person, User.class);
 		for (Date duiTime : duiTimes) {
-			list.add(initVIPExpress(order, duiTime,user));
+			list.add(initVIPExpress(order, duiTime, user));
 		}
 		expressRepository.save(list);
 		return list;
 	}
 
-	private Express initVIPExpress(Order order, Date duiTime,User user) {
+	private Express initVIPExpress(Order order, Date dueTime, User user) {
 		Express express = new Express(order);
-		if(express.getCategory()==null||express.getCategory().getServiceType()==null){
+		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
 			return null;
 		}
 		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		if (DateUtils.pastMinutes(duiTime) >= -60 * 2) {
+		if (DateUtils.pastMinutes(dueTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
 			express.setCreateTime(Calendar.getInstance().getTime());
 			sendExpressLog21010(express);
-		}else{
+		} else {
 			Line line = new Line();
 			line.setExecutorUser(user);
 			line.setFence(order.getSender().getFence());
 			line.setNode(order.getSender().getAddress());
 			line.setIndex(1);
-			line.setPlanTime(duiTime);
-			List<Line> lineList=new ArrayList<>();
+			line.setPlanTime(dueTime);
+			List<Line> lineList = new ArrayList<>();
 			lineList.add(line);
 			express.setLines(lineList);
 		}
+		express.setDueTime(dueTime);
 		return express;
 	}
 
 	private Express initVIPExpress(Order order) {
 		Express express = new Express(order);
-		if(express.getCategory()==null||express.getCategory().getServiceType()==null){
+		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
 			return null;
 		}
 		express.setMode(express.getCategory().getServiceType().getType());
@@ -155,7 +156,7 @@ public class ExpressService {
 				caseDetail.put("shopId", express.getShop().getId());
 				caseDetail.put("receiver", express.getReceiver());
 				caseDetail.put("sender", express.getSender());
-				
+
 				param.put("caseDetail", caseDetail);
 				HttpUtil.sendWindDataLog(param);
 			}
@@ -229,15 +230,16 @@ public class ExpressService {
 		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
 		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine());
 	}
-	
+
 	/**
 	 * 绑定的单号也一起查询
+	 * 
 	 * @param no
 	 * @return
 	 */
-	public Express selectByNo(String no){
+	public Express selectByNo(String no) {
 		Express express = selectByExpressNo(no);
-		if(express==null){
+		if (express == null) {
 			return selectByBindExpressNo(no);
 		}
 		return express;
@@ -247,14 +249,14 @@ public class ExpressService {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		return express;
 	}
-	
+
 	public Express selectByBindExpressNo(String expressNo) {
 		Express express = expressRepository.findFirstByBindExpressNo(expressNo);
 		return express;
 	}
-	
-	public int updateExpressBindNo(String expressNo,String bindExpressNo){
-		return expressDao.updateExpressBindNo(expressNo,bindExpressNo);
+
+	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
+		return expressDao.updateExpressBindNo(expressNo, bindExpressNo);
 	}
 
 	public List<Express> selectByExpressNo(List<String> express) {
@@ -263,7 +265,7 @@ public class ExpressService {
 		return list;
 	}
 
-	public JSONObject updateCategory(String expressNo,Category category) {
+	public JSONObject updateCategory(String expressNo, Category category) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
 		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
@@ -341,7 +343,7 @@ public class ExpressService {
 	public JSONObject errorComplete(List<String> list, JSONObject userInfo) {
 		Iterator<String> iterator = list.iterator();
 		User user = JSONObject.toJavaObject(userInfo, User.class);
-		JSONArray json=new JSONArray();
+		JSONArray json = new JSONArray();
 		while (iterator.hasNext()) {
 			String expressNo = iterator.next();
 			Express express = expressRepository.findFirstByExpressNo(expressNo);
@@ -358,8 +360,8 @@ public class ExpressService {
 			express.setStatus(App.ORDER_COMPLETE);
 			express.setSubStatus(App.ORDER_ERROR_COMPLETE);
 			expressDao.updateExpress(express);
-			
-			JSONObject tmp=new JSONObject();
+
+			JSONObject tmp = new JSONObject();
 			tmp.put("order", expressNo);
 			tmp.put("status", "CLOSE");
 			tmp.put("sendLog", false);
@@ -400,43 +402,51 @@ public class ExpressService {
 	}
 
 	public Page<Express> selectAllByExpress(Express express, Integer pageIndex, Integer pageSize) {
-		Sort sort = new Sort(Direction.DESC,"createTime");
-		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
-		Example<Express> example=Example.of(express);
-		return expressRepository.findAll(example,page);
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		Example<Express> example = Example.of(express);
+		return expressRepository.findAll(example, page);
 	}
-	
-	public List<Express> selectAll(String param,String fenceName, String mode, String status,String day, Integer pageIndex, Integer pageSize){
-		Sort sort = new Sort(Direction.DESC,"createTime");
-		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
-		return expressDao.findExpress(param, fenceName,mode,status,day,page);
+
+	public List<Express> selectAll(String param, String fenceName, String mode, String status, String day,
+			Date dueTime, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		return expressDao.findExpress(param, fenceName, mode, status, day,dueTime, page);
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		List<Line> lines = express.getLines();
-		Line [] newArray=new Line[lines.size()+list.size()];
-		
-		for(Line line : lines){
-			if(line==null)continue;
-			newArray[line.getIndex()-1]=line;
+		Line[] newArray = new Line[(lines == null ? 0 : lines.size() )+ list.size()];
+
+		if (lines != null) {
+			for (Line line : lines) {
+				if (line == null)
+					continue;
+				newArray[line.getIndex() - 1] = line;
+			}
 		}
 
-		for(Line line : list){
-			newArray[line.getIndex()-1]=line;
-		}
-		List<Line> newList=new ArrayList<>();
-		for(int i =0;i<newArray.length;i++){
-			Line line = newArray[i];
-			if(line==null)continue;
-			newList.add(line);
+		if (list != null) {
+			for (Line line : list) {
+				newArray[line.getIndex() - 1] = line;
+			}
 		}
 		
+		List<Line> newList = new ArrayList<>();
+		for (int i = 0; i < newArray.length; i++) {
+			Line line = newArray[i];
+			if (line == null)
+				continue;
+			newList.add(line);
+		}
+
 		expressDao.updateLines(expressNo, newList);
 	}
 
-	public void updateExpressPlanTime(String expressNo,Date planTime) {
-		expressDao.updateExpressPlanEndTime(expressNo,planTime);
+	public void updateExpressPlanTime(String expressNo, Date planTime) {
+		expressDao.updateExpressPlanEndTime(expressNo, planTime);
 	}
 
 	public void updateExpress(Express express) {
@@ -444,8 +454,8 @@ public class ExpressService {
 	}
 
 	public void cancelExpress(String expressNo) {
-		JSONArray json=new JSONArray();
-		JSONObject tmp=new JSONObject();
+		JSONArray json = new JSONArray();
+		JSONObject tmp = new JSONObject();
 		tmp.put("order", expressNo);
 		tmp.put("status", "CLOSE");
 		tmp.put("sendLog", false);
@@ -455,12 +465,12 @@ public class ExpressService {
 		expressDao.updateStatus(expressNo, App.ORDER_CANCLE, App.ORDER_CANCLE);
 	}
 
-	public JSONObject completeExpress(List<String> list,JSONObject userInfo) {
+	public JSONObject completeExpress(List<String> list, JSONObject userInfo) {
 		// TODO Auto-generated method stub
 		Iterator<String> iterator = list.iterator();
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
-		JSONArray json=new JSONArray();
+		JSONArray json = new JSONArray();
 		while (iterator.hasNext()) {
 			String expressNo = iterator.next();
 			Express express = expressRepository.findFirstByExpressNo(expressNo);
@@ -477,8 +487,8 @@ public class ExpressService {
 			express.setStatus(App.ORDER_COMPLETE);
 			express.setSubStatus(App.ORDER_COMPLETE);
 			expressDao.updateExpress(express);
-			
-			JSONObject tmp=new JSONObject();
+
+			JSONObject tmp = new JSONObject();
 			tmp.put("order", expressNo);
 			tmp.put("status", "COMPLETE");
 			tmp.put("sendLog", false);
@@ -486,7 +496,7 @@ public class ExpressService {
 			json.add(tmp);
 		}
 		HttpUtil.compileExpressMission(json);
-		
+
 		return JSONFactory.getSuccessJSON();
 	}
 }
