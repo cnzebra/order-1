@@ -406,19 +406,32 @@ public class ExpressService {
 		return expressRepository.findAll(example,page);
 	}
 	
-	public List<Express> selectAll(String param,String fenceName){
-		return expressDao.findExpress(param, fenceName);
+	public List<Express> selectAll(String param,String fenceName, String mode, String status,String day, Integer pageIndex, Integer pageSize){
+		Sort sort = new Sort(Direction.DESC,"createTime");
+		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
+		return expressDao.findExpress(param, fenceName,mode,status,day,page);
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		List<Line> lines = express.getLines();
-		List<Line> newList=new ArrayList<>(list.size()+(lines==null?0:lines.size()));
-		newList.addAll(lines);
-		for(Line line : list){
-			newList.set(line.getIndex()-1, line);
+		Line [] newArray=new Line[lines.size()+list.size()];
+		
+		for(Line line : lines){
+			if(line==null)continue;
+			newArray[line.getIndex()-1]=line;
 		}
-		newList.remove(null);
+
+		for(Line line : list){
+			newArray[line.getIndex()-1]=line;
+		}
+		List<Line> newList=new ArrayList<>();
+		for(int i =0;i<newArray.length;i++){
+			Line line = newArray[i];
+			if(line==null)continue;
+			newList.add(line);
+		}
+		
 		expressDao.updateLines(expressNo, newList);
 	}
 

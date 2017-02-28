@@ -1,5 +1,6 @@
 package com.mrwind.order.dao;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -7,34 +8,36 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 
 @Repository
 public class ExpressDao extends BaseDao {
-	
+
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
-	
+
 	public Integer updateExpressLineIndex(String expressNo, Integer lineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(lineIndex));
-		Update update = Update.update("currentLine", lineIndex+1);
+		Update update = Update.update("currentLine", lineIndex + 1);
 		update.set("lines.$.realTime", Calendar.getInstance().getTime());
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
 	public int updateCategory(Express express) {
 		Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
 		Update update = Update.update("category", express.getCategory());
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -58,28 +61,53 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, basicUpdate, Express.class).getN();
 	}
 
-	public List<Express> findExpress(String param, String fenceName) {
+	public List<Express> findExpress(String param, String fenceName, String mode, String status, String day,
+			PageRequest page) {
 		Criteria operator = new Criteria();
-		operator.orOperator(Criteria.where("bindExpressNo").regex(param),Criteria.where("shop.name").regex(param),
-				Criteria.where("expressNo").regex(param));
-		if (StringUtils.isNotBlank(fenceName)) {
-			operator.andOperator(Criteria.where("sender.fence.name").is(fenceName));
+		if (StringUtils.isNotBlank(param)) {
+			operator.orOperator(Criteria.where("bindExpressNo").regex(param), Criteria.where("shop.name").regex(param),
+					Criteria.where("expressNo").regex(param));
 		}
+		List<Criteria> list = new ArrayList<>();
+		if (StringUtils.isNotBlank(fenceName)) {
+			list.add(Criteria.where("sender.fence.name").is(fenceName));
+		}
+		if (StringUtils.isNotBlank(mode)) {
+			list.add(Criteria.where("mode").is(mode));
+		}
+		if (StringUtils.isNotBlank(status)) {
+			list.add(Criteria.where("status").is(status));
+		}
+		if (StringUtils.isNotBlank(day)) {
+			Date toDay = DateUtils.getStartTime();
+			if (day.equals("today")) {
+				list.add(Criteria.where("createTime").gte(toDay));
+			} else {
+				Date yesterday = DateUtils.addDays(toDay, -1);
+				list.add(Criteria.where("createTime").lte(toDay).gte(yesterday));
+			}
+		}
+		if (list.size() > 0) {
+			Criteria[] criteria = new Criteria[list.size()];
+			operator.andOperator(list.toArray(criteria));
+		}
+
 		Query query = Query.query(operator);
+		query.with(page);
 		return mongoTemplate.find(query, Express.class);
 	}
 
 	public int updateStatus(String expressNo, String status, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus);
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
-	
-	public int updateStatus(String expressNo, String status, String subStatus,Date createTime) {
+
+	public int updateStatus(String expressNo, String status, String subStatus, Date createTime) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus).set("createTime", createTime);
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -93,7 +121,7 @@ public class ExpressDao extends BaseDao {
 	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("bindExpressNo", bindExpressNo);
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -101,7 +129,7 @@ public class ExpressDao extends BaseDao {
 		// TODO Auto-generated method stub
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("planEndTime", planEndTime);
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -109,16 +137,17 @@ public class ExpressDao extends BaseDao {
 		Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
 		Update update = Update.update("category", express.getCategory());
 		update.set("status", express.getStatus()).set("subStatus", express.getSubStatus());
-		update.set("updateTime",Calendar.getInstance().getTime());
+		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
-	
+
 	public synchronized void updateExpress(final Express express) {
-		if(express==null)return;
+		if (express == null)
+			return;
 		Runnable runnable = new Runnable() {
 			public void run() {
 				Query query = Query.query(Criteria.where("expressNo").is(express.getExpressNo()));
-				Update update =new Update();
+				Update update = new Update();
 				if (express.getCategory() != null) {
 					update.set("category", express.getCategory());
 				}
@@ -146,40 +175,40 @@ public class ExpressDao extends BaseDao {
 				if (express.getCurrentLine() != null) {
 					update.set("currentLine", express.getCurrentLine());
 				}
-				
-				if(express.getLines()!=null){
+
+				if (express.getLines() != null) {
 					update.set("lines", express.getLines());
 				}
 
 				if (express.getReceiver() != null) {
-					update.set("receiver",express.getReceiver());
+					update.set("receiver", express.getReceiver());
 				}
 
 				if (express.getShop() != null) {
-					update.set("shop",express.getShop());
+					update.set("shop", express.getShop());
 				}
 
 				if (express.getSender() != null) {
-					update.set("sender",express.getSender());
-				}
-				
-				if(express.getCreateTime()!=null){
-					update.set("createTime",express.getCreateTime());
+					update.set("sender", express.getSender());
 				}
 
-				if(express.getDownMoney() !=null){
-					update.set("downMoney", express.getDownMoney() );
+				if (express.getCreateTime() != null) {
+					update.set("createTime", express.getCreateTime());
 				}
-				
-				if(express.getPlanEndTime() !=null){
+
+				if (express.getDownMoney() != null) {
+					update.set("downMoney", express.getDownMoney());
+				}
+
+				if (express.getPlanEndTime() != null) {
 					update.set("planEndTime", express.getPlanEndTime());
 				}
-				
-				if(express.getRealEndTime() != null){
+
+				if (express.getRealEndTime() != null) {
 					update.set("realEntTime", express.getRealEndTime());
 				}
 
-				update.set("updateTime",Calendar.getInstance().getTime());
+				update.set("updateTime", Calendar.getInstance().getTime());
 				mongoTemplate.updateFirst(query, update, Express.class).getN();
 			}
 		};

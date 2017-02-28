@@ -87,8 +87,8 @@ public class AppExpressController {
 	
 	@ResponseBody
 	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
-	public Result selectParamAll(String param,String fenceName,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
-		List<Express> selectAll = expressService.selectAll(param, fenceName);
+	public Result selectParamAll(String param,String fenceName,String mode,String status,String day,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
+		List<Express> selectAll = expressService.selectAll(param, fenceName,mode,status,day,pageIndex-1,pageSize);
 		return Result.success(selectAll);
 	}  
 }
