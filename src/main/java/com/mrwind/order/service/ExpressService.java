@@ -429,12 +429,8 @@ public class ExpressService {
 			}
 		}
 
-		Integer currentLine = Integer.MAX_VALUE;
 		if (list != null) {
 			for (Line line : list) {
-				if (line.getIndex() < currentLine) {
-					currentLine = line.getIndex();
-				}
 				newArray[line.getIndex() - 1] = line;
 			}
 		}
@@ -445,6 +441,17 @@ public class ExpressService {
 			if (line == null)
 				continue;
 			newList.add(line);
+		}
+		
+		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
+		Iterator<Object> iterator = expressMission.iterator();
+		Integer currentLine=(int) Short.MAX_VALUE;
+		while(iterator.hasNext()){
+			JSONObject next = (JSONObject) iterator.next();
+			Integer index = next.getInteger("missionNodeIndex");
+			if(index<currentLine){
+				currentLine=index;
+			}
 		}
 
 		expressDao.updateLines(expressNo, newList, currentLine);
