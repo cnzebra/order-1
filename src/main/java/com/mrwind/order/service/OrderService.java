@@ -164,7 +164,7 @@ public class OrderService {
 	public JSONObject queryTranSactionDetail(String tranNo) {
 		String successJSON = redisCache.getString("transaction_"+tranNo);
 		if(StringUtils.isBlank(successJSON)){
-			return JSONFactory.getErrorJSON("交易号已经超时，请重新发起交易！");
+			return JSONFactory.getErrorJSON("交易已经关闭!");
 		}
 		return JSONObject.parseObject(successJSON);
 	}
@@ -201,7 +201,7 @@ public class OrderService {
 			json.add(tmp);
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
-			expressService.completeLine(orderReceipt.getExpressNo());
+			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
 		}
 		if(sb.length()>0){
 			String express = sb.substring(0, sb.length()-1);

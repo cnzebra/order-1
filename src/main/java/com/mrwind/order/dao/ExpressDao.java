@@ -25,10 +25,10 @@ public class ExpressDao extends BaseDao {
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
-	public Integer updateExpressLineIndex(String expressNo, Integer lineIndex) {
+	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
-		query.addCriteria(Criteria.where("lines.index").is(lineIndex));
-		Update update = Update.update("currentLine", lineIndex + 1);
+		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
+		Update update = Update.update("currentLine", newLineIndex);
 		update.set("lines.$.realTime", Calendar.getInstance().getTime());
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
@@ -210,5 +210,11 @@ public class ExpressDao extends BaseDao {
 			}
 		};
 		newSingleThreadExecutor.execute(runnable);
+	}
+
+	public int updateLines(String expressNo, List<Line> newList, Integer currentLine) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("lines", newList).set("currentLine", currentLine);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 }

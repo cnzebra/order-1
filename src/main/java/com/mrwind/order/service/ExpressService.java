@@ -227,9 +227,9 @@ public class ExpressService {
 		thread.start();
 	}
 
-	public Integer completeLine(String expressNo) {
+	public Integer updateLineIndex(String expressNo, int addNumber) {
 		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
-		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine());
+		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),findFirstByExpressNo.getCurrentLine()+addNumber);
 	}
 
 	/**
@@ -429,8 +429,12 @@ public class ExpressService {
 			}
 		}
 
+		Integer currentLine = Integer.MAX_VALUE;
 		if (list != null) {
 			for (Line line : list) {
+				if (line.getIndex() < currentLine) {
+					currentLine = line.getIndex();
+				}
 				newArray[line.getIndex() - 1] = line;
 			}
 		}
@@ -443,7 +447,7 @@ public class ExpressService {
 			newList.add(line);
 		}
 
-		expressDao.updateLines(expressNo, newList);
+		expressDao.updateLines(expressNo, newList, currentLine);
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
@@ -506,7 +510,8 @@ public class ExpressService {
 
 		JSONArray json = new JSONArray();
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		if(express==null)return JSONFactory.getErrorJSON("运单不存在");
+		if (express == null)
+			return JSONFactory.getErrorJSON("运单不存在");
 		List<Line> lines = express.getLines();
 
 		Line line = new Line();
@@ -559,4 +564,5 @@ public class ExpressService {
 		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
 	}
+
 }
