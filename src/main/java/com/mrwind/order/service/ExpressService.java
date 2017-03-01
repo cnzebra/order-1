@@ -44,6 +44,8 @@ public class ExpressService {
 	ExpressRepository expressRepository;
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
+	
+	@Autowired ExpressBindService expressBindService;
 
 	@Autowired
 	ExpressDao expressDao;
@@ -76,6 +78,11 @@ public class ExpressService {
 		express.setMode(express.getCategory().getServiceType().getType());
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
+		express.setCreateTime(Calendar.getInstance().getTime());
+		if(!expressBindService.checkBind(express.getBindExpressNo())){
+			express.setBindExpressNo(null);
+		}
+		
 		if (DateUtils.pastMinutes(dueTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
@@ -91,7 +98,6 @@ public class ExpressService {
 			lineList.add(line);
 			express.setLines(lineList);
 		}
-		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(dueTime);
 		return express;
 	}
@@ -105,6 +111,10 @@ public class ExpressService {
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		express.setCreateTime(Calendar.getInstance().getTime());
+		if(!expressBindService.checkBind(express.getBindExpressNo())){
+			express.setBindExpressNo(null);
+		}
+		
 		express.setDueTime(Calendar.getInstance().getTime());
 		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_CREATED);
@@ -127,6 +137,7 @@ public class ExpressService {
 	}
 
 	public Express initExpress(Express express) {
+	
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		express.setStatus(App.ORDER_BEGIN);

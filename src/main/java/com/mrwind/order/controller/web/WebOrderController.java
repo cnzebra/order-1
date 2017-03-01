@@ -41,7 +41,7 @@ public class WebOrderController {
 		if(order.getShop()==null||StringUtils.isEmpty(order.getShop().getId())){
 			return JSONFactory.getErrorJSON("商户信息不能为空");
 		}
-		List<Express> res = orderService.insert(order);
+		List<Express> res = orderService.initAndInsert(order);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("content", res);
 		return successJSON;
@@ -70,7 +70,7 @@ public class WebOrderController {
 			order.setSender(sender);
 			list.add(order);
 		}
-		orderService.insert(list);
+		orderService.initAndInsert(list);
 		
 		return JSONFactory.getSuccessJSON();
 	}
