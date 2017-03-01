@@ -111,10 +111,10 @@ public class OrderService {
 		while(iterator.hasNext()){
 			Express next = iterator.next();
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
+				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
-				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
+				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){
 				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
