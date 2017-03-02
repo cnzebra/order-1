@@ -25,7 +25,7 @@ public class NumberUtils {
 	
 	public static boolean checkoutExpress(String expressNo){
 		Integer i = Calendar.getInstance().get(Calendar.YEAR);
-		if(expressNo.indexOf(i.toString())>-1){
+		if(expressNo.indexOf(i.toString())==0){
 			return false;
 		}
 		return true;
