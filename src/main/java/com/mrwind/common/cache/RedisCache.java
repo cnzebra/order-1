@@ -64,10 +64,12 @@ public class RedisCache {
 
 	public Long getPK(String tableName, int interval) {
 		long pk = this.incr("PK" + tableName, interval);
-		if (pk < 10000000) {
+		if (pk < 1000000000) {
 			Calendar instance = Calendar.getInstance();
-			this.set("PK" + tableName, Integer.MAX_VALUE,instance.getWeekYear()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
-			pk =Long.valueOf(instance.getWeekYear()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
+			this.set("PK" + tableName, Integer.MAX_VALUE,Integer.valueOf(instance.getWeekYear()).toString()+"00000000");
+			String strPk = this.getString("PK" + tableName);
+			return Long.valueOf(strPk);
+//			pk =Long.valueOf(Integer.valueOf(instance.getWeekYear()).toString()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
 		}
 		return pk;
 	}

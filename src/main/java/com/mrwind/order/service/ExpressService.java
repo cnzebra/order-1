@@ -99,10 +99,8 @@ public class ExpressService {
 				}
 			}
 		}
-		System.out.println(System.currentTimeMillis());
 		expressRepository.save(list);
 		sendExpressLog21010(list);
-		System.out.println(System.currentTimeMillis());
 		return list;
 	}
 
