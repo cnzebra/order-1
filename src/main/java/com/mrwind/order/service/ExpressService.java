@@ -227,7 +227,7 @@ public class ExpressService {
 				List<JSONObject> caseDetailList = new ArrayList<>();
 				while (iterator.hasNext()) {
 					Express next = iterator.next();
-					if(next.getStatus().equals(App.ORDER_BEGIN))continue;
+					if(!next.getStatus().equals(App.ORDER_BEGIN))continue;
 					JSONObject caseDetail = new JSONObject();
 					caseDetail.put("orderId", next.getExpressNo());
 					caseDetail.put("shopId", next.getShop().getId());
