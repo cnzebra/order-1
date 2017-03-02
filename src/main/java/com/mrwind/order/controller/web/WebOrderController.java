@@ -70,6 +70,7 @@ public class WebOrderController {
 		User sender = JSONObject.toJavaObject(senderJson, User.class);
 
 		JSONArray jsonArray = json.getJSONArray("expressList");
+		
 		Iterator<Object> iterator = jsonArray.iterator();
 		List<Order> list = new ArrayList<>();
 		while (iterator.hasNext()) {
