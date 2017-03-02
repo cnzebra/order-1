@@ -57,6 +57,7 @@ public class OrderService {
 			Order save = save(order);
 			newList.add(save);
 		}
+		System.out.println(System.currentTimeMillis());
 		return expressService.createExpress(newList);
 	}
 
