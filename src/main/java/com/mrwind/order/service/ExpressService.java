@@ -44,100 +44,107 @@ public class ExpressService {
 	ExpressRepository expressRepository;
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
-	
-	@Autowired ExpressBindService expressBindService;
+
+	@Autowired
+	ExpressBindService expressBindService;
 
 	@Autowired
 	ExpressDao expressDao;
 
 	public List<Express> createExpress(Order order) {
 		List<Express> list = new ArrayList<>();
-		if (order.getDueTimes() == null || order.getDueTimes().size() == 0) {
-			list.add(initVIPExpress(order));
-			return list;
-		}
+
+		Date nowDate = Calendar.getInstance().getTime();
 		List<Date> dueTimes = order.getDueTimes();
 		JSONObject person = findPerson(order);
-		if (person == null) {
-			return null;
+		User user = null;
+		if (person != null) {
+			user = JSONObject.toJavaObject(person, User.class);
+		}
+		if (dueTimes == null || dueTimes.size() == 0) {
+			list.add(initVIPExpress(order, user, nowDate));
+		} else {
+			for (Date dueTime : dueTimes) {
+				list.add(initVIPExpress(order, user, dueTime));
+			}
 		}
 
-		User user = JSONObject.toJavaObject(person, User.class);
-		for (Date dueTime : dueTimes) {
-			list.add(initVIPExpress(order, dueTime, user));
-		}
+		sendExpressLog21010(list);
 		expressRepository.save(list);
 		return list;
 	}
 
-	private Express initVIPExpress(Order order, Date dueTime, User user) {
+	public List<Express> createExpress(List<Order> orders) {
+		
+		if(orders==null || orders.size()==0){
+			return null;
+		}
+		
+		Date nowDate = Calendar.getInstance().getTime();
+		List<Express> list = new ArrayList<>();
+		JSONObject person = findPerson(orders.get(0));
+		
+		User user = null;
+		if (person != null) {
+			user = JSONObject.toJavaObject(person, User.class);
+		}
+		
+		for(Order order : orders){
+			List<Date> dueTimes = order.getDueTimes();
+			if (dueTimes == null || dueTimes.size() == 0) {
+				list.add(initVIPExpress(order, user, nowDate));
+			} else {
+				for (Date dueTime : dueTimes) {
+					list.add(initVIPExpress(order, user, dueTime));
+				}
+			}
+		}
+
+		sendExpressLog21010(list);
+		expressRepository.save(list);
+		return list;
+	}
+
+	private Express initVIPExpress(Order order, User user, Date dueTime) {
 		Express express = new Express(order);
 		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
 			return null;
 		}
 		express.setMode(express.getCategory().getServiceType().getType());
+
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setCreateTime(Calendar.getInstance().getTime());
-		if(!expressBindService.checkBind(express.getBindExpressNo())){
+
+		if (!expressBindService.checkBind(express.getBindExpressNo())) {
 			express.setBindExpressNo(null);
 		}
-		
+
+		express.setDueTime(dueTime);
 		if (DateUtils.pastMinutes(dueTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
-			sendExpressLog21010(express);
 		} else {
-			Line line = new Line();
-			line.setExecutorUser(user);
-			line.setFence(order.getSender().getFence());
-			line.setNode(order.getSender().getAddress());
-			line.setIndex(1);
-			line.setPlanTime(dueTime);
-			List<Line> lineList = new ArrayList<>();
-			lineList.add(line);
-			express.setLines(lineList);
+			if (user != null) {
+				List<Line> lineList = new ArrayList<>();
+				Line line = new Line();
+				line.setExecutorUser(user);
+				line.setFence(order.getSender().getFence());
+				line.setNode(order.getSender().getAddress());
+				line.setIndex(1);
+				line.setPlanTime(dueTime);
+				lineList.add(line);
+				express.setLines(lineList);
+			}
 		}
-		express.setDueTime(dueTime);
 		return express;
 	}
 
-	private Express initVIPExpress(Order order) {
-		Express express = new Express(order);
-		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
-			return null;
-		}
-		express.setMode(express.getCategory().getServiceType().getType());
-		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk.toString());
-		express.setCreateTime(Calendar.getInstance().getTime());
-		if(!expressBindService.checkBind(express.getBindExpressNo())){
-			express.setBindExpressNo(null);
-		}
-		
-		express.setDueTime(Calendar.getInstance().getTime());
-		express.setStatus(App.ORDER_BEGIN);
-		express.setSubStatus(App.ORDER_PRE_CREATED);
-		sendExpressLog21010(express);
-		expressRepository.save(express);
-		return express;
-	}
-
-	private JSONObject findPerson(Order order) {
-		Double lat = order.getSender().getLat();
-		Double lng = order.getSender().getLng();
-		String shopId = order.getShop().getId();
-		String mode = order.getCategory().getServiceType().getType();
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("lat", lat);
-		jsonObject.put("lng", lng);
-		jsonObject.put("shopId", shopId);
-		jsonObject.put("mode", mode);
-		return HttpUtil.findPersion(jsonObject);
-	}
-
+	/***
+	 * 配送员加单
+	 * 
+	 */
 	public Express initExpress(Express express) {
-	
+
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 		express.setStatus(App.ORDER_BEGIN);
@@ -148,7 +155,7 @@ public class ExpressService {
 		return express;
 	}
 
-	public void sendExpressLog21003(final Express express) {
+	private void sendExpressLog21003(final Express express) {
 		// TODO Auto-generated method stub
 		Thread thread = new Thread() {
 			public void run() {
@@ -220,6 +227,7 @@ public class ExpressService {
 				List<JSONObject> caseDetailList = new ArrayList<>();
 				while (iterator.hasNext()) {
 					Express next = iterator.next();
+					if(next.getStatus().equals(App.ORDER_BEGIN))continue;
 					JSONObject caseDetail = new JSONObject();
 					caseDetail.put("orderId", next.getExpressNo());
 					caseDetail.put("shopId", next.getShop().getId());
@@ -240,7 +248,8 @@ public class ExpressService {
 
 	public Integer updateLineIndex(String expressNo, int addNumber) {
 		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
-		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),findFirstByExpressNo.getCurrentLine()+addNumber);
+		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),
+				findFirstByExpressNo.getCurrentLine() + addNumber);
 	}
 
 	/**
@@ -453,15 +462,15 @@ public class ExpressService {
 				continue;
 			newList.add(line);
 		}
-		
+
 		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
 		Iterator<Object> iterator = expressMission.iterator();
-		Integer currentLine=(int) Short.MAX_VALUE;
-		while(iterator.hasNext()){
+		Integer currentLine = (int) Short.MAX_VALUE;
+		while (iterator.hasNext()) {
 			JSONObject next = (JSONObject) iterator.next();
 			Integer index = next.getInteger("missionNodeIndex");
-			if(index<currentLine){
-				currentLine=index;
+			if (index < currentLine) {
+				currentLine = index;
 			}
 		}
 
@@ -581,6 +590,19 @@ public class ExpressService {
 		json.add(tmp);
 		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
+	}
+
+	private JSONObject findPerson(Order order) {
+		Double lat = order.getSender().getLat();
+		Double lng = order.getSender().getLng();
+		String shopId = order.getShop().getId();
+		String mode = order.getCategory().getServiceType().getType();
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("lat", lat);
+		jsonObject.put("lng", lng);
+		jsonObject.put("shopId", shopId);
+		jsonObject.put("mode", mode);
+		return HttpUtil.findPersion(jsonObject);
 	}
 
 }

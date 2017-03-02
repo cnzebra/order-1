@@ -47,40 +47,17 @@ public class OrderService {
 	private OrderDao orderDao;
 
 	public List<Express> initAndInsert(Order order) {
-		order.setStatus(App.ORDER_CREATE);
-		order.setSubStatus(App.ORDER_PRE_CREATED);
-		order.setUpdateTime(Calendar.getInstance().getTime());
-		orderRepository.save(order);
-		List<Express> list = expressService.createExpress(order);
-		return list;
+		Order resOrder = save(order);
+		return expressService.createExpress(resOrder);
 	}
-	
 
-	public void initAndInsert(List<Order> list) {
+	public List<Express> initAndInsert(List<Order> list) {
+		List<Order> newList=new ArrayList<>();
 		for(Order order : list){
-			initAndInsert(order);
+			Order save = save(order);
+			newList.add(save);
 		}
-	}
-
-	@Deprecated
-	public void submitOrderPriced(Long orderNumber,Fence fence){
-		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
-	}
-
-	@Deprecated
-	public void completeOrder(Long orderNumber) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
-	}
-	
-	@Deprecated
-	public void errorCompleteOrder(Long orderNumber,String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
-	}
-
-	@Deprecated
-	public boolean cancelOrder(Long orderNumber, String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
-		return true;
+		return expressService.createExpress(newList);
 	}
 
 	public Order selectByOrder(Order order) {
@@ -258,5 +235,34 @@ public class OrderService {
 		successJSON.put("totalDownPrice", totalDownPrice);
 		successJSON.put("count", list.size());
 		return successJSON;
+	}
+	
+	private Order save(Order order) {
+		order.setCreateTime(Calendar.getInstance().getTime());
+		order.setStatus(App.ORDER_CREATE);
+		order.setSubStatus(App.ORDER_PRE_CREATED);
+		Order save = orderRepository.save(order);
+		return save;
+	}
+	
+	@Deprecated
+	public void submitOrderPriced(Long orderNumber,Fence fence){
+		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
+	}
+
+	@Deprecated
+	public void completeOrder(Long orderNumber) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
+	}
+	
+	@Deprecated
+	public void errorCompleteOrder(Long orderNumber,String subStatus) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
+	}
+
+	@Deprecated
+	public boolean cancelOrder(Long orderNumber, String subStatus) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
+		return true;
 	}
 }

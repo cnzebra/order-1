@@ -38,44 +38,52 @@ public class WebOrderController {
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
 	public JSONObject create(@RequestBody JSONObject json) {
 		Order order = JSONObject.toJavaObject(json, Order.class);
-		if(order.getShop()==null||StringUtils.isEmpty(order.getShop().getId())){
+		if (order.getShop() == null || StringUtils.isEmpty(order.getShop().getId())) {
 			return JSONFactory.getErrorJSON("商户信息不能为空");
 		}
-		List<Express> res = orderService.initAndInsert(order);
+		if(order.getSender()==null){
+			return JSONFactory.getErrorJSON("寄件人信息不明，无法下单");
+		}
+
+		List<Express> result = orderService.initAndInsert(order);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("content", res);
+		successJSON.put("content", result);
 		return successJSON;
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/create/list", method = RequestMethod.POST)
 	public JSONObject createList(@RequestBody JSONObject json) {
-		
+
 		JSONObject shopJson = json.getJSONObject("shop");
-		if(shopJson==null){
+		if (shopJson == null) {
 			return JSONFactory.getErrorJSON("商户信息不明，无法下单");
 		}
+		
 		ShopUser shopUser = JSONObject.toJavaObject(shopJson, ShopUser.class);
 		JSONObject senderJson = json.getJSONObject("sender");
-		User sender=null;
-		if(senderJson!=null){
-			sender = JSONObject.toJavaObject(senderJson, User.class);
+
+		if (senderJson == null) {
+			return JSONFactory.getErrorJSON("寄件人信息不明，无法下单");
 		}
+
+		User sender = JSONObject.toJavaObject(senderJson, User.class);
+
 		JSONArray jsonArray = json.getJSONArray("expressList");
 		Iterator<Object> iterator = jsonArray.iterator();
-		List<Order> list =new ArrayList<>();
-		while(iterator.hasNext()){
-			Order order = JSONObject.toJavaObject((JSONObject)iterator.next(),Order.class);
+		List<Order> list = new ArrayList<>();
+		while (iterator.hasNext()) {
+			Order order = JSONObject.toJavaObject((JSONObject) iterator.next(), Order.class);
 			order.setShop(shopUser);
 			order.setSender(sender);
 			list.add(order);
 		}
-		orderService.initAndInsert(list);
 		
-		return JSONFactory.getSuccessJSON();
+		List<Express> result = orderService.initAndInsert(list);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("content", result);
+		return successJSON;
 	}
-	
-	
 
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.POST)
@@ -83,11 +91,12 @@ public class WebOrderController {
 		Order res = orderService.selectByOrder(order);
 		return Result.success(res);
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
-	public Result selectAll(@RequestBody Order order,@PathVariable("pageIndex")Integer pageIndex,@PathVariable("pageSize")Integer pageSize) {
-		Page<Order> selectAllByOrder = orderService.selectAllByOrder(order,pageIndex-1,pageSize);
+	public Result selectAll(@RequestBody Order order, @PathVariable("pageIndex") Integer pageIndex,
+			@PathVariable("pageSize") Integer pageSize) {
+		Page<Order> selectAllByOrder = orderService.selectAllByOrder(order, pageIndex - 1, pageSize);
 		return Result.success(selectAllByOrder);
-	}  
+	}
 }
