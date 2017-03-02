@@ -46,38 +46,18 @@ public class OrderService {
 	@Autowired
 	private OrderDao orderDao;
 
-	public List<Express> insert(Order order) {
-		order.setStatus(App.ORDER_CREATE);
-		order.setSubStatus(App.ORDER_PRE_CREATED);
-		order.setUpdateTime(Calendar.getInstance().getTime());
-		orderRepository.save(order);
-		List<Express> list = expressService.createExpress(order);
-		return list;
+	public List<Express> initAndInsert(Order order) {
+		Order resOrder = save(order);
+		return expressService.createExpress(resOrder);
 	}
-	
 
-	public void insert(List<Order> list) {
+	public List<Express> initAndInsert(List<Order> list) {
+		List<Order> newList=new ArrayList<>();
 		for(Order order : list){
-			insert(order);
+			Order save = save(order);
+			newList.add(save);
 		}
-	}
-
-	
-	public void submitOrderPriced(Long orderNumber,Fence fence){
-		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
-	}
-
-	public void completeOrder(Long orderNumber) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
-	}
-	
-	public void errorCompleteOrder(Long orderNumber,String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
-	}
-
-	public boolean cancelOrder(Long orderNumber, String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
-		return true;
+		return expressService.createExpress(newList);
 	}
 
 	public Order selectByOrder(Order order) {
@@ -111,10 +91,10 @@ public class OrderService {
 		while(iterator.hasNext()){
 			Express next = iterator.next();
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
+				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
-				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+"，绑定单号为:"+next.getBindExpressNo());
+				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){
 				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
@@ -164,7 +144,7 @@ public class OrderService {
 	public JSONObject queryTranSactionDetail(String tranNo) {
 		String successJSON = redisCache.getString("transaction_"+tranNo);
 		if(StringUtils.isBlank(successJSON)){
-			return JSONFactory.getErrorJSON("交易号已经超时，请重新发起交易！");
+			return JSONFactory.getErrorJSON("交易已经关闭!");
 		}
 		return JSONObject.parseObject(successJSON);
 	}
@@ -201,7 +181,7 @@ public class OrderService {
 			json.add(tmp);
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
-			expressService.completeLine(orderReceipt.getExpressNo());
+			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
 		}
 		if(sb.length()>0){
 			String express = sb.substring(0, sb.length()-1);
@@ -255,5 +235,34 @@ public class OrderService {
 		successJSON.put("totalDownPrice", totalDownPrice);
 		successJSON.put("count", list.size());
 		return successJSON;
+	}
+	
+	private Order save(Order order) {
+		order.setCreateTime(Calendar.getInstance().getTime());
+		order.setStatus(App.ORDER_CREATE);
+		order.setSubStatus(App.ORDER_PRE_CREATED);
+		Order save = orderRepository.save(order);
+		return save;
+	}
+	
+	@Deprecated
+	public void submitOrderPriced(Long orderNumber,Fence fence){
+		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
+	}
+
+	@Deprecated
+	public void completeOrder(Long orderNumber) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
+	}
+	
+	@Deprecated
+	public void errorCompleteOrder(Long orderNumber,String subStatus) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
+	}
+
+	@Deprecated
+	public boolean cancelOrder(Long orderNumber, String subStatus) {
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
+		return true;
 	}
 }

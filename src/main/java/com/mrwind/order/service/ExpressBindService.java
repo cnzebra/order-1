@@ -4,6 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.mrwind.common.util.NumberUtils;
 import com.mrwind.order.entity.Express;
 
 @Service
@@ -38,6 +39,8 @@ public class ExpressBindService {
 	
 	public boolean checkBind(String bindExpressNo){
 		if(StringUtils.isBlank(bindExpressNo))return true;
+		boolean checkoutExpress = NumberUtils.checkoutExpress(bindExpressNo);
+		if(!checkoutExpress) return false;
 		Express bindExpress = expressService.selectByBindExpressNo(bindExpressNo);
 		if(bindExpress!=null){
 			return false;

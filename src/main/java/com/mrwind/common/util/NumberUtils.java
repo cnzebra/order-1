@@ -1,5 +1,6 @@
 package com.mrwind.common.util;
 
+import java.util.Calendar;
 import java.util.regex.Pattern;
 
 /**
@@ -20,5 +21,13 @@ public class NumberUtils {
 	public static boolean isNumeric1(String str) {
 		Pattern pattern = Pattern.compile("[0-9]*");
 		return pattern.matcher(str).matches();
+	}
+	
+	public static boolean checkoutExpress(String expressNo){
+		Integer i = Calendar.getInstance().get(Calendar.YEAR);
+		if(expressNo.indexOf(i.toString())==0){
+			return false;
+		}
+		return true;
 	}
 }

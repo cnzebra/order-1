@@ -229,6 +229,20 @@ public class HttpUtil {
 		return null;
 	}
 	
+	public static JSONArray findExpressMission(String expressNo){
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/missonInfo/selectTop2Mission?order="+expressNo);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if(res.getString("code").equals("1")){
+				return res.getJSONArray("content");
+			}
+		}
+		return null;
+	}
+	
 	public static Boolean compileExpressMission(JSONArray json){
 		Client client = Client.create();
 		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/compileMissionsByOrder");
