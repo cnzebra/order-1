@@ -55,6 +55,7 @@ public class WebOrderController {
 	@RequestMapping(value = "/create/list", method = RequestMethod.POST)
 	public JSONObject createList(@RequestBody JSONObject json) {
 
+		System.out.println(System.currentTimeMillis());
 		JSONObject shopJson = json.getJSONObject("shop");
 		if (shopJson == null) {
 			return JSONFactory.getErrorJSON("商户信息不明，无法下单");
@@ -70,7 +71,7 @@ public class WebOrderController {
 		User sender = JSONObject.toJavaObject(senderJson, User.class);
 
 		JSONArray jsonArray = json.getJSONArray("expressList");
-		
+		System.out.println(System.currentTimeMillis());
 		Iterator<Object> iterator = jsonArray.iterator();
 		List<Order> list = new ArrayList<>();
 		while (iterator.hasNext()) {
@@ -79,8 +80,9 @@ public class WebOrderController {
 			order.setSender(sender);
 			list.add(order);
 		}
-		
+		System.out.println(System.currentTimeMillis());
 		orderService.initAndInsert(list);
+		System.out.println(System.currentTimeMillis());
 		return JSONFactory.getSuccessJSON();
 	}
 

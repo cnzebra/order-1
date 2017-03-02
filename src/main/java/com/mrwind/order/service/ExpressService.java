@@ -68,9 +68,9 @@ public class ExpressService {
 				list.add(initVIPExpress(order, user, dueTime));
 			}
 		}
-
-		sendExpressLog21010(list);
+		
 		expressRepository.save(list);
+		sendExpressLog21010(list);
 		return list;
 	}
 
@@ -99,9 +99,10 @@ public class ExpressService {
 				}
 			}
 		}
-
-		sendExpressLog21010(list);
+		System.out.println(System.currentTimeMillis());
 		expressRepository.save(list);
+		sendExpressLog21010(list);
+		System.out.println(System.currentTimeMillis());
 		return list;
 	}
 
