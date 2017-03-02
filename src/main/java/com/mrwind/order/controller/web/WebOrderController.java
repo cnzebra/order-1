@@ -80,10 +80,8 @@ public class WebOrderController {
 			list.add(order);
 		}
 		
-		List<Express> result = orderService.initAndInsert(list);
-		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("content", result);
-		return successJSON;
+		orderService.initAndInsert(list);
+		return JSONFactory.getSuccessJSON();
 	}
 
 	@ResponseBody
