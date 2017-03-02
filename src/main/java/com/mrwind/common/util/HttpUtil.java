@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mrwind.common.constant.ConfigConstant;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -137,7 +138,7 @@ public class HttpUtil {
 		Client client = Client.create();
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
 		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE)
-				.post(ClientResponse.class, json.toString());
+				.post(ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
 		if (clientResponse.getStatus() == 200) {
 			return true;
 		}
