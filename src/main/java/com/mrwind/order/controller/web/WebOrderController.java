@@ -11,6 +11,7 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -130,7 +131,7 @@ public class WebOrderController {
 		for (int i = 2; i <= sheet.getLastRowNum(); i++) {
 			JSONObject jsonObject = new JSONObject();
 			Row row = sheet.getRow(i);
-			String bindExpressNo = row.getCell(1).getStringCellValue();
+			double bindExpressNo = row.getCell(1).getNumericCellValue();
 			String receiverUserName = row.getCell(2).getStringCellValue();
 			String receiverTel = row.getCell(3).getStringCellValue();
 			String receiverAddress = row.getCell(4).getStringCellValue();
