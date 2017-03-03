@@ -37,4 +37,11 @@ public class App
     public static String RDKEY_PAY_ORDER="rdkey_pay_order";
     
     public static String SESSION_KEY="sdf^#*(JFDK(@)#$TGJKEUID&*@#%";
+
+    public static String ORDER_SPECIAL = "special";
+
+    //根据用户id发送短信
+    public static final String MSG_SEND_USERID = "WindCloud/msg/info/batch";
+
+    public static String SPECIAL_EXPRESSES = "special_expresses";
 }
