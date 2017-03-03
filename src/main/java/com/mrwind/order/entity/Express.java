@@ -19,6 +19,7 @@ public class Express extends OrderBase {
 	private String mode;
 	private List<Line> lines;
 	private Integer currentLine=1;
+	private String type;
 	private BigDecimal downMoney;
 	private Date planEndTime;
 	private Date realEndTime;
@@ -109,6 +110,14 @@ public class Express extends OrderBase {
 
 	public void setDueTime(Date dueTime) {
 		this.dueTime = dueTime;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }
