@@ -13,8 +13,6 @@ public class Express extends OrderBase {
 	@Indexed
 	private String expressNo;
 	@Indexed
-	private String bindExpressNo;
-	@Indexed
 	private Date dueTime;
 	private String mode;
 	private List<Line> lines;
@@ -32,17 +30,17 @@ public class Express extends OrderBase {
 		super();
 	}
 	
-	public Express(OrderBase base) {
-		this.status = base.status;
-		this.shop = base.shop;
-		this.sender = base.sender;
-		this.receiver = base.receiver;
-		this.category = base.category;
-		this.remark = base.remark;
-		this.bindExpressNo=base.bindExpressNo;
+	public Express(Order order) {
+		this.status = order.status;
+		this.shop = order.shop;
+		this.sender = order.sender;
+		this.receiver = order.receiver;
+		this.category = order.category;
+		this.remark = order.remark;
+		this.bindExpressNo=order.bindExpressNo;
 //		this.orderUserType=base.orderUserType;
-		this.createTime = base.createTime;
-		this.updateTime = base.updateTime;
+		this.createTime = order.createTime;
+		this.updateTime = order.updateTime;
 	}
 
 	public void setLines(List<Line> lines) {
@@ -71,14 +69,6 @@ public class Express extends OrderBase {
 
 	public void setExpressNo(String expressNo) {
 		this.expressNo = expressNo;
-	}
-
-	public String getBindExpressNo() {
-		return bindExpressNo;
-	}
-
-	public void setBindExpressNo(String bindExpressNo) {
-		this.bindExpressNo = bindExpressNo;
 	}
 
 	public Date getPlanEndTime() {
