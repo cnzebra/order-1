@@ -148,10 +148,19 @@ public class ExpressService {
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setStatus(App.ORDER_BEGIN);
+		
+		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+			express.setStatus(App.ORDER_SENDING);
+		}else{
+			express.setStatus(App.ORDER_BEGIN);
+		}
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
+		
+		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+			return express;
+		}
 		sendExpressLog21003(express);
 		return express;
 	}
