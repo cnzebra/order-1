@@ -33,6 +33,8 @@ public class App
     
     public static String ORDER_CANCLE="cancle";  //取消
     
+    public static String ORDER_TYPE_AFTER="after";
+    
     //支付的订单
     public static String RDKEY_PAY_ORDER="rdkey_pay_order";
     

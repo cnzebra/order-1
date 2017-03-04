@@ -20,6 +20,7 @@ public class OrderBase {
 	protected User receiver;
 	protected Category category;
 	protected String remark;
+	@Indexed
 	protected String bindExpressNo;
 //	protected String orderUserType;
 	protected Date createTime;

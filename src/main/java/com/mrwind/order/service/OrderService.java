@@ -91,6 +91,9 @@ public class OrderService {
 		int i=0;
 		while(iterator.hasNext()){
 			Express next = iterator.next();
+			if(App.ORDER_TYPE_AFTER.equals(next.getType())){
+				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
+			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
 				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
@@ -223,6 +226,7 @@ public class OrderService {
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
 		while(iterator.hasNext()){
 			Express next = iterator.next();
+			if(App.ORDER_TYPE_AFTER.equals(next.getType()))continue;
 			if(next.getCategory()!=null){
 				totalPrice=totalPrice.add(next.getCategory().getTotalPrice());
 			}
