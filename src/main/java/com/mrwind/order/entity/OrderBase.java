@@ -20,6 +20,7 @@ public class OrderBase {
 	protected User receiver;
 	protected Category category;
 	protected String remark;
+	protected String bindExpressNo;
 //	protected String orderUserType;
 	protected Date createTime;
 	protected Date updateTime;
@@ -90,5 +91,11 @@ public class OrderBase {
 	}
 	public void setId(String id) {
 		this.id = id;
+	}
+	public String getBindExpressNo() {
+		return bindExpressNo;
+	}
+	public void setBindExpressNo(String bindExpressNo) {
+		this.bindExpressNo = bindExpressNo;
 	}
 }

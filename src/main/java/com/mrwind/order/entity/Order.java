@@ -8,7 +8,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Order extends OrderBase {
 	
-	private String bindExpressNo;
+
 	
 	private List<Date> dueTimes;
 
@@ -19,13 +19,4 @@ public class Order extends OrderBase {
 	public void setDueTimes(List<Date> dueTimes) {
 		this.dueTimes = dueTimes;
 	}
-
-	public String getBindExpressNo() {
-		return bindExpressNo;
-	}
-
-	public void setBindExpressNo(String bindExpressNo) {
-		this.bindExpressNo = bindExpressNo;
-	}
-
 }

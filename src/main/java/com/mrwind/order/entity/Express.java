@@ -39,6 +39,7 @@ public class Express extends OrderBase {
 		this.receiver = base.receiver;
 		this.category = base.category;
 		this.remark = base.remark;
+		this.bindExpressNo=base.bindExpressNo;
 //		this.orderUserType=base.orderUserType;
 		this.createTime = base.createTime;
 		this.updateTime = base.updateTime;
