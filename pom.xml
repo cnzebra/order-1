@@ -263,7 +263,11 @@
 			<artifactId>httpclient</artifactId>
 			<version>4.3.6</version>
 		</dependency>
-
+		<dependency>
+			<groupId>com.gezbox.mrwind</groupId>
+			<artifactId>wind-push-client</artifactId>
+			<version>1.0.2.${push.name}</version>
+		</dependency>
 
 	</dependencies>
 
@@ -273,6 +277,7 @@
 			<id>dev</id>
 			<properties>
 				<env>dev</env>
+				<push.name>develop</push.name>
 			</properties>
 			<activation>
 				<activeByDefault>true</activeByDefault><!-- 默认启用的是dev环境配置 -->
@@ -283,6 +288,7 @@
 			<id>test</id>
 			<properties>
 				<env>test</env>
+				<push.name>develop</push.name>
 			</properties>
 		</profile>
 		<!-- 生产环境 -->
@@ -290,6 +296,7 @@
 			<id>prod</id>
 			<properties>
 				<env>prod</env>
+				<push.name>release</push.name>
 			</properties>
 		</profile>
 	</profiles>

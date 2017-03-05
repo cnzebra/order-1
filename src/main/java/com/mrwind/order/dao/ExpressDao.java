@@ -25,6 +25,13 @@ public class ExpressDao extends BaseDao {
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
+	public List<Express> findByTypeAndStatusAndSubStatus(String type,String status,String subStatus){
+		Query query = new Query();
+		query.addCriteria(Criteria.where(type).is(type));
+		query.addCriteria(Criteria.where(status).is(status));
+		query.addCriteria(Criteria.where(subStatus).is(subStatus).not());
+		return mongoTemplate.getCollection("express").distinct("shop.id",query.getQueryObject());
+	}
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));

@@ -2,6 +2,8 @@ package com.mrwind.common.util;
 
 import javax.ws.rs.core.MediaType;
 
+import com.alibaba.fastjson.JSON;
+import com.mrwind.order.App;
 import org.apache.commons.lang3.StringUtils;
 
 import com.alibaba.fastjson.JSONArray;
@@ -12,8 +14,55 @@ import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
+import java.util.Collection;
+
 public class HttpUtil {
 
+
+	/**
+	 * 余额支付接口
+	 * @param tranNo
+	 * @return
+	 */
+	public static boolean balancePay(String tranNo){
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "/merchant/account/accountBalance/balanceDiscount?tranNo=" + tranNo);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	/**
+	 * 发送给指定userid短信
+	 * @param content
+	 * @param userIds
+	 */
+	public static void sendSMSToUserId(String content,Collection<String> userIds){
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("userIds", userIds);
+		jsonObject.put("mrContent", content);
+		//暂时随意填，防止被过滤
+		jsonObject.put("eventId", 1);
+		jsonObject.put("modelId", 12);
+		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_USERID, jsonObject.toJSONString());
+	}
+	private static JSONObject post(String url,String parameter){
+		Client client = new Client();
+		WebResource webResource =client.resource(url);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,parameter);
+		if (clientResponse.getStatus() == 200){
+			String result = clientResponse.getEntity(String.class);
+			return JSON.parseObject(result);
+		}
+		return null;
+	}
 	/***
 	 * 查询内部用户的方法
 	 * 
