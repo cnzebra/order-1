@@ -16,6 +16,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.order.entity.Address;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.service.ExpressService;
@@ -119,6 +120,8 @@ public class ExpressController {
 		}
 
 		String expressNo = json.getString("expressNo");
+		Address endAddress = JSON.toJavaObject(json, Address.class);
+		
 		if (StringUtils.isEmpty(expressNo)) {
 			return JSONFactory.getErrorJSON("订单号不能为空");
 		}
@@ -129,7 +132,7 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		expressService.completeExpress(expressNo,userInfo);
+		expressService.completeExpress(expressNo,endAddress,userInfo);
 		return JSONFactory.getSuccessJSON();
 	}
 
@@ -143,6 +146,7 @@ public class ExpressController {
 		}
 
 		String expressNo = json.getString("expressNo");
+		Address endAddress = JSON.toJavaObject(json, Address.class);
 		if (StringUtils.isEmpty(expressNo)) {
 			return JSONFactory.getErrorJSON("订单号不能为空");
 		}
@@ -154,7 +158,7 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("请登录!");
 		}
 
-		return expressService.errorComplete(expressNo, userInfo);
+		return expressService.errorComplete(expressNo,endAddress, userInfo);
 
 	}
 }

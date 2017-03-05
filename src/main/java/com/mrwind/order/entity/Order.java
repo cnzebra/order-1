@@ -8,8 +8,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Order extends OrderBase {
 	
-
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8853475781658025423L;
+	/**
+	 * 
+	 */
 	private List<Date> dueTimes;
 
 	public List<Date> getDueTimes() {

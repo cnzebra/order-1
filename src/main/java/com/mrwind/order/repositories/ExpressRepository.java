@@ -1,6 +1,7 @@
 package com.mrwind.order.repositories;
 
 
+import java.util.Collection;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -17,7 +18,7 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 	
 	Express findFirstByBindExpressNo(String bindExpressNo);
 
-	List<Express> findByExpressNoIn(List<String> express);
+	List<Express> findByExpressNoIn(Collection<String> express);
 	
 	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 

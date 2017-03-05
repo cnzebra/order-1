@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 import com.alibaba.fastjson.annotation.JSONField;
 
 public class OrderBase implements Serializable{
-
+	private static final long serialVersionUID = 1L;
 	@JSONField(serialize=false)
 	@Id
 	protected String id;
@@ -23,7 +23,6 @@ public class OrderBase implements Serializable{
 	protected String remark;
 	@Indexed
 	protected String bindExpressNo;
-//	protected String orderUserType;
 	protected Date createTime;
 	protected Date updateTime;
 

@@ -1,21 +1,26 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.gezbox.mrwind.service.netty.NettyConnectClient;
-import com.mrwind.common.cache.RedisCache;
-import com.mrwind.common.util.HttpUtil;
-import com.mrwind.common.util.UUIDUtils;
-import com.mrwind.order.repositories.ExpressRepository;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.cache.RedisCache;
+import com.mrwind.common.util.DateUtils;
+import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.Express;
@@ -66,35 +71,91 @@ public class TaskService {
 
 
 	public void sendWarning(){
-		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_SPECIAL, App.ORDER_BEGIN, App.ORDER_PRE_PAY_PRICED);
-		List<String> listExpress = new ArrayList<>();
+		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER, App.ORDER_SENDING, App.ORDER_PRE_PRICED);
+		Map<String,ShopAfterExpress> map = new HashMap<>();
 
-		System.out.println(specialExpresses.size());
-		String content = "尊有效敬的客户您好，点此链接完成支付：。此链接五分钟之内。";
+		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH:mm");
+		String content = "尊敬的风先生用户，截止到"+nowDate+"，您还有{0}订单尚未支付，总计{1}元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。http://vip.123feng.com";
 		for (Express e : specialExpresses){
-			System.out.println(e.getShop().getId());
-			Set<String> set = new HashSet<String>();
-			set.add(e.getShop().getId());
-			//发送短信
-			HttpUtil.sendSMSToUserId(content, set);
-			listExpress.add(e.getExpressNo());
+			ShopAfterExpress shopAfterExpress = map.get(e);
+			if(shopAfterExpress==null){
+				shopAfterExpress=new ShopAfterExpress();
+				shopAfterExpress.setShopId(e.getShop().getId());
+				shopAfterExpress.setTotalPrice(e.getCategory().getTotalPrice());
+				Set<String> experssNo=new HashSet<>();
+				experssNo.add(e.getExpressNo());
+				shopAfterExpress.setExperssNo(experssNo);
+			}
+			
+			BigDecimal totalPrice = shopAfterExpress.getTotalPrice();
+			shopAfterExpress.setTotalPrice(totalPrice.add(e.getCategory().getTotalPrice()));
+			Set<String> experssNoSet = shopAfterExpress.getExperssNo();
+			experssNoSet.add(e.getExpressNo());
+			shopAfterExpress.setExperssNo(experssNoSet);
 		}
-		String str = JSON.toJSON(listExpress).toString();
-		redisCache.set(App.SPECIAL_EXPRESSES,3600*24,str);
-		System.out.println("sendWarning");
+
+		for(Entry<String, ShopAfterExpress> entry : map.entrySet()){
+			String key = entry.getKey();
+			ShopAfterExpress value = entry.getValue();
+			HashSet<String> userIds = new HashSet<>();
+			userIds.add(key);
+			MessageFormat.format(content,value.getExperssNo().size(),value.getTotalPrice());
+			HttpUtil.sendSMSToUserId(content, userIds);
+		}
+		String jsonString = JSONObject.toJSONString(map);
+		redisCache.set(App.RDKEY_AFTER_ORDER, 3600*4,jsonString);
 	}
 
 	public void chargeBack(){
-		List<String> listExpress;
-		listExpress = JSONObject.parseArray(redisCache.getString(App.SPECIAL_EXPRESSES),String.class);
-		if (listExpress != null){
-			//生成交易号
-			JSONObject jsonObject = orderService.pay(listExpress,"wdFDuAk7ZhQ0i8ZceScTASqQ");
-			//根据交易号请求余额支付
-			HttpUtil.balancePay(jsonObject.getString("tranNo"));
-			System.out.println("chargeBack");
+		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
+		
+		for(Entry<String, Object> entry : jsonObject.entrySet()){
+			ShopAfterExpress value =JSONObject.toJavaObject((JSONObject)entry.getValue(),ShopAfterExpress.class);
+			JSONObject resJson=orderService.systemPay(value.getExperssNo(), "系统定时收款");
+			if(resJson==null){
+				System.out.println("系统收款失败!");
+				return;
+			}
+			boolean balancePay = HttpUtil.balancePay(resJson.getString("tranNo"));
+			String content = "您的账户余额不足，请及时充值，以免影响后续发货。";
+			if(balancePay){
+				content="您的账户于21：00成功支付"+resJson.getBigDecimal("totalPrice")+"元。感谢使用风先生，祝您生活愉快。";
+			}
+			
+			Collection<String> userIds=new HashSet<>();
+			userIds.add(entry.getKey());
+			
+			HttpUtil.sendSMSToUserId(content, userIds);
 		}
-
+	}
+	
+	/***
+	 * 商户 后录单
+	 * @author imacyf0012
+	 *
+	 */
+	class ShopAfterExpress{
+		private String shopId;
+		private Set<String> experssNo;
+		private BigDecimal totalPrice;
+		public String getShopId() {
+			return shopId;
+		}
+		public void setShopId(String shopId) {
+			this.shopId = shopId;
+		}
+		public Set<String> getExperssNo() {
+			return experssNo;
+		}
+		public void setExperssNo(Set<String> experssNo) {
+			this.experssNo = experssNo;
+		}
+		public BigDecimal getTotalPrice() {
+			return totalPrice;
+		}
+		public void setTotalPrice(BigDecimal totalPrice) {
+			this.totalPrice = totalPrice;
+		}
 	}
 
 }

@@ -2,6 +2,7 @@ package com.mrwind.order.service;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -26,6 +27,7 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
+import com.mrwind.order.entity.Address;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
@@ -290,7 +292,7 @@ public class ExpressService {
 		return expressDao.updateExpressBindNo(expressNo, bindExpressNo);
 	}
 
-	public List<Express> selectByExpressNo(List<String> express) {
+	public List<Express> selectByExpressNo(Collection<String> express) {
 		// TODO Auto-generated method stub
 		List<Express> list = expressRepository.findByExpressNoIn(express);
 		return list;
@@ -542,7 +544,7 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public JSONObject completeExpress(String expressNo, JSONObject userInfo) {
+	public JSONObject completeExpress(String expressNo, Address endAddress, JSONObject userInfo) {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
 		JSONArray json = new JSONArray();
@@ -561,6 +563,9 @@ public class ExpressService {
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
 		express.setSubStatus(App.ORDER_COMPLETE);
+		if(endAddress!=null){
+			express.setEndAddress(endAddress);
+		}
 		expressDao.updateExpress(express);
 
 		JSONObject tmp = new JSONObject();
@@ -574,7 +579,7 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public JSONObject errorComplete(String expressNo, JSONObject userInfo) {
+	public JSONObject errorComplete(String expressNo, Address endAddress, JSONObject userInfo) {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 		JSONArray json = new JSONArray();
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
@@ -590,13 +595,16 @@ public class ExpressService {
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
 		express.setSubStatus(App.ORDER_ERROR_COMPLETE);
+		if(endAddress!=null){
+			express.setEndAddress(endAddress);
+		}
 		expressDao.updateExpress(express);
 
 		JSONObject tmp = new JSONObject();
 		tmp.put("order", expressNo);
 		tmp.put("status", "CLOSE");
 		tmp.put("sendLog", false);
-		tmp.put("des", "妥投");
+		tmp.put("des", "异常妥投");
 		json.add(tmp);
 		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
