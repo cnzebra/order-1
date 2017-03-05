@@ -71,7 +71,7 @@ public class TaskService {
 
 
 	public void sendWarning(){
-		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER, App.ORDER_SENDING, App.ORDER_PRE_PRICED);
+		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER, App.ORDER_COMPLETE, App.ORDER_PRE_PRICED);
 		Map<String,ShopAfterExpress> map = new HashMap<>();
 
 		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH:mm");
