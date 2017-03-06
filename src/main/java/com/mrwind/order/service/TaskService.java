@@ -76,7 +76,9 @@ public class TaskService {
 		Map<String,ShopAfterExpress> map = new HashMap<>();
 
 		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH:mm");
-		String content = "尊敬的风先生用户，截止到"+nowDate+"，您还有{0}订单尚未支付，总计{1}元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。http://vip.123feng.com";
+		Integer count;
+		BigDecimal price;
+
 		for (Express e : specialExpresses){
 			ShopAfterExpress shopAfterExpress = map.get(e.getShop().getId());
 			if(shopAfterExpress==null){
@@ -101,8 +103,10 @@ public class TaskService {
 			ShopAfterExpress value = entry.getValue();
 			HashSet<String> userIds = new HashSet<>();
 			userIds.add(key);
-			MessageFormat.format(content,value.getExpressNo().size(),value.getTotalPrice());
-			HttpUtil.sendSMSToUserId(content, userIds);
+			//MessageFormat.format(content,value.getExpressNo().size(),value.getTotalPrice());
+			count = value.getExpressNo().size();
+			price = value.getTotalPrice();
+			HttpUtil.sendSMSToUserId(getContent(nowDate,count,price), userIds);
 		}
 		String jsonString = JSONObject.toJSONString(map);
 		redisCache.set(App.RDKEY_AFTER_ORDER, 3600*4,jsonString);
@@ -132,6 +136,9 @@ public class TaskService {
 		}
 	}
 
+	private String getContent(String date,Integer count,BigDecimal price){
+		return "尊敬的风先生用户，截止到"+date+"，您还有"+ count +"订单尚未支付，总计"+ price +"元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。http://vip.123feng.com";
+	}
 	/***
 	 * 商户 后录单
 	 * @author imacyf0012

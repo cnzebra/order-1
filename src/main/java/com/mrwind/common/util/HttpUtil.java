@@ -26,7 +26,7 @@ public class HttpUtil {
 	 */
 	public static boolean balancePay(String tranNo){
 		Client client = Client.create();
-		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "/merchant/account/accountBalance/balanceDiscount?tranNo=" + tranNo);
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/balanceDiscount?tranNo=" + tranNo);
 		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
