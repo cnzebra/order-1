@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.mrwind.common.util.CodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -98,4 +99,20 @@ public class AppExpressController {
 				pageSize);
 		return Result.success(selectAll);
 	}
+
+	/**
+	 * 发送验证码
+	 *
+	 * @param expressNo
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/send/code", method = RequestMethod.GET)
+	public Result sendCode(String expressNo) {
+		if (expressService.sendCode(expressNo)) {
+			return Result.success();
+		}
+		return Result.error("发送验证码失败");
+	}
+
 }

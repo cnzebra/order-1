@@ -39,7 +39,10 @@ public class App
     public static String RDKEY_PAY_ORDER="rdkey_pay_order";
     
     public static String RDKEY_AFTER_ORDER="rdkey_after_order";
-    
+
+    //妥投验证码
+    public static String RDKEY_VERIFY_CODE="rdkey_verify_code";
+
     public static String SESSION_KEY="sdf^#*(JFDK(@)#$TGJKEUID&*@#%";
 
     //根据用户id发送短信
