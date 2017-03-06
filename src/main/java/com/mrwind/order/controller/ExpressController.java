@@ -137,6 +137,40 @@ public class ExpressController {
 	}
 
 	@ResponseBody
+	@RequestMapping(value = "/completeByCode", method = RequestMethod.POST)
+	public JSONObject completeByCode(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+									 HttpServletResponse response) {
+
+		if (StringUtils.isEmpty(token)) {
+			return JSONFactory.getErrorJSON("没有登录信息");
+		}
+
+		String expressNo = json.getString("expressNo");
+
+		String verifyCode = json.getString("verifyCode");
+
+		if (StringUtils.isEmpty(verifyCode)) {
+			return JSONFactory.getErrorJSON("验证码缺失");
+		}
+
+		if (StringUtils.isEmpty(expressNo)) {
+			return JSONFactory.getErrorJSON("订单号不能为空");
+		}
+		token = token.substring(6);
+		JSONObject userInfo = HttpUtil.getUserInfoByToken(token);
+		if (userInfo == null) {
+			response.setStatus(401);
+			return JSONFactory.getErrorJSON("请登录!");
+		}
+		boolean result = expressService.completeByCode(expressNo, verifyCode, userInfo);
+		if (result) {
+			return JSONFactory.getSuccessJSON();
+		}
+		return JSONFactory.getErrorJSON("验证码妥投失败");
+	}
+
+
+	@ResponseBody
 	@RequestMapping(value = "/error/complete", method = RequestMethod.POST)
 	public JSONObject errorComplete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
 			HttpServletResponse response) {
