@@ -644,7 +644,9 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-		express.setSubStatus(App.ORDER_COMPLETE);
+		if (!App.ORDER_TYPE_AFTER.equals(express.getType())){
+			express.setSubStatus(App.ORDER_COMPLETE);
+		}
 		if(endAddress!=null){
 			express.setEndAddress(endAddress);
 		}

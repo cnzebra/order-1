@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -108,6 +109,7 @@ public class TaskService {
 		}
 		String jsonString = JSONObject.toJSONString(map);
 		redisCache.set(App.RDKEY_AFTER_ORDER, 3600*4,jsonString);
+		System.out.println("sendWarning");
 	}
 
 	public void chargeBack(){
@@ -125,12 +127,20 @@ public class TaskService {
 			String content = "您的账户余额不足，请及时充值，以免影响后续发货。";
 			if(balancePay){
 				content="您的账户于21：00成功支付"+resJson.getBigDecimal("totalPrice")+"元。感谢使用风先生，祝您生活愉快。";
+				Set<String> set = value.getExpressNo();
+				Iterator<String> it = set.iterator();
+				while (it.hasNext()) {
+					String expressNo = it.next();
+					expressDao.updateStatus(expressNo,App.ORDER_COMPLETE,App.ORDER_COMPLETE);
+				}
+
 			}
 
 			Collection<String> userIds=new HashSet<>();
 			userIds.add(entry.getKey());
 
 			HttpUtil.sendSMSToUserId(content, userIds);
+			System.out.println("chargeBack");
 		}
 	}
 
