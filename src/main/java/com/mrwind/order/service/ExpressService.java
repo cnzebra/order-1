@@ -551,7 +551,8 @@ public class ExpressService {
 
 		Line line = new Line();
 		line.setExecutorUser(user);
-		line.setRealTime(Calendar.getInstance().getTime());
+		Date sysDate = Calendar.getInstance().getTime();
+		line.setRealTime(sysDate);
 		line.setTitle(user.getName() + "妥投了订单");
 		line.setIndex(lines.size());
 		lines.add(line);
@@ -559,6 +560,7 @@ public class ExpressService {
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
 		express.setSubStatus(App.ORDER_COMPLETE);
+		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
 
 		JSONObject tmp = new JSONObject();
@@ -580,7 +582,8 @@ public class ExpressService {
 
 		Line line = new Line();
 		line.setExecutorUser(user);
-		line.setRealTime(Calendar.getInstance().getTime());
+		Date sysDate = Calendar.getInstance().getTime();
+		line.setRealTime(sysDate);
 		line.setTitle(user.getName() + "异常妥投了订单");
 		line.setIndex(lines.size());
 		lines.add(line);
@@ -588,6 +591,7 @@ public class ExpressService {
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
 		express.setSubStatus(App.ORDER_ERROR_COMPLETE);
+		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
 
 		JSONObject tmp = new JSONObject();
