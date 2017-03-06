@@ -7,6 +7,8 @@ import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
+import io.netty.util.internal.MathUtil;
+
 /**
  * 日期工具类, 继承org.apache.commons.lang.time.DateUtils类
  * 
@@ -25,25 +27,24 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	public static String getDate() {
 		return getDate("yyyy-MM-dd");
 	}
-	
-	public static Date getStartTime(){  
-        Calendar todayStart = Calendar.getInstance();  
-        todayStart.set(Calendar.HOUR, 0);  
-        todayStart.set(Calendar.MINUTE, 0);  
-        todayStart.set(Calendar.SECOND, 0);  
-        todayStart.set(Calendar.MILLISECOND, 0);  
-        return todayStart.getTime(); 
-    }  
-      
-    public static Date getEndTime(){  
-        Calendar todayEnd = Calendar.getInstance();  
-        todayEnd.set(Calendar.HOUR, 23);  
-        todayEnd.set(Calendar.MINUTE, 59);  
-        todayEnd.set(Calendar.SECOND, 59);  
-        todayEnd.set(Calendar.MILLISECOND, 999);  
-        return todayEnd.getTime();  
-    } 
 
+	public static Date getStartTime() {
+		Calendar todayStart = Calendar.getInstance();
+		todayStart.set(Calendar.HOUR, 0);
+		todayStart.set(Calendar.MINUTE, 0);
+		todayStart.set(Calendar.SECOND, 0);
+		todayStart.set(Calendar.MILLISECOND, 0);
+		return todayStart.getTime();
+	}
+
+	public static Date getEndTime() {
+		Calendar todayEnd = Calendar.getInstance();
+		todayEnd.set(Calendar.HOUR, 23);
+		todayEnd.set(Calendar.MINUTE, 59);
+		todayEnd.set(Calendar.SECOND, 59);
+		todayEnd.set(Calendar.MILLISECOND, 999);
+		return todayEnd.getTime();
+	}
 
 	/**
 	 * 得到当前日期字符串 格式（yyyy-MM-dd） pattern可以为："yyyy-MM-dd" "HH:mm:ss" "E"
@@ -158,11 +159,33 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 	 * 获取过去的分钟
 	 * 
 	 * @param date
-	 * @return
+	 * @return 算出负数的时候坑爹的很
 	 */
+	@Deprecated
 	public static long pastMinutes(Date date) {
 		long t = new Date().getTime() - date.getTime();
 		return t / (60 * 1000);
+	}
+
+	/**
+	 * 分种差
+	 * 
+	 * @param before
+	 * @param after
+	 * @return
+	 */
+	public static int diffMinute(Date before, Date after) {
+		return (int) (after.getTime() - before.getTime()) / 1000 / 60;
+	}
+	
+	/**
+	 * 分种差
+	 * 
+	 * @param after
+	 * @return
+	 */
+	public static int diffMinute(Date before) {
+		return (int) (System.currentTimeMillis() - before.getTime()) / 1000 / 60;
 	}
 
 	/**
