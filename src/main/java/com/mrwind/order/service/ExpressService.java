@@ -252,6 +252,7 @@ public class ExpressService {
 		if (!verifyCode.equals(code)) {
 			return false;
 		}
+		redisCache.hdel(App.RDKEY_VERIFY_CODE.getBytes(),expressNo.getBytes());
 		completeExpress(expressNo, null, userInfo);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
 				ExpressCodeLog.TypeConstant.TYPE_VERIFY, code);

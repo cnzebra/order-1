@@ -139,7 +139,7 @@ public class ExpressController {
 	@ResponseBody
 	@RequestMapping(value = "/completeByCode", method = RequestMethod.POST)
 	public JSONObject completeByCode(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
-							   HttpServletResponse response) {
+									 HttpServletResponse response) {
 
 		if (StringUtils.isEmpty(token)) {
 			return JSONFactory.getErrorJSON("没有登录信息");
@@ -149,7 +149,7 @@ public class ExpressController {
 
 		String verifyCode = json.getString("verifyCode");
 
-		if(StringUtils.isEmpty(verifyCode)){
+		if (StringUtils.isEmpty(verifyCode)) {
 			return JSONFactory.getErrorJSON("验证码缺失");
 		}
 
@@ -162,9 +162,11 @@ public class ExpressController {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
 		}
-
-		expressService.completeByCode(expressNo,verifyCode,userInfo);
-		return JSONFactory.getSuccessJSON();
+		boolean result = expressService.completeByCode(expressNo, verifyCode, userInfo);
+		if (result) {
+			return JSONFactory.getSuccessJSON();
+		}
+		return JSONFactory.getErrorJSON("验证码妥投失败");
 	}
 
 
