@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.mrwind.order.entity.ShopAfterExpress;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -77,21 +78,22 @@ public class TaskService {
 		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH:mm");
 		String content = "尊敬的风先生用户，截止到"+nowDate+"，您还有{0}订单尚未支付，总计{1}元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。http://vip.123feng.com";
 		for (Express e : specialExpresses){
-			ShopAfterExpress shopAfterExpress = map.get(e);
+			ShopAfterExpress shopAfterExpress = map.get(e.getShop().getId());
 			if(shopAfterExpress==null){
 				shopAfterExpress=new ShopAfterExpress();
 				shopAfterExpress.setShopId(e.getShop().getId());
 				shopAfterExpress.setTotalPrice(e.getCategory().getTotalPrice());
-				Set<String> experssNo=new HashSet<>();
-				experssNo.add(e.getExpressNo());
-				shopAfterExpress.setExperssNo(experssNo);
+				Set<String> expressNo=new HashSet<>();
+				expressNo.add(e.getExpressNo());
+				shopAfterExpress.setExpressNo(expressNo);
+				map.put(e.getShop().getId(),shopAfterExpress);
+				continue;
 			}
-			
+
 			BigDecimal totalPrice = shopAfterExpress.getTotalPrice();
 			shopAfterExpress.setTotalPrice(totalPrice.add(e.getCategory().getTotalPrice()));
-			Set<String> experssNoSet = shopAfterExpress.getExperssNo();
-			experssNoSet.add(e.getExpressNo());
-			shopAfterExpress.setExperssNo(experssNoSet);
+			Set<String> expressNoSet = shopAfterExpress.getExpressNo();
+			expressNoSet.add(e.getExpressNo());
 		}
 
 		for(Entry<String, ShopAfterExpress> entry : map.entrySet()){
@@ -99,7 +101,7 @@ public class TaskService {
 			ShopAfterExpress value = entry.getValue();
 			HashSet<String> userIds = new HashSet<>();
 			userIds.add(key);
-			MessageFormat.format(content,value.getExperssNo().size(),value.getTotalPrice());
+			MessageFormat.format(content,value.getExpressNo().size(),value.getTotalPrice());
 			HttpUtil.sendSMSToUserId(content, userIds);
 		}
 		String jsonString = JSONObject.toJSONString(map);
@@ -108,10 +110,11 @@ public class TaskService {
 
 	public void chargeBack(){
 		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
-		
+
 		for(Entry<String, Object> entry : jsonObject.entrySet()){
-			ShopAfterExpress value =JSONObject.toJavaObject((JSONObject)entry.getValue(),ShopAfterExpress.class);
-			JSONObject resJson=orderService.systemPay(value.getExperssNo(), "系统定时收款");
+			JSONObject jsonObject1 = (JSONObject)entry.getValue();
+			ShopAfterExpress value =JSONObject.toJavaObject(jsonObject1,ShopAfterExpress.class);
+			JSONObject resJson=orderService.systemPay(value.getExpressNo(), "系统定时收款");
 			if(resJson==null){
 				System.out.println("系统收款失败!");
 				return;
@@ -121,22 +124,22 @@ public class TaskService {
 			if(balancePay){
 				content="您的账户于21：00成功支付"+resJson.getBigDecimal("totalPrice")+"元。感谢使用风先生，祝您生活愉快。";
 			}
-			
+
 			Collection<String> userIds=new HashSet<>();
 			userIds.add(entry.getKey());
-			
+
 			HttpUtil.sendSMSToUserId(content, userIds);
 		}
 	}
-	
+
 	/***
 	 * 商户 后录单
 	 * @author imacyf0012
 	 *
 	 */
-	class ShopAfterExpress{
+/*	class ShopAfterExpress{
 		private String shopId;
-		private Set<String> experssNo;
+		private Set<String> expressNo;
 		private BigDecimal totalPrice;
 		public String getShopId() {
 			return shopId;
@@ -144,11 +147,11 @@ public class TaskService {
 		public void setShopId(String shopId) {
 			this.shopId = shopId;
 		}
-		public Set<String> getExperssNo() {
-			return experssNo;
+		public Set<String> getExpressNo() {
+			return expressNo;
 		}
-		public void setExperssNo(Set<String> experssNo) {
-			this.experssNo = experssNo;
+		public void setExpressNo(Set<String> expressNo) {
+			this.expressNo = expressNo;
 		}
 		public BigDecimal getTotalPrice() {
 			return totalPrice;
@@ -156,6 +159,6 @@ public class TaskService {
 		public void setTotalPrice(BigDecimal totalPrice) {
 			this.totalPrice = totalPrice;
 		}
-	}
+	}*/
 
 }
