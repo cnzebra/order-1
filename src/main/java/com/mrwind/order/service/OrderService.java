@@ -2,9 +2,11 @@ package com.mrwind.order.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -137,13 +139,69 @@ public class OrderService {
 		if(StringUtils.isNoneEmpty(userId)){
 			successJSON.put("executor", HttpUtil.findPrivateUserInfo(userId));
 		}
-		
-		
 
 		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
 		return successJSON;
 	}
 
+	/***
+	 * 系统发起付款
+	 * @param experssNo
+	 * @param string
+	 * @return
+	 */
+	public JSONObject systemPay(Set<String> experssNo, String string) {
+		// TODO Auto-generated method stub
+		List<Express> list = expressService.selectByExpressNo(experssNo);
+		if(list.size()==0){
+			return null;
+		}
+		
+		List<OrderReceipt> listReceipt=new ArrayList<>();
+		Iterator<Express> iterator = list.iterator();
+		String tranNo = UUIDUtils.getUUID();
+		BigDecimal totalPrice=BigDecimal.ZERO;
+		BigDecimal totalDownPrice=BigDecimal.ZERO;
+		String shopId="";
+		int i=0;
+		while(iterator.hasNext()){
+			Express next = iterator.next();
+			if(!App.ORDER_TYPE_AFTER.equals(next.getType())){
+				return null;
+			}
+			
+			if(next.getShop()!=null){
+				if(shopId.equals("")){
+					shopId= next.getShop().getId();
+				}
+				if(!shopId.equals(next.getShop().getId())){
+					return null;
+				}
+			}
+			
+			OrderReceipt orderReceipt = new OrderReceipt(next);
+			totalPrice=totalPrice.add(orderReceipt.getPrice());
+			if(next.getDownMoney()!=null){
+				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			}
+			orderReceipt.setTranNo(tranNo);
+			listReceipt.add(orderReceipt);
+			i++;
+		}
+	
+		orderReceiptRepository.save(listReceipt);
+
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("content", listReceipt);
+		successJSON.put("totalPrice", totalPrice.subtract(totalDownPrice));
+		successJSON.put("expressCount", i);
+		successJSON.put("totalDownPrice", totalDownPrice);
+		successJSON.put("tranNo", tranNo);
+		successJSON.put("shopId", shopId);
+
+		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
+		return successJSON;
+	}
 
 	public JSONObject queryTranSactionDetail(String tranNo) {
 		String successJSON = redisCache.getString("transaction_"+tranNo);

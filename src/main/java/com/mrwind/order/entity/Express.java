@@ -7,9 +7,15 @@ import java.util.List;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.alibaba.fastjson.annotation.JSONField;
+
 @Document
 public class Express extends OrderBase {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 7265949299425489281L;
 	@Indexed
 	private String expressNo;
 	@Indexed
@@ -21,6 +27,8 @@ public class Express extends OrderBase {
 	private BigDecimal downMoney;
 	private Date planEndTime;
 	private Date realEndTime;
+	@JSONField(serialize=false)
+	private Address endAddress;
 
 	public List<Line> getLines() {
 		return lines;
@@ -38,7 +46,6 @@ public class Express extends OrderBase {
 		this.category = order.category;
 		this.remark = order.remark;
 		this.bindExpressNo=order.bindExpressNo;
-//		this.orderUserType=base.orderUserType;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
 	}
@@ -109,6 +116,18 @@ public class Express extends OrderBase {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public Address getEndAddress() {
+		return endAddress;
+	}
+
+	public void setEndAddress(Address endAddress) {
+		this.endAddress = endAddress;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 }

@@ -25,6 +25,14 @@ public class ExpressDao extends BaseDao {
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
+	public List<Express> findByTypeAndStatusAndSubStatus(String type,String status,String subStatus){
+		Query query = new Query();
+		query.addCriteria(Criteria.where(type).is(type));
+		query.addCriteria(Criteria.where(status).is(status));
+		query.addCriteria(Criteria.where(subStatus).is(subStatus).not());
+		return mongoTemplate.find(query,Express.class);
+	}
+	
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
@@ -203,6 +211,9 @@ public class ExpressDao extends BaseDao {
 
 				if (express.getRealEndTime() != null) {
 					update.set("realEntTime", express.getRealEndTime());
+				}
+				if(express.getEndAddress()!=null){
+					update.set("endAddress", express.getEndAddress());
 				}
 
 				update.set("updateTime", Calendar.getInstance().getTime());

@@ -1,5 +1,6 @@
 package com.mrwind.order.entity;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.springframework.data.annotation.Id;
@@ -7,8 +8,8 @@ import org.springframework.data.mongodb.core.index.Indexed;
 
 import com.alibaba.fastjson.annotation.JSONField;
 
-public class OrderBase {
-
+public class OrderBase implements Serializable{
+	private static final long serialVersionUID = 1L;
 	@JSONField(serialize=false)
 	@Id
 	protected String id;
@@ -22,7 +23,6 @@ public class OrderBase {
 	protected String remark;
 	@Indexed
 	protected String bindExpressNo;
-//	protected String orderUserType;
 	protected Date createTime;
 	protected Date updateTime;
 
