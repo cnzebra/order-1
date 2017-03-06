@@ -132,7 +132,7 @@ public class ExpressService {
 		}
 
 		express.setDueTime(dueTime);
-		if (DateUtils.pastMinutes(dueTime) >= -60 * 2) {
+		if (DateUtils.diffMinute(dueTime) >= -60 * 2) {
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
 		} else {
