@@ -1,5 +1,6 @@
 package com.mrwind.order.service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -143,27 +145,48 @@ public class ExpressService {
 	}
 
 	/***
-	 * 配送员加单
+	 * 配送员普通单加单
 	 * 
 	 */
 	public Express initExpress(Express express) {
+		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
+		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
+		calculatePrice.put("artificialPrice",0.3);
+		calculatePrice.put("totalPrice",calculatePrice.getBigDecimal("totalPrice").add(BigDecimal.valueOf(0.3)));
+		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(javaObject);
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		
-		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
-			express.setStatus(App.ORDER_SENDING);
-		}else{
-			express.setStatus(App.ORDER_BEGIN);
-		}
+
+		express.setStatus(App.ORDER_BEGIN);
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		expressRepository.save(express);
 		
-		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
-			return express;
-		}
 		sendExpressLog21003(express);
+		return express;
+	}
+
+	/**
+	 * 配送员后录单加单
+	 * @param express
+	 * @return
+	 */
+	public Express initAfterExpress(Express express){
+		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
+		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
+
+		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(javaObject);
+
+		Long pk = redisCache.getPK("express", 1);
+		express.setExpressNo(pk.toString());
+		express.setStatus(App.ORDER_SENDING);
+		express.setSubStatus(App.ORDER_PRE_PRICED);
+		express.setCreateTime(Calendar.getInstance().getTime());
+		expressRepository.save(express);
+
 		return express;
 	}
 

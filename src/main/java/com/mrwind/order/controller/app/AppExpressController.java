@@ -5,6 +5,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.mrwind.order.App;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -66,10 +67,14 @@ public class AppExpressController {
 		lines.add(line);
 
 		express.setLines(lines);
-		JSONObject calculatePrice = HttpUtil.calculatePrice(expressJson.getJSONObject("category"));
-		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
-		express.setCategory(javaObject);
-		Express initExpress = expressService.initExpress(express);
+
+		Express initExpress;
+		if (App.ORDER_TYPE_AFTER.equals(express.getType())){
+			initExpress = expressService.initAfterExpress(express);
+		}else {
+			initExpress = expressService.initExpress(express);
+		}
+
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", initExpress);
 		return successJSON;
