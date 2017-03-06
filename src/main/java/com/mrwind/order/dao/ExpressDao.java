@@ -27,9 +27,9 @@ public class ExpressDao extends BaseDao {
 
 	public List<Express> findByTypeAndStatusAndSubStatus(String type,String status,String subStatus){
 		Query query = new Query();
-		query.addCriteria(Criteria.where(type).is(type));
-		query.addCriteria(Criteria.where(status).is(status));
-		query.addCriteria(Criteria.where(subStatus).is(subStatus).not());
+		query.addCriteria(Criteria.where("type").is(type));
+		query.addCriteria(Criteria.where("status").is(status));
+		query.addCriteria(Criteria.where("subStatus").is(subStatus));
 		return mongoTemplate.find(query,Express.class);
 	}
 	

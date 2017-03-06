@@ -1,12 +1,16 @@
 package com.mrwind.order.service;
 
-import java.util.*;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.mrwind.common.util.CodeUtils;
-import com.mrwind.order.entity.*;
-import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,15 +21,25 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.CodeUtils;
 import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
+import com.mrwind.order.entity.Address;
+import com.mrwind.order.entity.Category;
+import com.mrwind.order.entity.Express;
+import com.mrwind.order.entity.ExpressCodeLog;
+import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Line.LineUtil;
+import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.User;
+import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import com.mrwind.order.repositories.ExpressRepository;
 
 @Service
@@ -138,10 +152,16 @@ public class ExpressService {
 	}
 
 	/***
-	 * 配送员加单
-	 *
+	 * 配送员普通单加单
+	 * 
 	 */
 	public Express initExpress(Express express) {
+		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
+		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
+		calculatePrice.put("artificialPrice",0.3);
+		calculatePrice.put("totalPrice",calculatePrice.getBigDecimal("totalPrice").add(BigDecimal.valueOf(0.3)));
+		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(javaObject);
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
@@ -158,7 +178,30 @@ public class ExpressService {
 		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
 			return express;
 		}
+
 		sendExpressLog21003(express);
+		return express;
+	}
+
+	/**
+	 * 配送员后录单加单
+	 * @param express
+	 * @return
+	 */
+	public Express initAfterExpress(Express express){
+		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
+		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
+
+		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(javaObject);
+
+		Long pk = redisCache.getPK("express", 1);
+		express.setExpressNo(pk.toString());
+		express.setStatus(App.ORDER_SENDING);
+		express.setSubStatus(App.ORDER_PRE_PRICED);
+		express.setCreateTime(Calendar.getInstance().getTime());
+		expressRepository.save(express);
+
 		return express;
 	}
 

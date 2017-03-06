@@ -5,7 +5,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import com.mrwind.common.util.CodeUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -15,12 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
-import com.mrwind.common.util.HttpUtil;
-import com.mrwind.order.entity.Category;
+import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.User;
@@ -67,10 +64,14 @@ public class AppExpressController {
 		lines.add(line);
 
 		express.setLines(lines);
-		JSONObject calculatePrice = HttpUtil.calculatePrice(expressJson.getJSONObject("category"));
-		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
-		express.setCategory(javaObject);
-		Express initExpress = expressService.initExpress(express);
+
+		Express initExpress;
+		if (App.ORDER_TYPE_AFTER.equals(express.getType())){
+			initExpress = expressService.initAfterExpress(express);
+		}else {
+			initExpress = expressService.initExpress(express);
+		}
+
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", initExpress);
 		return successJSON;

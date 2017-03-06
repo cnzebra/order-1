@@ -17,6 +17,8 @@ public class Category {
 	private ServiceType serviceType;
 	private BigDecimal servicePrice;
 	private BigDecimal totalPrice;
+	private User serviceUser;
+	private BigDecimal artificialPrice;
 
 	public String getId() {
 		return id;
@@ -113,5 +115,20 @@ public class Category {
 	public void setServiceType(ServiceType serviceType) {
 		this.serviceType = serviceType;
 	}
-	
+
+	public User getServiceUser() {
+		return serviceUser;
+	}
+
+	public void setServiceUser(User serviceUser) {
+		this.serviceUser = serviceUser;
+	}
+
+	public BigDecimal getArtificialPrice() {
+		return artificialPrice;
+	}
+
+	public void setArtificialPrice(BigDecimal artificialPrice) {
+		this.artificialPrice = artificialPrice;
+	}
 }

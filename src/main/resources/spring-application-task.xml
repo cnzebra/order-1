@@ -14,6 +14,8 @@
 			cron="0 0/1 *  * * ? " />
 		<task:scheduled ref="taskService" method="sendWarning" cron="0 0 20 * * ?"/>
 		<task:scheduled ref="taskService" method="chargeBack" cron="0 0 21 * * ?"/>
+		<!--<task:scheduled ref="taskService" method="sendWarning" fixed-delay="15000"/>-->
+		<!--<task:scheduled ref="taskService" method="chargeBack" fixed-delay="6000"/>-->
 	</task:scheduled-tasks>
 
 </beans>
