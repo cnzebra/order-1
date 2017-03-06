@@ -14,12 +14,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
-import com.mrwind.common.util.HttpUtil;
-import com.mrwind.order.entity.Category;
+import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.User;
@@ -66,10 +64,14 @@ public class AppExpressController {
 		lines.add(line);
 
 		express.setLines(lines);
-		JSONObject calculatePrice = HttpUtil.calculatePrice(expressJson.getJSONObject("category"));
-		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
-		express.setCategory(javaObject);
-		Express initExpress = expressService.initExpress(express);
+
+		Express initExpress;
+		if (App.ORDER_TYPE_AFTER.equals(express.getType())){
+			initExpress = expressService.initAfterExpress(express);
+		}else {
+			initExpress = expressService.initExpress(express);
+		}
+
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", initExpress);
 		return successJSON;
@@ -98,4 +100,20 @@ public class AppExpressController {
 				pageSize);
 		return Result.success(selectAll);
 	}
+
+	/**
+	 * 发送验证码
+	 *
+	 * @param expressNo
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/send/code", method = RequestMethod.GET)
+	public Result sendCode(String expressNo) {
+		if (expressService.sendCode(expressNo)) {
+			return Result.success();
+		}
+		return Result.error("发送验证码失败");
+	}
+
 }

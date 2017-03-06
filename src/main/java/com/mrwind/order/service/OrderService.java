@@ -2,7 +2,6 @@ package com.mrwind.order.service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
@@ -146,17 +145,17 @@ public class OrderService {
 
 	/***
 	 * 系统发起付款
-	 * @param experssNo
+	 * @param expressNo
 	 * @param string
 	 * @return
 	 */
-	public JSONObject systemPay(Set<String> experssNo, String string) {
+	public JSONObject systemPay(Set<String> expressNo, String string) {
 		// TODO Auto-generated method stub
-		List<Express> list = expressService.selectByExpressNo(experssNo);
+		List<Express> list = expressService.selectByExpressNo(expressNo);
 		if(list.size()==0){
 			return null;
 		}
-		
+
 		List<OrderReceipt> listReceipt=new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
