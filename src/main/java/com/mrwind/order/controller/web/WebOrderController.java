@@ -130,10 +130,11 @@ public class WebOrderController {
 		for (int i = 2; i <= sheet.getLastRowNum(); i++) {
 			JSONObject jsonObject = new JSONObject();
 			Row row = sheet.getRow(i);
+			double bindExpressNo =0;
 			if (row.getCell(1) != null) {
-				double bindExpressNo = row.getCell(1).getNumericCellValue();
-				jsonObject.put("bindExpressNo", bindExpressNo);
+				bindExpressNo= row.getCell(1).getNumericCellValue();
 			}
+			jsonObject.put("bindExpressNo", bindExpressNo);
 			if (row.getCell(2) != null) {
 				String receiverUserName = row.getCell(2).getStringCellValue();
 				jsonObject.put("receiverUserName", receiverUserName);
