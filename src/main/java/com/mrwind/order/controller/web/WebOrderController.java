@@ -130,21 +130,33 @@ public class WebOrderController {
 		for (int i = 2; i <= sheet.getLastRowNum(); i++) {
 			JSONObject jsonObject = new JSONObject();
 			Row row = sheet.getRow(i);
-			double bindExpressNo = row.getCell(1).getNumericCellValue();
-			String receiverUserName = row.getCell(2).getStringCellValue();
-			String receiverTel = row.getCell(3).getStringCellValue();
-			String receiverAddress = row.getCell(4).getStringCellValue();
-			String remark = row.getCell(5).getStringCellValue();
-			
-			jsonObject.put("bindExpressNo", bindExpressNo);
-			jsonObject.put("receiverUserName", receiverUserName);
-			jsonObject.put("receiverTel", receiverTel);
-			jsonObject.put("receiverAddress", receiverAddress);
-			jsonObject.put("remark", remark);
-			
+			if (row.getCell(1) != null) {
+				double bindExpressNo = row.getCell(1).getNumericCellValue();
+				jsonObject.put("bindExpressNo", bindExpressNo);
+			}
+			if (row.getCell(2) != null) {
+				String receiverUserName = row.getCell(2).getStringCellValue();
+				jsonObject.put("receiverUserName", receiverUserName);
+			}
+			if (row.getCell(3) != null) {
+				String receiverTel = row.getCell(3).getStringCellValue();
+				jsonObject.put("receiverTel", receiverTel);
+			}else{
+				continue;
+			}
+			if (row.getCell(4) != null) {
+				String receiverAddress = row.getCell(4).getStringCellValue();
+				jsonObject.put("receiverAddress", receiverAddress);
+			}else{
+				continue;
+			}
+			if (row.getCell(5) != null) {
+				String remark = row.getCell(5).getStringCellValue();
+				jsonObject.put("remark", remark);
+			}
 			list.add(jsonObject);
 		}
-		
+
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("list", list);
 		return successJSON;
