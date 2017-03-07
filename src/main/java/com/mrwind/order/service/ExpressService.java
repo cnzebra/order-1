@@ -390,6 +390,9 @@ public class ExpressService {
 		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
 		}
+		if(!firstExpress.getStatus().equals(App.ORDER_BEGIN)){
+			return JSONFactory.getErrorJSON("运单不允许改价！");
+		}
 		firstExpress.setCategory(category);
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);

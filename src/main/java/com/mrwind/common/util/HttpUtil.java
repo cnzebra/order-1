@@ -1,32 +1,33 @@
 package com.mrwind.common.util;
 
+import java.util.Collection;
+
 import javax.ws.rs.core.MediaType;
 
-import com.alibaba.fastjson.JSON;
-import com.mrwind.order.App;
 import org.apache.commons.lang3.StringUtils;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mrwind.common.constant.ConfigConstant;
+import com.mrwind.order.App;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 
-import java.util.Collection;
-
 public class HttpUtil {
-
 
 	/**
 	 * 余额支付接口
+	 * 
 	 * @param tranNo
 	 * @return
 	 */
-	public static boolean balancePay(String tranNo){
+	public static boolean balancePay(String tranNo) {
 		Client client = Client.create();
-		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/balanceDiscount?tranNo=" + tranNo);
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/balanceDiscount?tranNo=" + tranNo);
 		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
@@ -39,30 +40,35 @@ public class HttpUtil {
 		}
 		return false;
 	}
+
 	/**
 	 * 发送给指定userid短信
+	 * 
 	 * @param content
 	 * @param userIds
 	 */
-	public static void sendSMSToUserId(String content,Collection<String> userIds){
+	public static void sendSMSToUserId(String content, Collection<String> userIds) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("userIds", userIds);
 		jsonObject.put("mrContent", content);
-		//暂时随意填，防止被过滤
+		// 暂时随意填，防止被过滤
 		jsonObject.put("eventId", 1);
 		jsonObject.put("modelId", 12);
 		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_USERID, jsonObject.toJSONString());
 	}
-	private static JSONObject post(String url,String parameter){
+
+	private static JSONObject post(String url, String parameter) {
 		Client client = new Client();
-		WebResource webResource =client.resource(url);
-		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,parameter);
-		if (clientResponse.getStatus() == 200){
+		WebResource webResource = client.resource(url);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,
+				parameter);
+		if (clientResponse.getStatus() == 200) {
 			String result = clientResponse.getEntity(String.class);
 			return JSON.parseObject(result);
 		}
 		return null;
 	}
+
 	/***
 	 * 查询内部用户的方法
 	 * 
@@ -89,8 +95,8 @@ public class HttpUtil {
 					userJson.put("tel", jsonObject.get("tel"));
 					userJson.put("address", jsonObject.get("address"));
 					userJson.put("avatar", jsonObject.get("avatar"));
-					JSONObject gps = findUserGPS(userId).getJSONObject(0);
-					if(gps!=null){
+					JSONObject gps = findUserGPS(userId);
+					if (gps != null) {
 						JSONObject gpsDetail = gps.getJSONObject("gpsDetail");
 						userJson.put("lng", gpsDetail.getDoubleValue("longitude"));
 						userJson.put("lat", gpsDetail.getDoubleValue("latitude"));
@@ -102,7 +108,7 @@ public class HttpUtil {
 		}
 		return null;
 	}
-	
+
 	public static JSONObject getUserInfoByToken(String token) {
 		Client client = Client.create();
 		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindCloud/account/baseInfo/token");
@@ -116,8 +122,9 @@ public class HttpUtil {
 			return null;
 		}
 	}
-	
-	public static JSONArray findUserGPS(String userId) {
+
+	@Deprecated
+	public static JSONObject findUserGPS(String userId) {
 		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "gps/api/query";
 		Client client = Client.create();
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL + "?mansIds=" + userId);
@@ -129,37 +136,21 @@ public class HttpUtil {
 				JSONObject parseObject = JSONObject.parseObject(textEntity);
 				if (parseObject.getString("code").equals("1")) {
 					JSONArray resObj = parseObject.getJSONArray("content");
-					return resObj;
+					if (resObj != null && resObj.size() > 0) {
+						JSONObject gps = resObj.getJSONObject(0);
+						if (gps != null) {
+							return gps;
+						}
+					}
 				}
 			}
 		}
-		return null;
-	}
+		// JSONObject gpsDetail = gps.getJSONObject("gpsDetail");
+		// if (gpsDetail != null) {
+		// userJson.put("lng", gpsDetail.getDoubleValue("longitude"));
+		// userJson.put("lat", gpsDetail.getDoubleValue("latitude"));
 
-	/***
-	 * 查询运单详情
-	 * 
-	 * @param orders
-	 *            运单们
-	 * @param params
-	 *            查询的种子
-	 * @return
-	 */
-	public static JSONArray findOrderInfo(String orders, String params) {
-		StringBuffer requestUrl = new StringBuffer(ConfigConstant.API_PYTHON_HOST + "server/multi");
-		Client client = Client.create();
-		WebResource webResource = client.resource(requestUrl.toString());
-		ClientResponse clientResponse = webResource.queryParam("only", params).queryParam("page", "1")
-				.queryParam("count", orders.split(",").length + "").queryParam("numbers", orders)
-				.queryParam("order_by", "-number").get(ClientResponse.class);
-		if (clientResponse.getStatus() == 200) {
-			String textEntity = clientResponse.getEntity(String.class);
-			if (textEntity != null) {
-				JSONArray jsonArray = JSONArray.parseArray(textEntity);
-				return jsonArray;
-			}
-		}
-		return new JSONArray();
+		return null;
 	}
 
 	public static JSONObject findUserInfo(String userId) {
@@ -186,8 +177,8 @@ public class HttpUtil {
 		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "WindData/log/create";
 		Client client = Client.create();
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
-		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE)
-				.post(ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
+		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE).post(
+				ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
 		if (clientResponse.getStatus() == 200) {
 			return true;
 		}
@@ -228,36 +219,39 @@ public class HttpUtil {
 			return "";
 		}
 	}
-	
+
 	public static Boolean selectUserProtocol(String uid, String protocolNumber) {
 		// TODO Auto-generated method stub
 		Client client = Client.create();
-		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/protocol/findByShopIdAndProtocolNum?shopId="+uid+"&protocolNum="+protocolNumber);
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST
+				+ "merchant/protocol/findByShopIdAndProtocolNum?shopId=" + uid + "&protocolNum=" + protocolNumber);
 		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			JSONObject json = JSONObject.parseObject(textEntity);
-			if(json.getString("code").equals("1")){
+			if (json.getString("code").equals("1")) {
 				return true;
 			}
-		} 
+		}
 		return false;
 	}
 
 	/***
 	 * 定价接口
+	 * 
 	 * @param json
-	 * @return 
+	 * @return
 	 */
 	public static JSONObject calculatePrice(JSONObject json) {
 		// TODO Auto-generated method stub
 		Client client = Client.create();
 		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "Category/calculatePrice");
-		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,json.toString());
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,
+				json.toString());
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			JSONObject res = JSONObject.parseObject(textEntity);
-			if(res.getString("code").equals("1")){
+			if (res.getString("code").equals("1")) {
 				return res.getJSONObject("data");
 			}
 		}
@@ -268,39 +262,43 @@ public class HttpUtil {
 		// TODO Auto-generated method stub
 		Client client = Client.create();
 		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindData/util/findPerson");
-		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,jsonObject.toString());
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,
+				jsonObject.toString());
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			JSONObject res = JSONObject.parseObject(textEntity);
-			if(res.getString("code").equals("1")){
+			if (res.getString("code").equals("1")) {
 				return res.getJSONObject("content");
 			}
 		}
 		return null;
 	}
-	
-	public static JSONArray findExpressMission(String expressNo){
+
+	public static JSONArray findExpressMission(String expressNo) {
 		Client client = Client.create();
-		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/missonInfo/selectTop2Mission?order="+expressNo);
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/missonInfo/selectTop2Mission?order=" + expressNo);
 		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			JSONObject res = JSONObject.parseObject(textEntity);
-			if(res.getString("code").equals("1")){
+			if (res.getString("code").equals("1")) {
 				return res.getJSONArray("content");
 			}
 		}
 		return null;
 	}
-	
-	public static Boolean compileExpressMission(JSONArray json){
+
+	public static Boolean compileExpressMission(JSONArray json) {
 		Client client = Client.create();
-		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/compileMissionsByOrder");
-		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,json.toString());
+		WebResource webResource = client
+				.resource(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/compileMissionsByOrder");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,
+				json.toString());
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			JSONObject res = JSONObject.parseObject(textEntity);
-			if(res.getString("code").equals("1")){
+			if (res.getString("code").equals("1")) {
 				return true;
 			}
 		}
