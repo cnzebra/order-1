@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mrwind.common.constant.ConfigConstant;
 import com.mrwind.order.App;
+import com.mrwind.order.entity.Address;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -95,11 +96,10 @@ public class HttpUtil {
 					userJson.put("tel", jsonObject.get("tel"));
 					userJson.put("address", jsonObject.get("address"));
 					userJson.put("avatar", jsonObject.get("avatar"));
-					JSONObject gps = findUserGPS(userId);
+					Address gps = findUserGPS(userId);
 					if (gps != null) {
-						JSONObject gpsDetail = gps.getJSONObject("gpsDetail");
-						userJson.put("lng", gpsDetail.getDoubleValue("longitude"));
-						userJson.put("lat", gpsDetail.getDoubleValue("latitude"));
+						userJson.put("lng",gps.getLng());
+						userJson.put("lat", gps.getLat());
 					}
 					userJson.put("job", jsonObject.get("job"));
 					return userJson;
@@ -123,33 +123,21 @@ public class HttpUtil {
 		}
 	}
 
-	@Deprecated
-	public static JSONObject findUserGPS(String userId) {
-		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "gps/api/query";
+	public static Address findUserGPS(String userId) {
+		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "gps/api/getGps";
 		Client client = Client.create();
-		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL + "?mansIds=" + userId);
-		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED)
+		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL + "?userId=" + userId);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON)
 				.get(ClientResponse.class);
 		if (clientResponse.getStatus() == 200) {
 			String textEntity = clientResponse.getEntity(String.class);
 			if (textEntity != null) {
 				JSONObject parseObject = JSONObject.parseObject(textEntity);
 				if (parseObject.getString("code").equals("1")) {
-					JSONArray resObj = parseObject.getJSONArray("content");
-					if (resObj != null && resObj.size() > 0) {
-						JSONObject gps = resObj.getJSONObject(0);
-						if (gps != null) {
-							return gps;
-						}
-					}
+					return JSONObject.toJavaObject(parseObject.getJSONObject("content"),Address.class);
 				}
 			}
 		}
-		// JSONObject gpsDetail = gps.getJSONObject("gpsDetail");
-		// if (gpsDetail != null) {
-		// userJson.put("lng", gpsDetail.getDoubleValue("longitude"));
-		// userJson.put("lat", gpsDetail.getDoubleValue("latitude"));
-
 		return null;
 	}
 
