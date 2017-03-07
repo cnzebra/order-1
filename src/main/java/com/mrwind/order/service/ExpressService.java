@@ -394,6 +394,7 @@ public class ExpressService {
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
+		sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 
