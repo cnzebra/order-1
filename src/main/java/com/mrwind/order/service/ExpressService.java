@@ -646,7 +646,7 @@ public class ExpressService {
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);
 		line.setTitle(user.getName() + "妥投了订单");
-		line.setIndex(lines.size());
+		line.setIndex(lines.size()+1);
 		lines.add(line);
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
