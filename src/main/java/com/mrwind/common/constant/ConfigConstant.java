@@ -5,7 +5,6 @@ import org.springframework.core.PriorityOrdered;
 public class ConfigConstant implements PriorityOrdered{
 
 	public static String API_JAVA_HOST = "http://dev.api.gomrwind.com:5000/" ;
-	public static String API_PYTHON_HOST = "http://dev.api.gomrwind.com:5000/express/";
 	
 	public static String API_DFENG_XIN_HOST = "http://123.57.45.209:5000/";
 	
@@ -20,9 +19,6 @@ public class ConfigConstant implements PriorityOrdered{
 	
 	public void setAPI_JAVA_HOST(String aPI_JAVA_HOST) {
 		API_JAVA_HOST = aPI_JAVA_HOST;
-	}
-	public void setAPI_PYTHON_HOST(String aPI_PYTHON_HOST) {
-		API_PYTHON_HOST = aPI_PYTHON_HOST;
 	}
 	public void setAPI_DFENG_XIN_HOST(String aPI_DFENG_XIN_HOST) {
 		API_DFENG_XIN_HOST = aPI_DFENG_XIN_HOST;

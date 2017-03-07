@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.util.HttpUtil;
 
 public class Line {
 
@@ -62,6 +63,12 @@ public class Line {
 
 			line.setPlanTime(json.getDate("predict_time"));
 			User executorUser = JSONObject.toJavaObject(json.getJSONObject("operator"), User.class);
+			Address userGPS = HttpUtil.findUserGPS(executorUser.getId());
+			if(userGPS!=null){
+				executorUser.setLat(userGPS.getLat());
+				executorUser.setLng(userGPS.getLng());
+			}
+
 			line.setExecutorUser(executorUser);
 			line.setIndex(json.getInteger("node_num"));
 			if (json.getJSONObject("fence") != null) {
