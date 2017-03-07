@@ -41,7 +41,7 @@ public class App
     public static String RDKEY_AFTER_ORDER="rdkey_after_order";
 
     //妥投验证码
-    public static String RDKEY_VERIFY_CODE="rdkey_verify_code";
+    public static String RDKEY_VERIFY_CODE="rdkey_verify_code_";
 
     public static String SESSION_KEY="sdf^#*(JFDK(@)#$TGJKEUID&*@#%";
 

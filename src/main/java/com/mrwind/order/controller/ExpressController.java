@@ -162,11 +162,7 @@ public class ExpressController {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
 		}
-		boolean result = expressService.completeByCode(expressNo, verifyCode, userInfo);
-		if (result) {
-			return JSONFactory.getSuccessJSON();
-		}
-		return JSONFactory.getErrorJSON("验证码妥投失败");
+		return expressService.completeByCode(expressNo, verifyCode, userInfo);
 	}
 
 

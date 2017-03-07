@@ -109,11 +109,8 @@ public class AppExpressController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/send/code", method = RequestMethod.GET)
-	public Result sendCode(String expressNo) {
-		if (expressService.sendCode(expressNo)) {
-			return Result.success();
-		}
-		return Result.error("发送验证码失败");
+	public JSONObject sendCode(String expressNo) {
+		return expressService.sendCode(expressNo);
 	}
 
 }

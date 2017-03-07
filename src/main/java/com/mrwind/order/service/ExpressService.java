@@ -263,21 +263,25 @@ public class ExpressService {
 	 * @param expressNo 订单号
 	 * @return
 	 */
-    public boolean sendCode(String expressNo) {
+    public JSONObject sendCode(String expressNo) {
+       String cacheCode = redisCache.getString(App.RDKEY_VERIFY_CODE+expressNo);
+    	if(cacheCode != null){
+    		return JSONFactory.getSuccessJSON("不要重复发送验证码");
+		}
         Express express = selectByNo(expressNo);
         if (express == null) {
-            return false;
-        }
+			return JSONFactory.getErrorJSON("查找不到该订单信息");
+		}
         String code = CodeUtils.genSimpleCode(4);
         String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
         Collection<String> userIds = new HashSet<>();
         userIds.add(express.getShop().getId());
         HttpUtil.sendSMSToUserId(content, userIds);
-        redisCache.hset(App.RDKEY_VERIFY_CODE, expressNo, code);
+		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo,900,code);
         ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
                 ExpressCodeLog.TypeConstant.TYPE_SEND, code);
         expressCodeLogRepository.save(expressCodeLog);
-        return true;
+		return JSONFactory.getSuccessJSON("发送成功");
     }
 
 	/**
@@ -288,17 +292,17 @@ public class ExpressService {
 	 * @param userInfo 用户信息
 	 * @return
 	 */
-	public boolean completeByCode(String expressNo, String verifyCode, JSONObject userInfo) {
-		String code = (String) redisCache.hget(App.RDKEY_VERIFY_CODE, expressNo);
+	public JSONObject completeByCode(String expressNo, String verifyCode, JSONObject userInfo) {
+		String code = redisCache.getString(App.RDKEY_VERIFY_CODE+expressNo);
 		if (!verifyCode.equals(code)) {
-			return false;
+			return JSONFactory.getErrorJSON("验证码错误");
 		}
-		redisCache.hdel(App.RDKEY_VERIFY_CODE.getBytes(),expressNo.getBytes());
-		completeExpress(expressNo, null, userInfo);
+		redisCache.delete(App.RDKEY_VERIFY_CODE+expressNo);
+	    JSONObject jsonObject =	completeExpress(expressNo, null, userInfo);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
 				ExpressCodeLog.TypeConstant.TYPE_VERIFY, code);
 		expressCodeLogRepository.save(expressCodeLog);
-		return true;
+		return jsonObject;
 	}
 
 
@@ -388,6 +392,7 @@ public class ExpressService {
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
+		sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 
@@ -639,7 +644,7 @@ public class ExpressService {
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);
 		line.setTitle(user.getName() + "妥投了订单");
-		line.setIndex(lines.size());
+		line.setIndex(lines.size()+1);
 		lines.add(line);
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
