@@ -595,6 +595,7 @@ public class ExpressService {
 		tmp.put("des", "取消订单");
 		json.add(tmp);
 		HttpUtil.compileExpressMission(json);
+		expressDao.updateExpressBindNo(expressNo, "");
 		expressDao.updateStatus(expressNo, App.ORDER_CANCLE, App.ORDER_CANCLE);
 	}
 
