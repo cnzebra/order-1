@@ -102,6 +102,7 @@ public class OrderService {
 				tmp.put("sendLog", false);
 				tmp.put("des", "收件完成");
 				jsonArray.add(tmp);
+				continue;
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
 				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
