@@ -13,6 +13,8 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mrwind.common.constant.ConfigConstant;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Address;
+import com.mrwind.order.entity.Category;
+import com.mrwind.order.entity.Express;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
@@ -187,11 +189,18 @@ public class HttpUtil {
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		JSONObject json = new JSONObject();
-		json.put("uid", "11e62c84fb1fa880bdaf22266a250d8f");
-		json.put("data", "测试数据");
+		Express express = new Express();
+		Category category=new Category();
+		category.setDistance(100.1);
+		express.setCategory(category);
+		
+		update(express);
+		System.out.println(express.getCategory().getDistance());
+	}
 
-		pushJsonDateToPhone(json);
+	private static void update(Express express) {
+		// TODO Auto-generated method stub
+		express.getCategory().setDistance(200.0);
 	}
 
 	public static String getUserIdByToken(String token) {
@@ -245,6 +254,32 @@ public class HttpUtil {
 		}
 		return null;
 	}
+	
+	/***
+	 * 定价接口
+	 * 
+	 * @param json
+	 * @return
+	 */
+	public static JSONObject calculatePrice(String shopId,Integer weight,Integer distance) {
+		// TODO Auto-generated method stub
+		JSONObject json=new JSONObject();
+		json.put("shopId", shopId);
+		json.put("weight", weight);
+		json.put("distance", distance);
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "Category/calculatePrice");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,
+				json.toString());
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if (res.getString("code").equals("1")) {
+				return res.getJSONObject("data");
+			}
+		}
+		return null;
+	}
 
 	public static JSONObject findPersion(JSONObject jsonObject) {
 		// TODO Auto-generated method stub
@@ -275,6 +310,34 @@ public class HttpUtil {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * 获取距离
+	 * @param toLat
+	 * @param toLng
+	 * @param fromLat
+	 * @param fromLng
+	 * @return
+	 */
+	public static Integer getDistance(Double toLat,Double toLng,Double fromLat,Double fromLng) {
+		Client client = Client.create();
+		JSONObject json=new JSONObject();
+		json.put("toUserLat", toLat);
+		json.put("toUserLng", toLng);
+		json.put("fromUserLat", fromLat);
+		json.put("fromUserLng", fromLng);
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "WindData/util/driver/distance");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).post(ClientResponse.class,json.toJSONString());
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if (res.getString("code").equals("1")) {
+				return res.getInteger("content");
+			}
+		}
+		return 0;
 	}
 
 	public static Boolean compileExpressMission(JSONArray json) {
