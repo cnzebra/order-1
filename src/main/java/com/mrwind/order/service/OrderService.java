@@ -90,10 +90,18 @@ public class OrderService {
 		BigDecimal totalServicePrice=BigDecimal.ZERO;
 		String shopId="";
 		int i=0;
+		JSONArray jsonArray=new JSONArray();
 		while(iterator.hasNext()){
 			Express next = iterator.next();
 			if(App.ORDER_TYPE_AFTER.equals(next.getType())){
-				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
+//				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
+				JSONObject tmp=new JSONObject();
+				tmp.put("order", next.getExpressNo());
+				tmp.put("status", "COMPLETE");
+				tmp.put("orderType", "A");
+				tmp.put("sendLog", false);
+				tmp.put("des", "收件完成");
+				jsonArray.add(tmp);
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
 				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
@@ -121,6 +129,9 @@ public class OrderService {
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
 			if(next.getDownMoney()!=null){
 				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			}
+			if(jsonArray.size()>0){
+				HttpUtil.compileExpressMission(jsonArray);
 			}
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
