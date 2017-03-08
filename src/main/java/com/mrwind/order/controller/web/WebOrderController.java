@@ -1,6 +1,7 @@
 package com.mrwind.order.controller.web;
 
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -143,8 +144,14 @@ public class WebOrderController {
 				String receiverUserName = row.getCell(2).getStringCellValue();
 				jsonObject.put("receiverUserName", receiverUserName);
 			}
+			String receiverTel;
 			if (row.getCell(3) != null) {
-				String receiverTel = row.getCell(3).getStringCellValue();
+				try {
+					receiverTel = row.getCell(3).getStringCellValue();
+				} catch (Exception e) {
+					DecimalFormat df=new DecimalFormat("0");
+					receiverTel = df.format(row.getCell(3).getNumericCellValue());
+				}
 				jsonObject.put("receiverTel", receiverTel);
 			} else {
 				continue;
