@@ -641,7 +641,6 @@ public class ExpressService {
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
 		List<Line> lines = express.getLines();
-
 		Line line = new Line();
 		line.setExecutorUser(user);
 		Date sysDate = Calendar.getInstance().getTime();
@@ -649,6 +648,7 @@ public class ExpressService {
 		line.setTitle(user.getName() + "妥投了订单");
 		line.setIndex(lines.size()+1);
 		lines.add(line);
+		
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
@@ -657,6 +657,9 @@ public class ExpressService {
 		}
 		if(endAddress!=null){
 			express.setEndAddress(endAddress);
+			if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+				updateAfterExpressPrice(endAddress, express);
+			}
 		}
 		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
@@ -670,6 +673,14 @@ public class ExpressService {
 
 		HttpUtil.compileExpressMission(json);
 		return JSONFactory.getSuccessJSON();
+	}
+
+	private void updateAfterExpressPrice(Address endAddress, Express express) {
+		User sender = express.getSender();
+		Integer distance = HttpUtil.getDistance(endAddress.getLat(), endAddress.getLng(), sender.getLat(), sender.getLng());
+		JSONObject calculatePrice = HttpUtil.calculatePrice(express.getShop().getId(), express.getCategory().getWeight().intValue(), distance);
+		Category category = JSONObject.toJavaObject(calculatePrice, Category.class);
+		express.setCategory(category);
 	}
 
 	public JSONObject errorComplete(String expressNo, Address endAddress, JSONObject userInfo) {
