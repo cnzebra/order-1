@@ -110,9 +110,9 @@ public class OrderService {
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
 				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
-			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){
-				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
-			}
+//			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){   改为更新交易号的方式
+//				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
+//			}
 			if(next.getShop()!=null){
 				if(shopId.equals("")){
 					shopId= next.getShop().getId();
@@ -134,6 +134,14 @@ public class OrderService {
 			if(jsonArray.size()>0){
 				HttpUtil.compileExpressMission(jsonArray);
 			}
+			
+			Object key = redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString());
+			if(key!=null){
+				String strKey = key.toString();
+				redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), next.getExpressNo().getBytes());
+				redisCache.delete("transaction_"+strKey);
+			}
+			redisCache.hset(App.RDKEY_PAY_ORDER,next.getExpressNo(),tranNo);
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
 		}
@@ -336,7 +344,7 @@ public class OrderService {
 
 	@Deprecated
 	public boolean cancelOrder(Long orderNumber, String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCLE,subStatus);
+		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCEL,subStatus);
 		return true;
 	}
 }

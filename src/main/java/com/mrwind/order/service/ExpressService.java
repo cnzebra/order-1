@@ -598,7 +598,7 @@ public class ExpressService {
 		json.add(tmp);
 		HttpUtil.compileExpressMission(json);
 		expressDao.updateExpressBindNo(expressNo, "");
-		expressDao.updateStatus(expressNo, App.ORDER_CANCLE, App.ORDER_CANCLE);
+		expressDao.updateStatus(expressNo, App.ORDER_CANCEL, App.ORDER_CANCEL);
 	}
 
 	public JSONObject completeExpress(List<String> list, JSONObject userInfo) {
