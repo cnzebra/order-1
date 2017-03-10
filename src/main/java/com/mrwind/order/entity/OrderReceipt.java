@@ -25,7 +25,7 @@ public class OrderReceipt {
 	private BigDecimal price;
 	private Date createTime;
 	private Category category;
-	
+
 	public OrderReceipt(){
 		
 	}
