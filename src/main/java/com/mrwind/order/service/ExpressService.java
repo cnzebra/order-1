@@ -732,4 +732,13 @@ public class ExpressService {
 		return HttpUtil.findPersion(jsonObject);
 	}
 
+	public JSONObject findRelationship(String userId){
+		JSONObject jsonObject = JSONFactory.getSuccessJSON();
+		List<Express> expresses = expressDao.findRelationship(userId);
+
+		jsonObject.put("size", expresses.size());
+		jsonObject.put("content", expresses);
+		return jsonObject;
+	}
+
 }
