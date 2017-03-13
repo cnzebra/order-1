@@ -1,13 +1,7 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -153,7 +147,7 @@ public class ExpressService {
 
 	/***
 	 * 配送员普通单加单
-	 * 
+	 *
 	 */
 	public Express initExpress(Express express) {
 		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
@@ -643,6 +637,19 @@ public class ExpressService {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
+
+		JSONObject tmp = new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "COMPLETE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "妥投");
+		json.add(tmp);
+		//妥投验证
+		boolean isComplete = HttpUtil.compileExpressMission(json);
+		if(!isComplete){
+			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+		}
+
 		List<Line> lines = express.getLines();
 		Line line = new Line();
 		line.setExecutorUser(user);
@@ -651,7 +658,7 @@ public class ExpressService {
 		line.setTitle(user.getName() + "妥投了订单");
 		line.setIndex(lines.size()+1);
 		lines.add(line);
-		
+
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
@@ -667,14 +674,12 @@ public class ExpressService {
 		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
 
-		JSONObject tmp = new JSONObject();
-		tmp.put("order", expressNo);
-		tmp.put("status", "COMPLETE");
-		tmp.put("sendLog", false);
-		tmp.put("des", "妥投");
-		json.add(tmp);
-
-		HttpUtil.compileExpressMission(json);
+        if(express.getSender()!= null) {
+            HttpUtil.sendSMSToUserTel("您的包裹已妥投，妥投类型：本人签收，期待您再次使用风先生", express.getSender().getTel());
+        }
+        if(express.getReceiver()!= null){
+            HttpUtil.sendSMSToUserTel("我是配送员" + user.getName() + "，已不辱使命将你最宝贵的物品安全送达！ 期待你为我的全力以赴续满能量", express.getReceiver().getTel());
+        }
 		return JSONFactory.getSuccessJSON();
 	}
 
