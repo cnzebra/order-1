@@ -60,6 +60,22 @@ public class HttpUtil {
 		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_USERID, jsonObject.toJSONString());
 	}
 
+	/**
+	 * 发送给指定手机号码短信
+	 *
+	 * @param content
+	 * @param tels
+	 */
+	public static void sendSMSToUserTel(String content,String tels) {
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("tel", tels);
+		jsonObject.put("mrContent", content);
+		// 暂时随意填，防止被过滤
+		jsonObject.put("eventId", 1);
+		jsonObject.put("modelId", 12);
+		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_TEL, jsonObject.toJSONString());
+	}
+
 	private static JSONObject post(String url, String parameter) {
 		Client client = new Client();
 		WebResource webResource = client.resource(url);
