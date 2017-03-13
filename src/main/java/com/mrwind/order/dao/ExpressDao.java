@@ -32,6 +32,11 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("subStatus").is(subStatus));
 		return mongoTemplate.find(query,Express.class);
 	}
+
+	public List<Express> findRelationship(String userId){
+		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
+		return mongoTemplate.find(query, Express.class);
+	}
 	
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));

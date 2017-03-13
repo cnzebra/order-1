@@ -5,12 +5,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
@@ -190,5 +185,19 @@ public class ExpressController {
 
 		return expressService.errorComplete(expressNo,endAddress, userInfo);
 
+	}
+
+	/**
+	 * 根据用户id查询与其有关系的运单
+	 * @param userId
+	 * @param response
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/relationship", method = RequestMethod.GET)
+	public JSONObject errorComplete(@RequestParam String userId, HttpServletResponse response) {
+		if (StringUtils.isEmpty(userId))
+			return JSONFactory.getErrorJSON("用户id不能为空");
+		return expressService.findRelationship(userId);
 	}
 }
