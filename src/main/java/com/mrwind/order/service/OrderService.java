@@ -95,13 +95,13 @@ public class OrderService {
 			Express next = iterator.next();
 			if(App.ORDER_TYPE_AFTER.equals(next.getType())){
 //				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
-				JSONObject tmp=new JSONObject();
-				tmp.put("order", next.getExpressNo());
-				tmp.put("status", "COMPLETE");
-				tmp.put("orderType", "A");
-				tmp.put("sendLog", false);
-				tmp.put("des", "收件完成");
-				jsonArray.add(tmp);
+//				JSONObject tmp=new JSONObject();
+//				tmp.put("order", next.getExpressNo());
+//				tmp.put("status", "COMPLETE");
+//				tmp.put("orderType", "A");
+//				tmp.put("sendLog", false);
+//				tmp.put("des", "收件完成");
+//				jsonArray.add(tmp);
 				continue;
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
