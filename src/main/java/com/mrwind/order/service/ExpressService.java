@@ -746,4 +746,12 @@ public class ExpressService {
 		return jsonObject;
 	}
 
+    public JSONObject updateExpressPrinted(List<String> expressList) {
+
+        int count = expressDao.updateExpressPrinted(expressList);
+        if (count > 0) {
+            return JSONFactory.getSuccessJSON();
+        }
+        return JSONFactory.getfailJSON("更新失败");
+    }
 }

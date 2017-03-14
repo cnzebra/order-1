@@ -7,10 +7,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
@@ -56,5 +53,25 @@ public class WebExpressController {
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", filterProperty);
 		return successJSON;
+	}
+
+	/**
+	 * 批量标记打印
+	 *
+	 * @param list 要标记的订单号
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/printed", method = RequestMethod.POST)
+	public JSONObject printExpress(@RequestBody List<Object> list) {
+		if(list == null){
+			return JSONFactory.getfailJSON("操作失败");
+		}
+		List<String> expressList = new ArrayList<>();
+		Iterator<Object> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			expressList.add(iterator.next().toString());
+		}
+		return expressService.updateExpressPrinted(expressList);
 	}
 }

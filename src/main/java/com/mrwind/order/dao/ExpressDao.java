@@ -235,4 +235,11 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("lines", newList).set("currentLine", currentLine);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+
+	public int updateExpressPrinted(List<String> expressNo) {
+		Query query = Query.query(Criteria.where("expressNo").in(expressNo));
+		Update update = Update.update("printed", true);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateMulti(query, update, Express.class).getN();
+	}
 }

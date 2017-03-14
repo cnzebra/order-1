@@ -30,6 +30,11 @@ public class Express extends OrderBase {
 	@JSONField(serialize=false)
 	private Address endAddress;
 
+	/**
+	 * 是否打印
+	 */
+	private boolean printed;
+
 	public List<Line> getLines() {
 		return lines;
 	}
@@ -48,6 +53,14 @@ public class Express extends OrderBase {
 		this.bindExpressNo=order.bindExpressNo;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
+	}
+
+	public boolean isPrinted() {
+		return printed;
+	}
+
+	public void setPrinted(boolean printed) {
+		this.printed = printed;
 	}
 
 	public void setLines(List<Line> lines) {
