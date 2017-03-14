@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -35,6 +36,7 @@ public class ExpressDao extends BaseDao {
 
 	public List<Express> findRelationship(String userId){
 		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
+		query.with(new Sort(Sort.Direction.DESC,"createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
 	
