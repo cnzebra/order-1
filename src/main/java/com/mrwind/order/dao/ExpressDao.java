@@ -242,4 +242,23 @@ public class ExpressDao extends BaseDao {
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
+
+	public List<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,PageRequest page) {
+		Query query = Query.query(Criteria.where("shop.id").is(id));
+		if(tel != null){
+			query.addCriteria(Criteria.where("sender.tel").is(tel));
+			query.addCriteria(Criteria.where("receiver.tel").is(tel));
+		}
+		if(expressNo != null){
+			query.addCriteria(Criteria.where("expressNo").is(expressNo));
+		}
+		if(date!=null){
+			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
+		}
+		if(expressNo!=null){
+			query.addCriteria(Criteria.where("expressNo").is(expressNo));
+		}
+		query.with(page);
+		return mongoTemplate.find(query,Express.class);
+	}
 }

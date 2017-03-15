@@ -297,4 +297,17 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		return "";
 	}
 
+	/**
+	 * 获取到以小时为最小计数单位的Date类型
+	 *
+	 * @return
+	 */
+	public static Date getDateInHour() {
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.MINUTE, 0);
+		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.MILLISECOND, 0);
+		return today.getTime();
+	}
+
 }

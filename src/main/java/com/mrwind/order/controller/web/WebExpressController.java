@@ -1,11 +1,14 @@
 package com.mrwind.order.controller.web;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -74,4 +77,32 @@ public class WebExpressController {
 		}
 		return expressService.updateExpressPrinted(expressList);
 	}
+
+	/**
+	 * 根据发件人Id将订单以dueTime分钟为单位进行分组
+	 * @param id 发件人Id
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/selectByShopIdAndMode", method = RequestMethod.GET)
+	public JSONObject selectByShopIdAndMode(String id, String tel, Date date, String expressNo, Integer pageIndex, Integer pageSize) {
+		if(StringUtils.isBlank(id)){
+			return JSONFactory.getfailJSON("寄件人Id不能为空");
+		}
+		if(pageIndex == null){
+			pageIndex = 1;
+		}
+		if(pageSize == null){
+			pageSize = 100;
+		}
+		List<Express> expressList =  expressService.selectByShopIdAndMode(id,tel,expressNo,date,pageIndex -1,pageSize);
+		if(expressList != null){
+			JSONObject json = JSONFactory.getSuccessJSON();
+			json.put("content",expressList);
+			return json;
+		}
+		return JSONFactory.getfailJSON("查询不到数据");
+	}
+
+
 }

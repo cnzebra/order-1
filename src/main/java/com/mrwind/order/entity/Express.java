@@ -35,6 +35,11 @@ public class Express extends OrderBase {
 	 */
 	private boolean printed;
 
+	/**
+	 * 批次号 格式以分为最小计数值
+	 */
+	private Long  batchNo;
+
 	public List<Line> getLines() {
 		return lines;
 	}
@@ -53,6 +58,14 @@ public class Express extends OrderBase {
 		this.bindExpressNo=order.bindExpressNo;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
+	}
+
+	public Long getBatchNo() {
+		return batchNo;
+	}
+
+	public void setBatchNo(Long batchNo) {
+		this.batchNo = batchNo;
 	}
 
 	public boolean isPrinted() {
