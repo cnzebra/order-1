@@ -80,14 +80,20 @@ public class WebExpressController {
 
 	/**
 	 * 根据发件人Id将订单以dueTime分钟为单位进行分组
-	 * @param id 发件人Id
+	 *
+	 * @param id 商户Id
+	 * @param tel 发件人或收件人手机号码
+	 * @param date 日期
+	 * @param expressNo 订单号
+	 * @param pageIndex
+	 * @param pageSize
 	 * @return
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/selectByShopIdAndMode", method = RequestMethod.GET)
 	public JSONObject selectByShopIdAndMode(String id, String tel, Date date, String expressNo, Integer pageIndex, Integer pageSize) {
 		if(StringUtils.isBlank(id)){
-			return JSONFactory.getfailJSON("寄件人Id不能为空");
+			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
 		if(pageIndex == null){
 			pageIndex = 1;
@@ -103,6 +109,40 @@ public class WebExpressController {
 		}
 		return JSONFactory.getfailJSON("查询不到数据");
 	}
+
+
+	/**
+	 * 微信订单多维度查询接口
+	 *
+	 * @param id
+	 * @param status begin,create
+	 * @param date
+	 * @param dayType today,history
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@ResponseBody
+    @RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
+    public JSONObject selectByShopIdForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,Integer pageIndex, Integer pageSize) {
+        if(StringUtils.isBlank(id)){
+            return JSONFactory.getfailJSON("商户Id不能为空");
+        }
+        if(pageIndex == null){
+            pageIndex = 1;
+        }
+        if(pageSize == null){
+            pageSize = 20;
+        }
+        List<Express> expressList =  expressService.selectByShopIdAndModeForWeChat(id,status,date,dayType,expressNo,name,pageIndex -1,pageSize);
+        if(expressList != null){
+            JSONObject json = JSONFactory.getSuccessJSON();
+            json.put("content",expressList);
+            return json;
+        }
+        return JSONFactory.getfailJSON("查询不到数据");
+    }
+
 
 
 }

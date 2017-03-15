@@ -761,4 +761,10 @@ public class ExpressService {
 		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
 		return expressDao.selectByShopIdAndMode(id,tel,expressNo,date,page);
 	}
+
+	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
+		return expressDao.selectByShopIdAndModeForWeChat(id,status,date,dayType,expressNo,name,page);
+	}
 }
