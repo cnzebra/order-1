@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -32,8 +33,12 @@ import com.mrwind.order.entity.OrderReceipt;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
+import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
+
 @Service
 public class OrderService {
+
+	static Logger log = Logger.getLogger(OrderService.class);
 
 	@Autowired
 	private OrderRepository orderRepository;
@@ -105,7 +110,7 @@ public class OrderService {
 				continue;
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
+				return JSONFactory.getErrorJSON("未定价，订单号:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
 				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
@@ -249,6 +254,7 @@ public class OrderService {
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_"+tranNo);
+		log.info("付款回调:" + tranNo);
 		JSONArray json=new JSONArray();
 		StringBuffer sb=new StringBuffer();
 		for (OrderReceipt orderReceipt : list){
@@ -263,9 +269,10 @@ public class OrderService {
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
+			//发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver()!= null) {
 				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo()) ? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
-				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单：http://fh.123feng.com/page/order_trace/list.html?page=list&order_id=" + expressNo;
+				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
 		}
@@ -275,6 +282,9 @@ public class OrderService {
 		}
 		HttpUtil.compileExpressMission(json);
 
+		log.info("需要完成的单号 : " + json.toJSONString());
+		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
+	
 		return null;
 	}
 

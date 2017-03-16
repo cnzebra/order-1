@@ -264,7 +264,7 @@ public class ExpressDao extends BaseDao {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
         if (status != null) {
-			query.addCriteria(Criteria.where("sender.status").is(status));
+			query.addCriteria(Criteria.where("status").is(status));
         }
         if (StringUtils.isNotBlank(dayType)) {
             Date dayStart = DateUtils.getStartTime();
