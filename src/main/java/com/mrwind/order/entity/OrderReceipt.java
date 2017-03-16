@@ -25,6 +25,9 @@ public class OrderReceipt {
 	private BigDecimal price;
 	private Date createTime;
 	private Category category;
+	private User sender;
+	private User receiver;
+	protected String bindExpressNo;
 
 	public OrderReceipt(){
 		
@@ -35,6 +38,9 @@ public class OrderReceipt {
 		this.price=express.getCategory().getTotalPrice();
 		this.createTime=Calendar.getInstance().getTime();
 		this.category=express.getCategory();
+		this.sender = express.getSender();
+		this.bindExpressNo = express.getBindExpressNo();
+		this.receiver = express.getReceiver();
 	}
 	public String getId() {
 		return id;
@@ -76,7 +82,28 @@ public class OrderReceipt {
 	public void setExpressNo(String expressNo) {
 		this.expressNo = expressNo;
 	}
-	
-	
-	 
+
+	public User getSender() {
+		return sender;
+	}
+
+	public void setSender(User sender) {
+		this.sender = sender;
+	}
+
+	public String getBindExpressNo() {
+		return bindExpressNo;
+	}
+
+	public void setBindExpressNo(String bindExpressNo) {
+		this.bindExpressNo = bindExpressNo;
+	}
+
+	public User getReceiver() {
+		return receiver;
+	}
+
+	public void setReceiver(User receiver) {
+		this.receiver = receiver;
+	}
 }

@@ -263,6 +263,11 @@ public class OrderService {
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
+			if (orderReceipt.getSender() != null && orderReceipt.getReceiver()!= null) {
+				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo()) ? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单：http://fh.123feng.com/page/order_trace/list.html?page=list&order_id=" + expressNo;
+				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
+			}
 		}
 		if(sb.length()>0){
 			String express = sb.substring(0, sb.length()-1);
