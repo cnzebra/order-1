@@ -37,13 +37,13 @@ public class OrderService {
 
 	@Autowired
 	private OrderRepository orderRepository;
-	
+
 	@Autowired ExpressService expressService;
-	
+
 	@Autowired OrderReceiptRepository orderReceiptRepository;
-	
+
 	@Autowired RedisCache redisCache;
-	
+
 	@Autowired
 	private OrderDao orderDao;
 
@@ -66,7 +66,7 @@ public class OrderService {
 		Example<Order> example=Example.of(order);
 		return orderRepository.findOne(example);
 	}
-	
+
 	public Page<Order> selectAllByOrder(Order order, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC,"createTime");
 		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
@@ -80,8 +80,8 @@ public class OrderService {
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
 		}
-		
-		
+
+
 		List<OrderReceipt> listReceipt=new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
@@ -134,7 +134,7 @@ public class OrderService {
 			if(jsonArray.size()>0){
 				HttpUtil.compileExpressMission(jsonArray);
 			}
-			
+
 			Object key = redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString());
 			if(key!=null){
 				String strKey = key.toString();
@@ -145,7 +145,7 @@ public class OrderService {
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
 		}
-	
+
 		orderReceiptRepository.save(listReceipt);
 
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -188,7 +188,7 @@ public class OrderService {
 			if(!App.ORDER_TYPE_AFTER.equals(next.getType())){
 				return null;
 			}
-			
+
 			if(next.getShop()!=null){
 				if(shopId.equals("")){
 					shopId= next.getShop().getId();
@@ -197,7 +197,7 @@ public class OrderService {
 					return null;
 				}
 			}
-			
+
 			OrderReceipt orderReceipt = new OrderReceipt(next);
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
 			if(next.getDownMoney()!=null){
@@ -207,7 +207,7 @@ public class OrderService {
 			listReceipt.add(orderReceipt);
 			i++;
 		}
-	
+
 		orderReceiptRepository.save(listReceipt);
 
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -274,10 +274,10 @@ public class OrderService {
 			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
-	
+
 		return null;
 	}
-	
+
 	/***
 	 * 支付完成 发送日志
 	 * @param expressNo
@@ -302,7 +302,7 @@ public class OrderService {
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单!");
 		}
-		
+
 		Iterator<Express> iterator = list.iterator();
 		BigDecimal totalPrice=BigDecimal.ZERO;
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
@@ -323,7 +323,7 @@ public class OrderService {
 		successJSON.put("count", list.size());
 		return successJSON;
 	}
-	
+
 	private Order save(Order order) {
 		order.setCreateTime(Calendar.getInstance().getTime());
 		order.setStatus(App.ORDER_CREATE);
@@ -331,7 +331,7 @@ public class OrderService {
 		Order save = orderRepository.save(order);
 		return save;
 	}
-	
+
 	@Deprecated
 	public void submitOrderPriced(Long orderNumber,Fence fence){
 		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
@@ -341,7 +341,7 @@ public class OrderService {
 	public void completeOrder(Long orderNumber) {
 		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
 	}
-	
+
 	@Deprecated
 	public void errorCompleteOrder(Long orderNumber,String subStatus) {
 		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);

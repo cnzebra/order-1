@@ -45,7 +45,6 @@ public class AppExpressController {
 	public JSONObject create(@RequestBody JSONObject expressJson) {
 		Express express = JSONObject.toJavaObject(expressJson, Express.class);
 		express.setCreateTime(Calendar.getInstance().getTime());
-
 		List<Line> lines = new ArrayList<>();
 		User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
 		if (executorUser == null) {

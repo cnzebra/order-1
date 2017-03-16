@@ -8,9 +8,12 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
@@ -124,7 +127,7 @@ public class WebExpressController {
 	 */
 	@ResponseBody
     @RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
-    public JSONObject selectByShopIdForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,Integer pageIndex, Integer pageSize) {
+    public JSONObject selectByShopIdForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,@RequestParam(value="pageIndex",defaultValue="1")Integer pageIndex, Integer pageSize) {
         if(StringUtils.isBlank(id)){
             return JSONFactory.getfailJSON("商户Id不能为空");
         }
