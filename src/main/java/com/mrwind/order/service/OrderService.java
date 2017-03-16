@@ -33,6 +33,8 @@ import com.mrwind.order.entity.OrderReceipt;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
+import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
+
 @Service
 public class OrderService {
 
@@ -267,9 +269,10 @@ public class OrderService {
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
+			//发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver()!= null) {
 				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo()) ? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
-				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单：http://fh.123feng.com/page/order_trace/list.html?page=list&order_id=" + expressNo;
+				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
 		}
