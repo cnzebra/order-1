@@ -7,7 +7,7 @@ public class Test {
 
 	public static void main(String[] args) {
 		
-		String token = Md5Util.string2MD5("a1fa887f60c142c5b39db08dcee5c96b"+App.SESSION_KEY);
+		String token = Md5Util.string2MD5("1bbc3ba96d46490baa3ab423843c43e2"+App.SESSION_KEY);
 		System.out.println(token);
 	}
 

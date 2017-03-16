@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -34,6 +35,8 @@ import com.mrwind.order.repositories.OrderRepository;
 
 @Service
 public class OrderService {
+
+	static Logger log = Logger.getLogger(OrderService.class);
 
 	@Autowired
 	private OrderRepository orderRepository;
@@ -105,7 +108,7 @@ public class OrderService {
 				continue;
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
+				return JSONFactory.getErrorJSON("未定价，订单号:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
 				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
@@ -249,6 +252,7 @@ public class OrderService {
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_"+tranNo);
+		log.info("付款回调:" + tranNo);
 		JSONArray json=new JSONArray();
 		StringBuffer sb=new StringBuffer();
 		for (OrderReceipt orderReceipt : list){
@@ -273,7 +277,8 @@ public class OrderService {
 			String express = sb.substring(0, sb.length()-1);
 			sendExpressLog21004(express);
 		}
-		HttpUtil.compileExpressMission(json);
+		log.info("需要完成的单号 : " + json.toJSONString());
+		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
 	
 		return null;
 	}
