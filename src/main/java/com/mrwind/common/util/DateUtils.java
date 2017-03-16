@@ -7,7 +7,7 @@ import java.util.Date;
 
 import org.apache.commons.lang3.time.DateFormatUtils;
 
-import io.netty.util.internal.MathUtil;
+//import io.netty.util.internal.MathUtil;
 
 /**
  * 日期工具类, 继承org.apache.commons.lang.time.DateUtils类
@@ -295,6 +295,19 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 			e.printStackTrace();
 		}
 		return "";
+	}
+
+	/**
+	 * 获取到以小时为最小计数单位的Date类型
+	 *
+	 * @return
+	 */
+	public static Date getDateInHour() {
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.MINUTE, 0);
+		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.MILLISECOND, 0);
+		return today.getTime();
 	}
 
 }

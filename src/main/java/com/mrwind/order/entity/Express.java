@@ -30,6 +30,16 @@ public class Express extends OrderBase {
 	@JSONField(serialize=false)
 	private Address endAddress;
 
+	/**
+	 * 是否打印
+	 */
+	private boolean printed;
+
+	/**
+	 * 批次号 格式以分为最小计数值
+	 */
+	private Long  batchNo;
+
 	public List<Line> getLines() {
 		return lines;
 	}
@@ -48,6 +58,22 @@ public class Express extends OrderBase {
 		this.bindExpressNo=order.bindExpressNo;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
+	}
+
+	public Long getBatchNo() {
+		return batchNo;
+	}
+
+	public void setBatchNo(Long batchNo) {
+		this.batchNo = batchNo;
+	}
+
+	public boolean isPrinted() {
+		return printed;
+	}
+
+	public void setPrinted(boolean printed) {
+		this.printed = printed;
 	}
 
 	public void setLines(List<Line> lines) {

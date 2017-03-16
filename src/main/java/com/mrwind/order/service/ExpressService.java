@@ -165,6 +165,7 @@ public class ExpressService {
 		}
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
+	    express.setDueTime(DateUtils.getDateInHour());
 		expressRepository.save(express);
 
 		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
@@ -744,4 +745,24 @@ public class ExpressService {
 		return jsonObject;
 	}
 
+    public JSONObject updateExpressPrinted(List<String> expressList) {
+
+        int count = expressDao.updateExpressPrinted(expressList);
+        if (count > 0) {
+            return JSONFactory.getSuccessJSON();
+        }
+        return JSONFactory.getfailJSON("更新失败");
+    }
+
+	public List<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC,"tel"));
+		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
+		return expressDao.selectByShopIdAndMode(id,tel,expressNo,date,page);
+	}
+
+	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
+		return expressDao.selectByShopIdAndModeForWeChat(id,status,date,dayType,expressNo,name,page);
+	}
 }

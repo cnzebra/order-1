@@ -7,7 +7,9 @@ public class ConfigConstant implements PriorityOrdered{
 	public static String API_JAVA_HOST = "http://dev.api.gomrwind.com:5000/" ;
 	
 	public static String API_DFENG_XIN_HOST = "http://123.57.45.209:5000/";
-	
+
+	public static String API_WECHAT_HOST = "http://dev.wechat.123feng.com:10060/";
+
 	public static Integer IS_FILTER=0;
 	
 	public static String FILTER_IP="";
@@ -26,6 +28,9 @@ public class ConfigConstant implements PriorityOrdered{
 	public static void setOUR_HOST(String oUR_HOST) {
 		OUR_HOST = oUR_HOST;
 	}
+	public void setAPI_WECHAT_HOST(String aPI_WECHAT_HOST) {
+		API_WECHAT_HOST = aPI_WECHAT_HOST;
+	}
 	
 	@Override
 	public int getOrder() {
@@ -39,5 +44,4 @@ public class ConfigConstant implements PriorityOrdered{
 	public static void setFILTER_IP(String fILTER_IP) {
 		FILTER_IP = fILTER_IP;
 	}
-	
 }

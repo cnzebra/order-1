@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
@@ -32,18 +33,22 @@ import com.mrwind.order.entity.OrderReceipt;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
+import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
+
 @Service
 public class OrderService {
 
+	static Logger log = Logger.getLogger(OrderService.class);
+
 	@Autowired
 	private OrderRepository orderRepository;
-	
+
 	@Autowired ExpressService expressService;
-	
+
 	@Autowired OrderReceiptRepository orderReceiptRepository;
-	
+
 	@Autowired RedisCache redisCache;
-	
+
 	@Autowired
 	private OrderDao orderDao;
 
@@ -66,7 +71,7 @@ public class OrderService {
 		Example<Order> example=Example.of(order);
 		return orderRepository.findOne(example);
 	}
-	
+
 	public Page<Order> selectAllByOrder(Order order, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC,"createTime");
 		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
@@ -80,8 +85,8 @@ public class OrderService {
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
 		}
-		
-		
+
+
 		List<OrderReceipt> listReceipt=new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
@@ -95,17 +100,17 @@ public class OrderService {
 			Express next = iterator.next();
 			if(App.ORDER_TYPE_AFTER.equals(next.getType())){
 //				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
-				JSONObject tmp=new JSONObject();
-				tmp.put("order", next.getExpressNo());
-				tmp.put("status", "COMPLETE");
-				tmp.put("orderType", "A");
-				tmp.put("sendLog", false);
-				tmp.put("des", "收件完成");
-				jsonArray.add(tmp);
+//				JSONObject tmp=new JSONObject();
+//				tmp.put("order", next.getExpressNo());
+//				tmp.put("status", "COMPLETE");
+//				tmp.put("orderType", "A");
+//				tmp.put("sendLog", false);
+//				tmp.put("des", "收件完成");
+//				jsonArray.add(tmp);
 				continue;
 			}
 			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("有订单未定价，无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
+				return JSONFactory.getErrorJSON("未定价，订单号:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
 			}
 			if(!next.getStatus().equals(App.ORDER_BEGIN)){
 				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
@@ -134,7 +139,7 @@ public class OrderService {
 			if(jsonArray.size()>0){
 				HttpUtil.compileExpressMission(jsonArray);
 			}
-			
+
 			Object key = redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString());
 			if(key!=null){
 				String strKey = key.toString();
@@ -145,7 +150,7 @@ public class OrderService {
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
 		}
-	
+
 		orderReceiptRepository.save(listReceipt);
 
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -188,7 +193,7 @@ public class OrderService {
 			if(!App.ORDER_TYPE_AFTER.equals(next.getType())){
 				return null;
 			}
-			
+
 			if(next.getShop()!=null){
 				if(shopId.equals("")){
 					shopId= next.getShop().getId();
@@ -197,7 +202,7 @@ public class OrderService {
 					return null;
 				}
 			}
-			
+
 			OrderReceipt orderReceipt = new OrderReceipt(next);
 			totalPrice=totalPrice.add(orderReceipt.getPrice());
 			if(next.getDownMoney()!=null){
@@ -207,7 +212,7 @@ public class OrderService {
 			listReceipt.add(orderReceipt);
 			i++;
 		}
-	
+
 		orderReceiptRepository.save(listReceipt);
 
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -249,6 +254,7 @@ public class OrderService {
 	public String payCallback(String tranNo) {
 		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_"+tranNo);
+		log.info("付款回调:" + tranNo);
 		JSONArray json=new JSONArray();
 		StringBuffer sb=new StringBuffer();
 		for (OrderReceipt orderReceipt : list){
@@ -263,16 +269,25 @@ public class OrderService {
 			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
+			//发送短信
+			if (orderReceipt.getSender() != null && orderReceipt.getReceiver()!= null) {
+				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo()) ? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
+				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
+			}
 		}
 		if(sb.length()>0){
 			String express = sb.substring(0, sb.length()-1);
 			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
+
+		log.info("需要完成的单号 : " + json.toJSONString());
+		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
 	
 		return null;
 	}
-	
+
 	/***
 	 * 支付完成 发送日志
 	 * @param expressNo
@@ -297,7 +312,7 @@ public class OrderService {
 		if(list.size()==0){
 			return JSONFactory.getErrorJSON("查找不到订单!");
 		}
-		
+
 		Iterator<Express> iterator = list.iterator();
 		BigDecimal totalPrice=BigDecimal.ZERO;
 		BigDecimal totalDownPrice=BigDecimal.ZERO;
@@ -318,7 +333,7 @@ public class OrderService {
 		successJSON.put("count", list.size());
 		return successJSON;
 	}
-	
+
 	private Order save(Order order) {
 		order.setCreateTime(Calendar.getInstance().getTime());
 		order.setStatus(App.ORDER_CREATE);
@@ -326,7 +341,7 @@ public class OrderService {
 		Order save = orderRepository.save(order);
 		return save;
 	}
-	
+
 	@Deprecated
 	public void submitOrderPriced(Long orderNumber,Fence fence){
 		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
@@ -336,7 +351,7 @@ public class OrderService {
 	public void completeOrder(Long orderNumber) {
 		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
 	}
-	
+
 	@Deprecated
 	public void errorCompleteOrder(Long orderNumber,String subStatus) {
 		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);

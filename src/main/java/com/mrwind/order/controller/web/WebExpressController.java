@@ -1,15 +1,18 @@
 package com.mrwind.order.controller.web;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
@@ -57,4 +60,82 @@ public class WebExpressController {
 		successJSON.put("data", filterProperty);
 		return successJSON;
 	}
+
+	/**
+	 * 批量标记打印
+	 *
+	 * @param list 要标记的订单号
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/printed", method = RequestMethod.POST)
+	public JSONObject printExpress(@RequestBody List<Object> list) {
+		if(list == null){
+			return JSONFactory.getfailJSON("操作失败");
+		}
+		List<String> expressList = new ArrayList<>();
+		Iterator<Object> iterator = list.iterator();
+		while (iterator.hasNext()) {
+			expressList.add(iterator.next().toString());
+		}
+		return expressService.updateExpressPrinted(expressList);
+	}
+
+	/**
+	 * 根据发件人Id将订单以dueTime分钟为单位进行分组
+	 *
+	 * @param id 商户Id
+	 * @param tel 发件人或收件人手机号码
+	 * @param date 日期
+	 * @param expressNo 订单号
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/selectByShopIdAndMode", method = RequestMethod.GET)
+	public JSONObject selectByShopIdAndMode(String id, String tel, Date date, String expressNo,
+											@RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
+											@RequestParam(value = "pageIndex", defaultValue = "100") Integer pageSize) {
+		if (StringUtils.isBlank(id)) {
+			return JSONFactory.getfailJSON("商户Id不能为空");
+		}
+		List<Express> expressList = expressService.selectByShopIdAndMode(id, tel, expressNo, date, pageIndex - 1, pageSize);
+		if (expressList != null) {
+			JSONObject json = JSONFactory.getSuccessJSON();
+			json.put("content", expressList);
+			return json;
+		}
+		return JSONFactory.getfailJSON("查询不到数据");
+	}
+
+
+	/**
+	 * 微信订单多维度查询接口
+	 *
+	 * @param id
+	 * @param status begin,create
+	 * @param date
+	 * @param dayType today,history
+	 * @param pageIndex
+	 * @param pageSize
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
+	public JSONObject selectByShopIdForWeChat(String id, String status, Date date, String dayType, String expressNo, String name,
+											  @RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
+											  @RequestParam(value = "pageIndex", defaultValue = "20") Integer pageSize) {
+		if (StringUtils.isBlank(id)) {
+			return JSONFactory.getfailJSON("商户Id不能为空");
+		}
+		List<Express> expressList = expressService.selectByShopIdAndModeForWeChat(id, status, date, dayType, expressNo, name, pageIndex - 1, pageSize);
+		if (expressList != null) {
+			JSONObject json = JSONFactory.getSuccessJSON();
+			json.put("content", expressList);
+			return json;
+		}
+		return JSONFactory.getfailJSON("查询不到数据");
+	}
+
 }

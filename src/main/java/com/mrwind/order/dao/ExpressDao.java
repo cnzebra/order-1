@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -35,9 +36,10 @@ public class ExpressDao extends BaseDao {
 
 	public List<Express> findRelationship(String userId){
 		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
+		query.with(new Sort(Sort.Direction.DESC,"createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
-	
+
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
@@ -103,7 +105,7 @@ public class ExpressDao extends BaseDao {
 		if(dueTime!=null){
 			list.add(Criteria.where("dueTime").gte(dueTime).lte(DateUtils.addDays(dueTime, 1)));
 		}
-		
+
 		if (list.size() > 0) {
 			Criteria[] criteria = new Criteria[list.size()];
 			operator.andOperator(list.toArray(criteria));
@@ -233,4 +235,57 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("lines", newList).set("currentLine", currentLine);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+
+	public int updateExpressPrinted(List<String> expressNo) {
+		Query query = Query.query(Criteria.where("expressNo").in(expressNo));
+		Update update = Update.update("printed", true);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateMulti(query, update, Express.class).getN();
+	}
+
+	public List<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,PageRequest page) {
+		Criteria operator = new Criteria();
+		Query query = Query.query(Criteria.where("shop.id").is(id));
+		if(tel != null){
+			operator.orOperator(Criteria.where("sender.tel").regex(tel),Criteria.where("receiver.tel").regex(tel));
+		}
+		if(expressNo != null){
+			query.addCriteria(Criteria.where("expressNo").is(expressNo));
+		}
+		if(date!=null){
+			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
+		}
+		query.addCriteria(operator);
+		query.with(page);
+		return mongoTemplate.find(query,Express.class);
+	}
+
+    public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,String expressNo,String name, PageRequest page) {
+		Criteria operator = new Criteria();
+		Query query = Query.query(Criteria.where("shop.id").is(id));
+        if (status != null) {
+			query.addCriteria(Criteria.where("status").is(status));
+        }
+        if (StringUtils.isNotBlank(dayType)) {
+            Date dayStart = DateUtils.getStartTime();
+            Date dayEnd = DateUtils.getEndTime();
+            if ("today".equals(dayType)) {
+				query.addCriteria(Criteria.where("createTime").gte(dayStart).lt(dayEnd));
+            } else if ("history".equals(dayType)) {
+				query.addCriteria(Criteria.where("createTime").lt(dayStart));
+            }
+        }
+        if (date != null) {
+			query.addCriteria(Criteria.where("createTime").gte(date).lt(DateUtils.addDays(date, 1)));
+        }
+        if(StringUtils.isNotBlank(expressNo)){
+			query.addCriteria(Criteria.where("expressNo").regex(expressNo));
+		}
+		if(StringUtils.isNotBlank(name)){
+			operator.orOperator(Criteria.where("sender.name").regex(name),Criteria.where("receiver.name").regex(name));
+		}
+		query.addCriteria(operator);
+        query.with(page);
+        return mongoTemplate.find(query, Express.class);
+    }
 }
