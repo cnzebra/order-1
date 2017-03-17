@@ -260,7 +260,7 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.find(query,Express.class);
 	}
 
-    public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,String expressNo,String name, PageRequest page) {
+    public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,String param, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
         if (status != null) {
@@ -278,13 +278,16 @@ public class ExpressDao extends BaseDao {
         if (date != null) {
 			query.addCriteria(Criteria.where("createTime").gte(date).lt(DateUtils.addDays(date, 1)));
         }
-        if(StringUtils.isNotBlank(expressNo)){
-			query.addCriteria(Criteria.where("expressNo").regex(expressNo));
-		}
-		if(StringUtils.isNotBlank(name)){
-			operator.orOperator(Criteria.where("sender.name").regex(name),Criteria.where("receiver.name").regex(name));
-		}
-		query.addCriteria(operator);
+        if (StringUtils.isNotBlank(param)) {
+            operator.orOperator(
+                    Criteria.where("expressNo").regex(param),
+                    Criteria.where("bindExpressNo").regex(param),
+                    Criteria.where("sender.name").regex(param),
+                    Criteria.where("sender.tel").regex(param),
+                    Criteria.where("receiver.tel").regex(param),
+                    Criteria.where("receiver.name").regex(param));
+        }
+        query.addCriteria(operator);
         query.with(page);
         return mongoTemplate.find(query, Express.class);
     }

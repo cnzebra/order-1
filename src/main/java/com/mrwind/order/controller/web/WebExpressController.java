@@ -123,13 +123,13 @@ public class WebExpressController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
-	public JSONObject selectByShopIdForWeChat(String id, String status, Date date, String dayType, String expressNo, String name,
+	public JSONObject selectByShopIdForWeChat(String id, String status, Date date, String dayType, String param,
 											  @RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
 											  @RequestParam(value = "pageIndex", defaultValue = "20") Integer pageSize) {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
-		List<Express> expressList = expressService.selectByShopIdAndModeForWeChat(id, status, date, dayType, expressNo, name, pageIndex - 1, pageSize);
+		List<Express> expressList = expressService.selectByShopIdAndModeForWeChat(id, status, date, dayType, param, pageIndex - 1, pageSize);
 		if (expressList != null) {
 			JSONObject json = JSONFactory.getSuccessJSON();
 			json.put("content", expressList);
