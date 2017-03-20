@@ -75,7 +75,12 @@ public class ExpressService {
 		}
 
 		expressRepository.save(list);
-		sendExpressLog21010(list);
+
+
+		//通知任务系统创建任务
+		HttpUtil.createReceiveMission(list);
+//		sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -104,10 +109,12 @@ public class ExpressService {
 				}
 			}
 		}
-		System.out.println(System.currentTimeMillis());
 		expressRepository.save(list);
-		sendExpressLog21010(list);
-		System.out.println(System.currentTimeMillis());
+
+		//通知任务系统创建任务
+		HttpUtil.createReceiveMission(list);
+//		sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -339,7 +346,6 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-
 	public Integer updateLineIndex(String expressNo, int addNumber) {
 		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
 		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),

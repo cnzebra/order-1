@@ -1,6 +1,7 @@
 package com.mrwind.common.util;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
@@ -18,8 +19,11 @@ import com.mrwind.order.entity.Express;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import org.apache.log4j.Logger;
 
 public class HttpUtil {
+
+	private static Logger log = Logger.getLogger(HttpUtil.class);
 
 	/**
 	 * 余额支付接口
@@ -85,7 +89,10 @@ public class HttpUtil {
 			String result = clientResponse.getEntity(String.class);
 			return JSON.parseObject(result);
 		}
-		return null;
+		JSONObject result = new JSONObject();
+		result.put("errCode", clientResponse.getStatus());
+		result.put("errMsg", clientResponse.getEntity(String.class));
+		return result;
 	}
 
 	/***
@@ -370,5 +377,16 @@ public class HttpUtil {
 			}
 		}
 		return false;
+	}
+
+	//创建收件行程及订单
+	public static void createReceiveMission(final List<Express> express){
+		JSONArray jsonArray = (JSONArray) JSONArray.toJSON(express);
+		JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/createReceiveMission", jsonArray.toJSONString());
+		if (result.containsKey("errorCode")){
+			log.info("类HttpUtil 方法createReceiveMission");
+			log.info("errorCode" + result.getInteger("errCode"));
+			log.info("errorMessage" + result.getString("errMsg"));
+		}
 	}
 }
