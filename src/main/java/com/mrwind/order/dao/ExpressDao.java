@@ -28,21 +28,21 @@ public class ExpressDao extends BaseDao {
 
 	ExecutorService newSingleThreadExecutor = Executors.newSingleThreadExecutor();
 
-	public List<Express> findByTypeAndStatusAndSubStatus(String type,String status,String subStatus){
+	public List<Express> findByTypeAndStatusAndSubStatus(String type, String status, String subStatus) {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("type").is(type));
 		query.addCriteria(Criteria.where("status").is(status));
 		query.addCriteria(Criteria.where("subStatus").is(subStatus));
-		return mongoTemplate.find(query,Express.class);
-	}
-
-	public List<Express> findRelationship(String userId){
-		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
-		query.with(new Sort(Sort.Direction.DESC,"createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
 
-	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex,Integer newLineIndex) {
+	public List<Express> findRelationship(String userId) {
+		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
+		query.with(new Sort(Sort.Direction.DESC, "createTime"));
+		return mongoTemplate.find(query, Express.class);
+	}
+
+	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex, Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
 		Update update = Update.update("currentLine", newLineIndex);
@@ -104,7 +104,7 @@ public class ExpressDao extends BaseDao {
 				list.add(Criteria.where("createTime").lte(toDay).gte(yesterday));
 			}
 		}
-		if(dueTime!=null){
+		if (dueTime != null) {
 			list.add(Criteria.where("dueTime").gte(dueTime).lte(DateUtils.addDays(dueTime, 1)));
 		}
 
@@ -121,6 +121,13 @@ public class ExpressDao extends BaseDao {
 	public int updateStatus(String expressNo, String status, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
+	public int updateSubStatus(String expressNo, String subStatus) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("subStatus", subStatus);
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
@@ -221,7 +228,7 @@ public class ExpressDao extends BaseDao {
 				if (express.getRealEndTime() != null) {
 					update.set("realEntTime", express.getRealEndTime());
 				}
-				if(express.getEndAddress()!=null){
+				if (express.getEndAddress() != null) {
 					update.set("endAddress", express.getEndAddress());
 				}
 
@@ -248,51 +255,48 @@ public class ExpressDao extends BaseDao {
 	public Page<Express> selectByShopIdAndMode(String id, String tel, String expressNo, Date date, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
-		if(tel != null){
-			operator.orOperator(Criteria.where("sender.tel").regex(tel),Criteria.where("receiver.tel").regex(tel));
+		if (tel != null) {
+			operator.orOperator(Criteria.where("sender.tel").regex(tel), Criteria.where("receiver.tel").regex(tel));
 		}
-		if(expressNo != null){
+		if (expressNo != null) {
 			query.addCriteria(Criteria.where("expressNo").is(expressNo));
 		}
-		if(date!=null){
+		if (date != null) {
 			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
 		}
 		query.addCriteria(operator);
 		query.with(page);
-		long count = mongoTemplate.count(query,Express.class);
-		return  new PageImpl<>( mongoTemplate.find(query,Express.class),page,count);
+		long count = mongoTemplate.count(query, Express.class);
+		return new PageImpl<>(mongoTemplate.find(query, Express.class), page, count);
 
 	}
 
-    public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,String param, PageRequest page) {
+	public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,
+			String param, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
-        if (status != null) {
+		if (status != null) {
 			query.addCriteria(Criteria.where("status").is(status));
-        }
-        if (StringUtils.isNotBlank(dayType)) {
-            Date dayStart = DateUtils.getStartTime();
-            Date dayEnd = DateUtils.getEndTime();
-            if ("today".equals(dayType)) {
+		}
+		if (StringUtils.isNotBlank(dayType)) {
+			Date dayStart = DateUtils.getStartTime();
+			Date dayEnd = DateUtils.getEndTime();
+			if ("today".equals(dayType)) {
 				query.addCriteria(Criteria.where("createTime").gte(dayStart).lt(dayEnd));
-            } else if ("history".equals(dayType)) {
+			} else if ("history".equals(dayType)) {
 				query.addCriteria(Criteria.where("createTime").lt(dayStart));
-            }
-        }
-        if (date != null) {
+			}
+		}
+		if (date != null) {
 			query.addCriteria(Criteria.where("createTime").gte(date).lt(DateUtils.addDays(date, 1)));
-        }
-        if (StringUtils.isNotBlank(param)) {
-            operator.orOperator(
-                    Criteria.where("expressNo").regex(param),
-                    Criteria.where("bindExpressNo").regex(param),
-                    Criteria.where("sender.name").regex(param),
-                    Criteria.where("sender.tel").regex(param),
-                    Criteria.where("receiver.tel").regex(param),
-                    Criteria.where("receiver.name").regex(param));
-        }
-        query.addCriteria(operator);
-        query.with(page);
-        return mongoTemplate.find(query, Express.class);
-    }
+		}
+		if (StringUtils.isNotBlank(param)) {
+			operator.orOperator(Criteria.where("expressNo").regex(param), Criteria.where("bindExpressNo").regex(param),
+					Criteria.where("sender.name").regex(param), Criteria.where("sender.tel").regex(param),
+					Criteria.where("receiver.tel").regex(param), Criteria.where("receiver.name").regex(param));
+		}
+		query.addCriteria(operator);
+		query.with(page);
+		return mongoTemplate.find(query, Express.class);
+	}
 }

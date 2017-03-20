@@ -34,6 +34,19 @@ public class OrderController {
 		return res;
 	}
 	
+	/***
+	 * 付款  信用方式
+	 * @param listExpress
+	 * @param userId
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/pay/credit/{userId}", method = RequestMethod.POST)
+	public JSONObject payCredit(@RequestBody List<String> listExpress,@PathVariable("userId")String userId) {
+		JSONObject res = orderService.payCredit(listExpress,userId);
+		return res;
+	}
+	
 	@ResponseBody
 	@RequestMapping(value = "/query/price", method = RequestMethod.POST)
 	public JSONObject queryPrice(@RequestBody List<String> listExpress) {

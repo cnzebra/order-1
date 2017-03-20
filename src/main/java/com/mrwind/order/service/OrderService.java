@@ -1,8 +1,12 @@
 package com.mrwind.order.service;
 
+import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -25,15 +29,11 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.UUIDUtils;
 import com.mrwind.order.App;
-import com.mrwind.order.dao.OrderDao;
 import com.mrwind.order.entity.Express;
-import com.mrwind.order.entity.Fence;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.OrderReceipt;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
-
-import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
 
 @Service
 public class OrderService {
@@ -43,14 +43,14 @@ public class OrderService {
 	@Autowired
 	private OrderRepository orderRepository;
 
-	@Autowired ExpressService expressService;
-
-	@Autowired OrderReceiptRepository orderReceiptRepository;
-
-	@Autowired RedisCache redisCache;
+	@Autowired
+	ExpressService expressService;
 
 	@Autowired
-	private OrderDao orderDao;
+	OrderReceiptRepository orderReceiptRepository;
+
+	@Autowired
+	RedisCache redisCache;
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);
@@ -58,8 +58,8 @@ public class OrderService {
 	}
 
 	public List<Express> initAndInsert(List<Order> list) {
-		List<Order> newList=new ArrayList<>();
-		for(Order order : list){
+		List<Order> newList = new ArrayList<>();
+		for (Order order : list) {
 			Order save = save(order);
 			newList.add(save);
 		}
@@ -68,85 +68,79 @@ public class OrderService {
 	}
 
 	public Order selectByOrder(Order order) {
-		Example<Order> example=Example.of(order);
+		Example<Order> example = Example.of(order);
 		return orderRepository.findOne(example);
 	}
 
 	public Page<Order> selectAllByOrder(Order order, Integer pageIndex, Integer pageSize) {
-		Sort sort = new Sort(Direction.DESC,"createTime");
-		PageRequest page =new PageRequest(pageIndex, pageSize,sort);
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
 
-		Example<Order> example=Example.of(order);
-		return orderRepository.findAll(example,page);
+		Example<Order> example = Example.of(order);
+		return orderRepository.findAll(example, page);
 	}
 
 	public synchronized JSONObject pay(List<String> listExpress, String userId) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);
-		if(list.size()==0){
+		if (list.size() == 0) {
 			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
 		}
 
-
-		List<OrderReceipt> listReceipt=new ArrayList<>();
+		List<OrderReceipt> listReceipt = new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
-		BigDecimal totalPrice=BigDecimal.ZERO;
-		BigDecimal totalDownPrice=BigDecimal.ZERO;
-		BigDecimal totalServicePrice=BigDecimal.ZERO;
-		String shopId="";
-		int i=0;
-		JSONArray jsonArray=new JSONArray();
-		while(iterator.hasNext()){
+		BigDecimal totalPrice = BigDecimal.ZERO;
+		BigDecimal totalDownPrice = BigDecimal.ZERO;
+		BigDecimal totalServicePrice = BigDecimal.ZERO;
+		String shopId = "";
+		int i = 0;
+		JSONArray jsonArray = new JSONArray();
+		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if(App.ORDER_TYPE_AFTER.equals(next.getType())){
-//				return JSONFactory.getErrorJSON("订单"+(next.getBindExpressNo()==null?next.getExpressNo():next.getBindExpressNo())+"为后录单，请先处理后再发起罚款!");
-//				JSONObject tmp=new JSONObject();
-//				tmp.put("order", next.getExpressNo());
-//				tmp.put("status", "COMPLETE");
-//				tmp.put("orderType", "A");
-//				tmp.put("sendLog", false);
-//				tmp.put("des", "收件完成");
-//				jsonArray.add(tmp);
+			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
 				continue;
 			}
-			if(next.getSubStatus().equals(App.ORDER_PRE_CREATED)){
-				return JSONFactory.getErrorJSON("未定价，订单号:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
+			if (next.getSubStatus().equals(App.ORDER_PRE_CREATED)) {
+				return JSONFactory.getErrorJSON("未定价，订单号:" + next.getExpressNo()
+						+ (next.getBindExpressNo() == null ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
 			}
-			if(!next.getStatus().equals(App.ORDER_BEGIN)){
-				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:"+next.getExpressNo()+(next.getBindExpressNo()==null?"。":("，绑定单号为:"+next.getBindExpressNo())));
+			if (!next.getStatus().equals(App.ORDER_BEGIN)) {
+				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:" + next.getExpressNo()
+						+ (next.getBindExpressNo() == null ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
 			}
-//			if(redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString())!=null){   改为更新交易号的方式
-//				return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
-//			}
-			if(next.getShop()!=null){
-				if(shopId.equals("")){
-					shopId= next.getShop().getId();
+			// if(redisCache.hget(App.RDKEY_PAY_ORDER,
+			// next.getExpressNo().toString())!=null){ 改为更新交易号的方式
+			// return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
+			// }
+			if (next.getShop() != null) {
+				if (shopId.equals("")) {
+					shopId = next.getShop().getId();
 				}
-				if(!shopId.equals(next.getShop().getId())){
+				if (!shopId.equals(next.getShop().getId())) {
 					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
 				}
 			}
 			OrderReceipt orderReceipt = new OrderReceipt(next);
-			if(i!=0){
+			if (i != 0) {
 				totalServicePrice.add(orderReceipt.getCategory().getServicePrice());
-			}else{
+			} else {
 				i++;
 			}
-			totalPrice=totalPrice.add(orderReceipt.getPrice());
-			if(next.getDownMoney()!=null){
-				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			totalPrice = totalPrice.add(orderReceipt.getPrice());
+			if (next.getDownMoney() != null) {
+				totalDownPrice = totalDownPrice.add(next.getDownMoney());
 			}
-			if(jsonArray.size()>0){
+			if (jsonArray.size() > 0) {
 				HttpUtil.compileExpressMission(jsonArray);
 			}
 
 			Object key = redisCache.hget(App.RDKEY_PAY_ORDER, next.getExpressNo().toString());
-			if(key!=null){
+			if (key != null) {
 				String strKey = key.toString();
 				redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), next.getExpressNo().getBytes());
-				redisCache.delete("transaction_"+strKey);
+				redisCache.delete("transaction_" + strKey);
 			}
-			redisCache.hset(App.RDKEY_PAY_ORDER,next.getExpressNo(),tranNo);
+			redisCache.hset(App.RDKEY_PAY_ORDER, next.getExpressNo(), tranNo);
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
 		}
@@ -160,16 +154,78 @@ public class OrderService {
 		successJSON.put("totalDownPrice", totalDownPrice);
 		successJSON.put("tranNo", tranNo);
 		successJSON.put("shopId", shopId);
-		if(StringUtils.isNoneEmpty(userId)){
+		if (StringUtils.isNoneEmpty(userId)) {
 			successJSON.put("executor", HttpUtil.findPrivateUserInfo(userId));
 		}
 
-		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
+		redisCache.set("transaction_" + tranNo, 3600, successJSON.toJSONString());
+		return successJSON;
+	}
+
+	public JSONObject payCredit(List<String> listExpress, String userId) {
+		List<Express> list = expressService.selectByExpressNo(listExpress);
+		if (list.size() == 0) {
+			return JSONFactory.getErrorJSON("查找不到订单，无法支付!");
+		}
+
+		Iterator<Express> iterator = list.iterator();
+		String shopId = "";
+		StringBuffer sb = new StringBuffer();
+		JSONArray json = new JSONArray();
+		
+		while (iterator.hasNext()) {
+			Express next = iterator.next();
+			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
+				continue;
+			}
+			if (next.getSubStatus().equals(App.ORDER_PRE_CREATED)) {
+				return JSONFactory.getErrorJSON("未定价，订单号:" + next.getExpressNo()
+						+ (StringUtils.isBlank(next.getBindExpressNo()) ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
+			}
+			if (!next.getStatus().equals(App.ORDER_BEGIN)) {
+				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:" + next.getExpressNo()
+						+ (StringUtils.isBlank(next.getBindExpressNo()) ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
+			}
+
+			if (next.getShop() != null) {
+				if (shopId.equals("")) {
+					shopId = next.getShop().getId();
+				}
+				if (!shopId.equals(next.getShop().getId())) {
+					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
+				}
+			}
+
+			JSONObject tmp = new JSONObject();
+			tmp.put("order", next.getExpressNo());
+			tmp.put("status", "COMPLETE");
+			tmp.put("orderType", "R");
+			tmp.put("sendLog", true);
+			tmp.put("des", "支付完成");
+			json.add(tmp);
+			sb.append(next.getExpressNo() + ",");
+			next.setStatus(App.ORDER_SENDING);
+			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
+			expressService.updateExpress(next);
+		}
+		if (sb.length() > 0) {
+			String express = sb.substring(0, sb.length() - 1);
+			sendExpressLog21004(express);
+		}
+		
+		Collection<String> userIds=new HashSet<>();
+		String content="您的货物我们已经收到，即将开始为您配送，消费额会在今天21:00从余额中扣除，对该笔消费有疑问，欢迎致电：0571-28216560";
+		userIds.add(shopId);
+		HttpUtil.sendSMSToUserId(content, userIds);
+		
+		HttpUtil.compileExpressMission(json);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		return successJSON;
 	}
 
 	/***
 	 * 系统发起付款
+	 * 
 	 * @param expressNo
 	 * @param string
 	 * @return
@@ -177,36 +233,36 @@ public class OrderService {
 	public JSONObject systemPay(Set<String> expressNo, String string) {
 		// TODO Auto-generated method stub
 		List<Express> list = expressService.selectByExpressNo(expressNo);
-		if(list.size()==0){
+		if (list.size() == 0) {
 			return null;
 		}
 
-		List<OrderReceipt> listReceipt=new ArrayList<>();
+		List<OrderReceipt> listReceipt = new ArrayList<>();
 		Iterator<Express> iterator = list.iterator();
 		String tranNo = UUIDUtils.getUUID();
-		BigDecimal totalPrice=BigDecimal.ZERO;
-		BigDecimal totalDownPrice=BigDecimal.ZERO;
-		String shopId="";
-		int i=0;
-		while(iterator.hasNext()){
+		BigDecimal totalPrice = BigDecimal.ZERO;
+		BigDecimal totalDownPrice = BigDecimal.ZERO;
+		String shopId = "";
+		int i = 0;
+		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if(!App.ORDER_TYPE_AFTER.equals(next.getType())){
+			if (!App.ORDER_TYPE_AFTER.equals(next.getType())) {
 				return null;
 			}
 
-			if(next.getShop()!=null){
-				if(shopId.equals("")){
-					shopId= next.getShop().getId();
+			if (next.getShop() != null) {
+				if (shopId.equals("")) {
+					shopId = next.getShop().getId();
 				}
-				if(!shopId.equals(next.getShop().getId())){
+				if (!shopId.equals(next.getShop().getId())) {
 					return null;
 				}
 			}
 
 			OrderReceipt orderReceipt = new OrderReceipt(next);
-			totalPrice=totalPrice.add(orderReceipt.getPrice());
-			if(next.getDownMoney()!=null){
-				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			totalPrice = totalPrice.add(orderReceipt.getPrice());
+			if (next.getDownMoney() != null) {
+				totalDownPrice = totalDownPrice.add(next.getDownMoney());
 			}
 			orderReceipt.setTranNo(tranNo);
 			listReceipt.add(orderReceipt);
@@ -223,73 +279,76 @@ public class OrderService {
 		successJSON.put("tranNo", tranNo);
 		successJSON.put("shopId", shopId);
 
-		redisCache.set("transaction_"+tranNo, 3600, successJSON.toJSONString());
+		redisCache.set("transaction_" + tranNo, 3600, successJSON.toJSONString());
 		return successJSON;
 	}
 
 	public JSONObject queryTranSactionDetail(String tranNo) {
-		String successJSON = redisCache.getString("transaction_"+tranNo);
-		if(StringUtils.isBlank(successJSON)){
+		String successJSON = redisCache.getString("transaction_" + tranNo);
+		if (StringUtils.isBlank(successJSON)) {
 			return JSONFactory.getErrorJSON("交易已经关闭!");
 		}
 		return JSONObject.parseObject(successJSON);
 	}
 
-
 	public JSONObject lockOrder(String tranNo) {
-		String res = redisCache.getString("transaction_"+tranNo);
-		if(StringUtils.isEmpty(res)){
+		String res = redisCache.getString("transaction_" + tranNo);
+		if (StringUtils.isEmpty(res)) {
 			return JSONFactory.getErrorJSON("不用锁单了，请求号已经无效");
 		}
 		JSONObject jsonObject = JSONObject.parseObject(res);
 		JSONArray items = jsonObject.getJSONArray("content");
 		Iterator<Object> iterator = items.iterator();
-		while(iterator.hasNext()){
-			OrderReceipt next =JSONObject.toJavaObject((JSONObject) iterator.next(),OrderReceipt.class);
+		while (iterator.hasNext()) {
+			OrderReceipt next = JSONObject.toJavaObject((JSONObject) iterator.next(), OrderReceipt.class);
 			redisCache.hset(App.RDKEY_PAY_ORDER, next.getExpressNo().toString(), 1);
 		}
 		return JSONFactory.getSuccessJSON();
 	}
 
 	public String payCallback(String tranNo) {
-		List<OrderReceipt> list=orderReceiptRepository.findAllByTranNo(tranNo);
-		redisCache.delete("transaction_"+tranNo);
+		List<OrderReceipt> list = orderReceiptRepository.findAllByTranNo(tranNo);
+		redisCache.delete("transaction_" + tranNo);
 		log.info("付款回调:" + tranNo);
-		JSONArray json=new JSONArray();
-		StringBuffer sb=new StringBuffer();
-		for (OrderReceipt orderReceipt : list){
-			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
-			JSONObject tmp=new JSONObject();
+		JSONArray json = new JSONArray();
+		StringBuffer sb = new StringBuffer();
+		for (OrderReceipt orderReceipt : list) {
+			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
+					App.ORDER_PRE_PAY_PRICED);
+			JSONObject tmp = new JSONObject();
 			tmp.put("order", orderReceipt.getExpressNo());
 			tmp.put("status", "COMPLETE");
 			tmp.put("orderType", "R");
 			tmp.put("sendLog", true);
 			tmp.put("des", "支付完成");
 			json.add(tmp);
-			sb.append(orderReceipt.getExpressNo()+",");
+			sb.append(orderReceipt.getExpressNo() + ",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
-			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
-			//发送短信
-			if (orderReceipt.getSender() != null && orderReceipt.getReceiver()!= null) {
-				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo()) ? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
-				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
+			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
+			// 发送短信
+			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
+				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo())
+						? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + expressNo;
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
 		}
-		if(sb.length()>0){
-			String express = sb.substring(0, sb.length()-1);
+		if (sb.length() > 0) {
+			String express = sb.substring(0, sb.length() - 1);
 			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
 
 		log.info("需要完成的单号 : " + json.toJSONString());
 		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
-	
+
 		return null;
 	}
 
 	/***
 	 * 支付完成 发送日志
+	 * 
 	 * @param expressNo
 	 */
 	public void sendExpressLog21004(final String expressNo) {
@@ -306,24 +365,24 @@ public class OrderService {
 		thread.start();
 	}
 
-
 	public JSONObject queryPrice(List<String> listExpress) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);
-		if(list.size()==0){
+		if (list.size() == 0) {
 			return JSONFactory.getErrorJSON("查找不到订单!");
 		}
 
 		Iterator<Express> iterator = list.iterator();
-		BigDecimal totalPrice=BigDecimal.ZERO;
-		BigDecimal totalDownPrice=BigDecimal.ZERO;
-		while(iterator.hasNext()){
+		BigDecimal totalPrice = BigDecimal.ZERO;
+		BigDecimal totalDownPrice = BigDecimal.ZERO;
+		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if(App.ORDER_TYPE_AFTER.equals(next.getType()))continue;
-			if(next.getCategory()!=null){
-				totalPrice=totalPrice.add(next.getCategory().getTotalPrice());
+			if (App.ORDER_TYPE_AFTER.equals(next.getType()))
+				continue;
+			if (next.getCategory() != null) {
+				totalPrice = totalPrice.add(next.getCategory().getTotalPrice());
 			}
-			if(next.getDownMoney()!=null){
-				totalDownPrice=totalDownPrice.add(next.getDownMoney());
+			if (next.getDownMoney() != null) {
+				totalDownPrice = totalDownPrice.add(next.getDownMoney());
 			}
 		}
 
@@ -340,26 +399,5 @@ public class OrderService {
 		order.setSubStatus(App.ORDER_PRE_CREATED);
 		Order save = orderRepository.save(order);
 		return save;
-	}
-
-	@Deprecated
-	public void submitOrderPriced(Long orderNumber,Fence fence){
-		orderDao.updateOrderStatusFence(orderNumber, App.ORDER_BEGIN,App.ORDER_BEGIN, fence);
-	}
-
-	@Deprecated
-	public void completeOrder(Long orderNumber) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,App.ORDER_COMPLETE);
-	}
-
-	@Deprecated
-	public void errorCompleteOrder(Long orderNumber,String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_COMPLETE,subStatus);
-	}
-
-	@Deprecated
-	public boolean cancelOrder(Long orderNumber, String subStatus) {
-		orderDao.updateOrderStatus(orderNumber, App.ORDER_CANCEL,subStatus);
-		return true;
 	}
 }
