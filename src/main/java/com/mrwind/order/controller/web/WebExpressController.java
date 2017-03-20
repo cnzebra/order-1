@@ -100,10 +100,10 @@ public class WebExpressController {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
-		List<Express> expressList = expressService.selectByShopIdAndMode(id, tel, expressNo, date, pageIndex - 1, pageSize);
-		if (expressList != null) {
+		Page<Express> expressPage = expressService.selectByShopIdAndMode(id, tel, expressNo, date, pageIndex - 1, pageSize);
+		if (expressPage != null) {
 			JSONObject json = JSONFactory.getSuccessJSON();
-			json.put("content", expressList);
+			json.put("content", expressPage);
 			return json;
 		}
 		return JSONFactory.getfailJSON("查询不到数据");

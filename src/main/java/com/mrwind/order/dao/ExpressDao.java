@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
@@ -243,7 +245,7 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
-	public List<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,PageRequest page) {
+	public Page<Express> selectByShopIdAndMode(String id, String tel, String expressNo, Date date, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
 		if(tel != null){
@@ -257,7 +259,9 @@ public class ExpressDao extends BaseDao {
 		}
 		query.addCriteria(operator);
 		query.with(page);
-		return mongoTemplate.find(query,Express.class);
+		long count = mongoTemplate.count(query,Express.class);
+		return  new PageImpl<>( mongoTemplate.find(query,Express.class),page,count);
+
 	}
 
     public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,String param, PageRequest page) {
