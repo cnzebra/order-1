@@ -381,12 +381,17 @@ public class HttpUtil {
 
 	//创建收件行程及订单
 	public static void createReceiveMission(final List<Express> express){
-		JSONArray jsonArray = (JSONArray) JSONArray.toJSON(express);
-		JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/createReceiveMission", jsonArray.toJSONString());
-		if (result.containsKey("errorCode")){
-			log.info("类HttpUtil 方法createReceiveMission");
-			log.info("errorCode" + result.getInteger("errCode"));
-			log.info("errorMessage" + result.getString("errMsg"));
-		}
+		 new Thread() {
+			public void run() {
+				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(express);
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/createReceiveMission", jsonArray.toJSONString());
+				if (result.containsKey("errorCode")) {
+					log.info("类HttpUtil 方法createReceiveMission");
+					log.info("errorCode" + result.getInteger("errCode"));
+					log.info("errorMessage" + result.getString("errMsg"));
+				}
+			}
+		}.start();
+
 	}
 }
