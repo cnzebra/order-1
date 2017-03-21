@@ -1,12 +1,10 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import com.mrwind.order.dao.ExpressDao;
+import com.mrwind.order.repositories.ExpressRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +49,9 @@ public class OrderService {
 	
 	@Autowired
 	private OrderDao orderDao;
+
+	@Autowired
+	ExpressRepository expressRepository;
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);
@@ -256,7 +257,7 @@ public class OrderService {
 		redisCache.delete("transaction_"+tranNo);
 		log.info("付款回调:" + tranNo);
 		JSONArray json=new JSONArray();
-		StringBuffer sb=new StringBuffer();
+		Set<String> expressNos = Collections.emptySet();
 		for (OrderReceipt orderReceipt : list){
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
 			JSONObject tmp=new JSONObject();
@@ -266,7 +267,6 @@ public class OrderService {
 			tmp.put("sendLog", true);
 			tmp.put("des", "支付完成");
 			json.add(tmp);
-			sb.append(orderReceipt.getExpressNo()+",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(),1);
 			//发送短信
@@ -275,14 +275,14 @@ public class OrderService {
 				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
+			expressNos.add(orderReceipt.getExpressNo());
 		}
-		if(sb.length()>0){
-			String express = sb.substring(0, sb.length()-1);
-			sendExpressLog21004(express);
+		if(expressNos.size() > 0){
+			HttpUtil.createReceiveMission(expressRepository.findByExpressNoIn(expressNos));
+//			sendExpressLog21004(express);
 		}
 		log.info("需要完成的单号 : " + json.toJSONString());
-		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
-	
+
 		return null;
 	}
 	

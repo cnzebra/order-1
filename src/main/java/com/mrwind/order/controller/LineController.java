@@ -1,9 +1,6 @@
 package com.mrwind.order.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -68,6 +65,12 @@ public class LineController {
 		return JSONFactory.getSuccessJSON();
 	}
 
+	/**
+	 * 修改轨迹（覆盖）
+	 * @param jsonString
+	 * @param expressNo
+	 * @return
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/update/{expressNo}", method = RequestMethod.POST)
 	public JSONObject updateLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
@@ -82,21 +85,22 @@ public class LineController {
 		return JSONFactory.getSuccessJSON();
 	}
 
+	/**
+	 * 修改轨迹（追加）
+	 * @param param
+	 * @return
+	 */
 	@ResponseBody
-	@RequestMapping(value = "/modifi/{expressNo}", method = RequestMethod.POST)
-	public JSONObject modifiLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
-		JSONArray jsonArray = jsonString.getJSONArray("predict");
-		Iterator<Object> iterator = jsonArray.iterator();
-		List<Line> list = new ArrayList<>();
-		while (iterator.hasNext()) {
-			Line line = LineUtil.caseToLine((JSONObject) iterator.next());
-			list.add(line);
-		}
-		Date planTime = jsonString.getDate("predict_time");
+	@RequestMapping(value = "/modifi", method = RequestMethod.POST)
+	public JSONObject modifiLine(@RequestBody JSONObject param) {
+
+		JSONArray jsonArray = param.getJSONArray("lines");
+		List<Line> list = jsonArray.toJavaList(Line.class);
+		String expressNo = param.getString("expressNo");
+		Date planTime = param.getDate("preTime");
 		expressService.updateExpressPlanTime(expressNo,planTime);
 		
 		expressService.modifiLine(expressNo, list);
 		return JSONFactory.getSuccessJSON();
 	}
-
 }

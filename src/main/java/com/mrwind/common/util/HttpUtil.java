@@ -281,7 +281,7 @@ public class HttpUtil {
 	/***
 	 * 定价接口
 	 * 
-	 * @param json
+	 * @param distance
 	 * @return
 	 */
 	public static JSONObject calculatePrice(String shopId,Integer weight,Integer distance) {
@@ -392,6 +392,5 @@ public class HttpUtil {
 				}
 			}
 		}.start();
-
 	}
 }
