@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.mrwind.common.util.Md5Util;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -329,8 +330,10 @@ public class OrderService {
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
 				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo())
 						? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
-						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + expressNo;
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+				redisCache.set(encode,60*60*24*15,expressNo);
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
 		}

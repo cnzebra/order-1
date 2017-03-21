@@ -2,6 +2,7 @@ package com.mrwind.order.controller;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.mrwind.common.cache.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -22,11 +23,13 @@ public class ExpressController {
 
 	@Autowired
 	ExpressService expressService;
-
+	@Autowired
+	RedisCache redisCache;
 
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.GET)
-	public JSONObject select(String expressNo) {
+	public JSONObject select(String encode) {
+		String expressNo = redisCache.getString(encode);
 		Express res = expressService.selectByNo(expressNo);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", res);
