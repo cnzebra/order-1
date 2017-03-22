@@ -12,16 +12,14 @@
      http://www.springframework.org/schema/data/mongo  
      http://www.springframework.org/schema/data/mongo/spring-mongo.xsd">
 
-	<mongo:mongo id="mongo" host="${mvn.mongo.host}" port="${mvn.mongo.port}">
-		<mongo:options connections-per-host="${mvn.mongo.connectionsPerHost}"
+	<mongo:mongo-client id="mongo" host="${mvn.mongo.host}"
+		port="${mvn.mongo.port}" credentials="${mvn.mongo.credentials}" >
+		<mongo:client-options connections-per-host="${mvn.mongo.connectionsPerHost}"
 			threads-allowed-to-block-for-connection-multiplier="${mvn.mongo.threadsAllowedToBlockForConnectionMultiplier}"
-			connect-timeout="${mvn.mongo.connectTimeout}" max-wait-time="${mvn.mongo.maxWaitTime}"
-			auto-connect-retry="${mvn.mongo.autoConnectRetry}" slave-ok="${mvn.mongo.slaveOk}"
-			write-number="1" write-timeout="0" write-fsync="true" />
-	</mongo:mongo>
+			connect-timeout="${mvn.mongo.connectTimeout}" max-wait-time="${mvn.mongo.maxWaitTime}" />
+	</mongo:mongo-client>
 
-	<mongo:db-factory dbname="${mvn.mongo.dbname}"
-		mongo-ref="mongo" />
+	<mongo:db-factory dbname="${mvn.mongo.dbname}" mongo-ref="mongo" />
 
 	<bean id="mappingContext"
 		class="org.springframework.data.mongodb.core.mapping.MongoMappingContext" />
@@ -43,7 +41,7 @@
 			<mongo:converter>
 				<bean
 					class="com.mrwind.common.spring.mongo.converters.DoubleToBigDecimalConverter" />
-			</mongo:converter>		
+			</mongo:converter>
 		</mongo:custom-converters>
 	</mongo:mapping-converter>
 
