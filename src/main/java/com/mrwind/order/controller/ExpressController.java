@@ -28,11 +28,13 @@ public class ExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/select", method = RequestMethod.GET)
-	public JSONObject select(String encode) {
+	public JSONObject select(String encode,String count) {
 		String expressNo = redisCache.getString(encode);
 		Express res = expressService.selectByNo(expressNo);
+		redisCache.set(expressNo,60*60*24*15,count);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", res);
+		successJSON.put("count",count);
 		return successJSON;
 	}
 

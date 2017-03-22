@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +53,21 @@ public class OrderService {
 
 	@Autowired
 	RedisCache redisCache;
+
+	public JSONObject reminder(String expressNo){
+		//根据运单号查找当前派送人
+		Express express = expressService.selectByNo(expressNo);
+		User user = express.getLines().get(express.getCurrentLine() - 1).getExecutorUser();
+		//推送派送人手机
+		JSONObject phoneJson = new JSONObject();
+		phoneJson.put("uid",user.getId());
+		JSONObject contentJson = new JSONObject();
+		contentJson.put("title","催单任务提醒");
+		contentJson.put("content","运单"+expressNo+ "被催单，请优先配送！");
+		phoneJson.put("data",contentJson);
+		HttpUtil.pushJsonDateToPhone(phoneJson);
+		return JSONFactory.getSuccessJSON();
+	}
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);

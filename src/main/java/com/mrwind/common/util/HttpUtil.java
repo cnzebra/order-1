@@ -185,10 +185,7 @@ public class HttpUtil {
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
 		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE).post(
 				ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
-		if (clientResponse.getStatus() == 200) {
-			return true;
-		}
-		return false;
+		return clientResponse.getStatus() == 200;
 	}
 
 	public static Boolean pushJsonDateToPhone(JSONObject json) {
@@ -197,10 +194,7 @@ public class HttpUtil {
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
 		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE)
 				.post(ClientResponse.class, json.toString());
-		if (clientResponse.getStatus() == 200) {
-			return true;
-		}
-		return false;
+		return clientResponse.getStatus() == 200;
 	}
 
 	public static void main(String[] args) {
