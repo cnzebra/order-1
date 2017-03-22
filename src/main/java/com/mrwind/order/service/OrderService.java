@@ -278,6 +278,7 @@ public class OrderService {
 			expressNos.add(orderReceipt.getExpressNo());
 		}
 		if(expressNos.size() > 0){
+			// TODO: 2017/3/22 此处应异步 
 			HttpUtil.createReceiveMission(expressRepository.findByExpressNoIn(expressNos));
 //			sendExpressLog21004(express);
 		}

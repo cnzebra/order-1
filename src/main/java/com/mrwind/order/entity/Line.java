@@ -16,6 +16,9 @@ public class Line {
 	private Date realTime;
 	private User executorUser;
 	private String title;
+	private Double lat;
+	private Double lng;
+	private String address;
 
 	public Line() {
 
@@ -123,4 +126,27 @@ public class Line {
 		this.status = status;
 	}
 
+	public Double getLat() {
+		return lat;
+	}
+
+	public void setLat(Double lat) {
+		this.lat = lat;
+	}
+
+	public Double getLng() {
+		return lng;
+	}
+
+	public void setLng(Double lng) {
+		this.lng = lng;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
 }

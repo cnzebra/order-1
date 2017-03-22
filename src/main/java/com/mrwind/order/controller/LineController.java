@@ -42,8 +42,7 @@ public class LineController {
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
 	public JSONObject completeLine(@RequestBody JSONObject param) {
 		String expressNo = param.getString("expressNo");
-		expressService.updateLineIndex(expressNo,2);   //节点同时有两个，所以一次更新两个
-		return JSONFactory.getSuccessJSON();
+		return expressService.updateLineIndex(expressNo,1);
 	}
 
 	@ResponseBody

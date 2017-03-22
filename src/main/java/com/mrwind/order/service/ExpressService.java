@@ -145,6 +145,9 @@ public class ExpressService {
 				line.setNode(order.getSender().getAddress());
 				line.setIndex(1);
 				line.setPlanTime(dueTime);
+				line.setAddress(order.getSender().getAddress());
+				line.setLat(order.getSender().getLat());
+				line.setLng(order.getSender().getLng());
 				lineList.add(line);
 				express.setLines(lineList);
 			}
@@ -346,10 +349,13 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-	public Integer updateLineIndex(String expressNo, int addNumber) {
-		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
-		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),
-				findFirstByExpressNo.getCurrentLine() + addNumber);
+	public JSONObject updateLineIndex(String expressNo, int addNumber) {
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		JSONObject result = JSONFactory.getSuccessJSON();
+		result.put("express", express);
+		return result;
 	}
 
 	/**
