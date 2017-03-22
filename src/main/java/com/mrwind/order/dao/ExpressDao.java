@@ -255,16 +255,16 @@ public class ExpressDao extends BaseDao {
 	public Page<Express> selectByShopIdAndMode(String id, String status, String tel, String expressNo, Date date, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
-		if (tel != null) {
+		if (StringUtils.isNotBlank(tel)) {
 			operator.orOperator(Criteria.where("sender.tel").regex(tel), Criteria.where("receiver.tel").regex(tel));
 		}
-		if (expressNo != null) {
+		if (StringUtils.isNotBlank(expressNo)) {
 			query.addCriteria(Criteria.where("expressNo").is(expressNo));
 		}
 		if (date != null) {
 			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
 		}
-		if (status != null) {
+		if (StringUtils.isNotBlank(status)) {
 			query.addCriteria(Criteria.where("status").is(status));
 		}
 		query.addCriteria(operator);
