@@ -94,13 +94,13 @@ public class WebExpressController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/selectByShopIdAndMode", method = RequestMethod.GET)
-	public JSONObject selectByShopIdAndMode(String id, String tel, Date date, String expressNo,
+	public JSONObject selectByShopIdAndMode(String id,String status, String tel, Date date, String expressNo,
 											@RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
 											@RequestParam(value = "pageIndex", defaultValue = "100") Integer pageSize) {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
-		Page<Express> expressPage = expressService.selectByShopIdAndMode(id, tel, expressNo, date, pageIndex - 1, pageSize);
+		Page<Express> expressPage = expressService.selectByShopIdAndMode(id,status, tel, expressNo, date, pageIndex - 1, pageSize);
 		if (expressPage != null) {
 			JSONObject json = JSONFactory.getSuccessJSON();
 			json.put("content", expressPage);

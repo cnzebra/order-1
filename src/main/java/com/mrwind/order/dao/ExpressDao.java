@@ -252,7 +252,7 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
-	public Page<Express> selectByShopIdAndMode(String id, String tel, String expressNo, Date date, PageRequest page) {
+	public Page<Express> selectByShopIdAndMode(String id, String status, String tel, String expressNo, Date date, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = Query.query(Criteria.where("shop.id").is(id));
 		if (tel != null) {
@@ -263,6 +263,9 @@ public class ExpressDao extends BaseDao {
 		}
 		if (date != null) {
 			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
+		}
+		if (status != null) {
+			query.addCriteria(Criteria.where("status").is(status));
 		}
 		query.addCriteria(operator);
 		query.with(page);

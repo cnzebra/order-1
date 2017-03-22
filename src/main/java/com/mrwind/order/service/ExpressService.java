@@ -756,10 +756,10 @@ public class ExpressService {
         return JSONFactory.getfailJSON("更新失败");
     }
 
-	public Page<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
+	public Page<Express> selectByShopIdAndMode(String id,String status,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC,"tel"));
 		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
-		return expressDao.selectByShopIdAndMode(id,tel,expressNo,date,page);
+		return expressDao.selectByShopIdAndMode(id,status,tel,expressNo,date,page);
 	}
 
 	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType,String param, Integer pageIndex, Integer pageSize) {
