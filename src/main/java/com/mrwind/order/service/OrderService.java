@@ -11,6 +11,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +54,21 @@ public class OrderService {
 
 	@Autowired
 	RedisCache redisCache;
+
+	public JSONObject reminder(String expressNo){
+		//根据运单号查找当前派送人
+		Express express = expressService.selectByNo(expressNo);
+		User user = express.getLines().get(express.getCurrentLine() - 1).getExecutorUser();
+		//推送派送人手机
+		JSONObject phoneJson = new JSONObject();
+		phoneJson.put("uid",user.getId());
+		JSONObject contentJson = new JSONObject();
+		contentJson.put("title","催单任务提醒");
+		contentJson.put("content","运单"+expressNo+ "被催单，请优先配送！");
+		phoneJson.put("data",contentJson);
+		HttpUtil.pushJsonDateToPhone(phoneJson);
+		return JSONFactory.getSuccessJSON();
+	}
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);
@@ -334,8 +351,10 @@ public class OrderService {
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
 				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo())
 						? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
-						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + expressNo;
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+				redisCache.set(encode,60*60*24*15,expressNo);
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
 		}
