@@ -271,7 +271,7 @@ public class ExpressService {
         String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
         Collection<String> userIds = new HashSet<>();
         userIds.add(express.getShop().getId());
-        HttpUtil.sendSMSToUserId(content, userIds);
+        HttpUtil.sendSMSToShopId(content, userIds);
 		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo,900,code);
         ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
                 ExpressCodeLog.TypeConstant.TYPE_SEND, code);
@@ -357,7 +357,7 @@ public class ExpressService {
 		}
 		return express;
 	}
-
+	
 	public Express selectByExpressNo(String expressNo) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		return express;
@@ -754,15 +754,15 @@ public class ExpressService {
         return JSONFactory.getfailJSON("更新失败");
     }
 
-	public List<Express> selectByShopIdAndMode(String id,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
+	public Page<Express> selectByShopIdAndMode(String id,String status,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC,"tel"));
 		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
-		return expressDao.selectByShopIdAndMode(id,tel,expressNo,date,page);
+		return expressDao.selectByShopIdAndMode(id,status,tel,expressNo,date,page);
 	}
 
-	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType, String expressNo,String name,Integer pageIndex, Integer pageSize) {
+	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType,String param, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
-		return expressDao.selectByShopIdAndModeForWeChat(id,status,date,dayType,expressNo,name,page);
+		return expressDao.selectByShopIdAndModeForWeChat(id,status,date,dayType,param,page);
 	}
 }

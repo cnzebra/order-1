@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+import com.mrwind.common.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -94,16 +95,17 @@ public class WebExpressController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/selectByShopIdAndMode", method = RequestMethod.GET)
-	public JSONObject selectByShopIdAndMode(String id, String tel, Date date, String expressNo,
+	public JSONObject selectByShopIdAndMode(String id,String status, String tel, String date, String expressNo,
 											@RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
-											@RequestParam(value = "pageIndex", defaultValue = "100") Integer pageSize) {
+											@RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
-		List<Express> expressList = expressService.selectByShopIdAndMode(id, tel, expressNo, date, pageIndex - 1, pageSize);
-		if (expressList != null) {
+		Date parseDate = DateUtils.parseDate(date);
+		Page<Express> expressPage = expressService.selectByShopIdAndMode(id,status, tel, expressNo, parseDate, pageIndex - 1, pageSize);
+		if (expressPage != null) {
 			JSONObject json = JSONFactory.getSuccessJSON();
-			json.put("content", expressList);
+			json.put("content", expressPage);
 			return json;
 		}
 		return JSONFactory.getfailJSON("查询不到数据");
@@ -123,13 +125,14 @@ public class WebExpressController {
 	 */
 	@ResponseBody
 	@RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
-	public JSONObject selectByShopIdForWeChat(String id, String status, Date date, String dayType, String expressNo, String name,
+	public JSONObject selectByShopIdForWeChat(String id, String status, String date, String dayType, String param,
 											  @RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
-											  @RequestParam(value = "pageIndex", defaultValue = "20") Integer pageSize) {
+											  @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
-		List<Express> expressList = expressService.selectByShopIdAndModeForWeChat(id, status, date, dayType, expressNo, name, pageIndex - 1, pageSize);
+		Date parseDate = DateUtils.parseDate(date);
+		List<Express> expressList = expressService.selectByShopIdAndModeForWeChat(id, status, parseDate, dayType, param, pageIndex - 1, pageSize);
 		if (expressList != null) {
 			JSONObject json = JSONFactory.getSuccessJSON();
 			json.put("content", expressList);

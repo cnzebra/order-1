@@ -23,4 +23,6 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 
 	Page<Express> findByShopId(String shopId, Pageable pageable);
+	
+	List<Express> findBySubStatus(String subStatus);
 }

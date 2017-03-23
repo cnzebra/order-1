@@ -2,6 +2,7 @@ package com.mrwind.common.spring;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.converter.HttpMessageNotWritableException;
@@ -20,8 +21,10 @@ public class CustomerFastJsonHttpMessageConverter extends FastJsonHttpMessageCon
 	    @Override
 	    protected void writeInternal(Object obj, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 	        OutputStream out = outputMessage.getBody();
-	        String text = JSON.toJSONString(obj, mapping, super.getFeatures());
-	        byte[] bytes = text.getBytes(getCharset());
+	        @SuppressWarnings("deprecation")
+			String text = JSON.toJSONString(obj, mapping, getFeatures());
+	        
+	        byte[] bytes = text.getBytes(Charset.defaultCharset());
 	        out.write(bytes);
 	    }
 

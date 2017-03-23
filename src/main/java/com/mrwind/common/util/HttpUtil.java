@@ -1,6 +1,8 @@
 package com.mrwind.common.util;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 
 import javax.ws.rs.core.MediaType;
 
@@ -50,6 +52,7 @@ public class HttpUtil {
 	 * @param content
 	 * @param userIds
 	 */
+	@Deprecated
 	public static void sendSMSToUserId(String content, Collection<String> userIds) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("userIds", userIds);
@@ -59,6 +62,40 @@ public class HttpUtil {
 		jsonObject.put("modelId", 12);
 		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_USERID, jsonObject.toJSONString());
 	}
+	
+	/**
+	 * 发送给指定shop短信
+	 * 
+	 * @param content
+	 * @param shop
+	 */
+	public static void sendSMSToShopId(String content, Collection<String> shopIds) {
+		JSONObject res = post(ConfigConstant.API_JAVA_HOST +"merchant/info/address/findByIds",JSON.toJSONString(shopIds));
+		StringBuffer sb=new StringBuffer();
+		String tels="";
+		if(res!=null){
+			JSONArray users = res.getJSONArray("content");
+			Iterator<Object> iterator = users.iterator();
+			while(iterator.hasNext()){
+				JSONObject user = (JSONObject) iterator.next();
+				String tel = user.getString("tel");
+				sb.append(tel+",");
+			}
+			if (sb.length() > 0) {
+				tels=sb.substring(0, sb.length() - 1);
+			}
+		}
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("tel", tels);
+		jsonObject.put("mrContent", content);
+		// 暂时随意填，防止被过滤
+		jsonObject.put("eventId", 1);
+		jsonObject.put("modelId", 12);
+		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_TEL, jsonObject.toJSONString());
+	}
+	
+	
 
 	/**
 	 * 发送给指定手机号码短信
@@ -185,10 +222,7 @@ public class HttpUtil {
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
 		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE).post(
 				ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
-		if (clientResponse.getStatus() == 200) {
-			return true;
-		}
-		return false;
+		return clientResponse.getStatus() == 200;
 	}
 
 	public static Boolean pushJsonDateToPhone(JSONObject json) {
@@ -197,21 +231,14 @@ public class HttpUtil {
 		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
 		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE)
 				.post(ClientResponse.class, json.toString());
-		if (clientResponse.getStatus() == 200) {
-			return true;
-		}
-		return false;
+		return clientResponse.getStatus() == 200;
 	}
 
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Express express = new Express();
-		Category category=new Category();
-		category.setDistance(100.1);
-		express.setCategory(category);
-		
-		update(express);
-		System.out.println(express.getCategory().getDistance());
+		HashSet<String> shopIds = new HashSet<>();
+		shopIds.add("58ca5a6fc2dc80aaf5b07bf0");
+		sendSMSToShopId("ce是数据", shopIds);
 	}
 
 	private static void update(Express express) {

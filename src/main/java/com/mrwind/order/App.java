@@ -31,6 +31,8 @@ public class App
     
     public static String ORDER_PRE_PAY_PRICED="pre_pay_priced";//支付完成
     
+    public static String ORDER_PRE_PAY_CREDIT="pre_pay_credit";//信用支付完成
+    
     public static String ORDER_CANCEL="cancel";  //取消
     
     public static String ORDER_TYPE_AFTER="after";
