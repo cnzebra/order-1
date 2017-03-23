@@ -72,6 +72,9 @@ public class ExpressService {
 			for (Date dueTime : dueTimes) {
 				list.add(initVIPExpress(order, user, dueTime));
 			}
+			Set<String> tels = new HashSet<>();
+			tels.add(order.getShop().getTel());
+			HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 		}
 
 		expressRepository.save(list);
@@ -107,6 +110,9 @@ public class ExpressService {
 				for (Date dueTime : dueTimes) {
 					list.add(initVIPExpress(order, user, dueTime));
 				}
+				Set<String> tels = new HashSet<>();
+				tels.add(order.getShop().getTel());
+				HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 			}
 		}
 		expressRepository.save(list);

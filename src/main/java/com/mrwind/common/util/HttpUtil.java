@@ -393,4 +393,26 @@ public class HttpUtil {
 			}
 		}.start();
 	}
+
+	public static JSONObject sendMessage(Collection<String> tels, Collection<String> userIds, String content){
+		JSONObject param = new JSONObject();
+		param.put("eventId", 1);
+		param.put("modelId", 12);
+		param.put("mrContent", content);
+		String url = "";
+		if (tels != null && tels.size() >0){
+			StringBuffer sb = new StringBuffer();
+			for (String tel: tels) {
+				sb.append(tel + ",");
+			}
+			param.put("tel", sb.substring(0, sb.length() - 1));
+			url = "msg/record/new";
+
+		}
+		else if (userIds != null && userIds.size() >0){
+			param.put("userIds", userIds);
+			url = "WindCloud/msg/info/batch";
+		}
+		return post(ConfigConstant.API_JAVA_HOST + url, param.toJSONString());
+	}
 }
