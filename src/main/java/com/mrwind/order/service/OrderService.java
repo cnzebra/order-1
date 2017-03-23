@@ -251,9 +251,9 @@ public class OrderService {
 		int i = 0;
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if (!App.ORDER_TYPE_AFTER.equals(next.getType())) {
-				return null;
-			}
+//			if (!App.ORDER_TYPE_AFTER.equals(next.getType())) {
+//				return null;
+//			}
 
 			if (next.getShop() != null) {
 				if (shopId.equals("")) {

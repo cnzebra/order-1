@@ -52,6 +52,7 @@ public class HttpUtil {
 	 * @param content
 	 * @param userIds
 	 */
+	@Deprecated
 	public static void sendSMSToUserId(String content, Collection<String> userIds) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("userIds", userIds);
