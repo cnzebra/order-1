@@ -2,6 +2,7 @@ package com.mrwind.order.controller;
 
 import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -100,6 +101,27 @@ public class LineController {
 		expressService.updateExpressPlanTime(expressNo,planTime);
 		
 		expressService.modifiLine(expressNo, list);
+		return JSONFactory.getSuccessJSON();
+	}
+
+	/**
+	 * 轨迹替换
+	 * @param param
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/replace", method = RequestMethod.POST)
+	public JSON replaceLine(@RequestBody final JSONObject param){
+		int index = param.getIntValue("startIndex");
+		String expressNo = param.getString("expressNo");
+		List<Line> lines = new ArrayList<Line>(){{addAll(param.getJSONArray("lines").toJavaList(Line.class));}};
+
+		if (StringUtils.isEmpty(expressNo)){
+			return JSONFactory.getErrorJSON("订单号不能为空");
+		}
+		if (lines == null || lines.size() == 0)
+			return JSONFactory.getErrorJSON("轨迹不能为空");
+		expressService.replaceLine(index, lines, expressNo);
 		return JSONFactory.getSuccessJSON();
 	}
 }

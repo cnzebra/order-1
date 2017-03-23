@@ -513,6 +513,10 @@ public class ExpressService {
 		expressDao.removeLine(expressNo, lineIndex);
 	}
 
+	public void replaceLine(Integer startIndex, List<Line> lines, String expressNo){
+		expressDao.replaceLine(startIndex,lines,expressNo);
+	}
+
 	public void updateLine(String expressNo, List<Line> list) {
 		expressDao.updateLines(expressNo, list);
 	}

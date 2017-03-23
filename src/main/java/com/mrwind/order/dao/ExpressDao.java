@@ -76,6 +76,14 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, basicUpdate, Express.class).getN();
 	}
 
+	public int replaceLine(Integer startIndex, List<Line> lines, String expressNo){
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		String cmd = "{ '$pull' : {'lines':{ 'index' : {'$gte':{ " + startIndex +"}}}}})";
+		BasicUpdate basicUpdate = new BasicUpdate(cmd);
+		mongoTemplate.updateFirst(query, basicUpdate, Express.class);
+		return addLines(expressNo, lines);
+	}
+
 	public List<Express> findExpress(String param, String fenceName, String mode, String status, String day,
 			Date dueTime, PageRequest page) {
 		Criteria operator = new Criteria();

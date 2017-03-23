@@ -19,6 +19,7 @@ public class Line {
 	private Double lat;
 	private Double lng;
 	private String address;
+	private String statu;
 
 	public Line() {
 
@@ -148,5 +149,13 @@ public class Line {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public String getStatu() {
+		return statu;
+	}
+
+	public void setStatu(String statu) {
+		this.statu = statu;
 	}
 }
