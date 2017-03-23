@@ -32,7 +32,7 @@ public class ExpressController {
 		successJSON.put("data", res);
 		return successJSON;
 	}
-
+	
 	@ResponseBody
 	@RequestMapping(value = "/update/pricing", method = RequestMethod.POST)
 	public JSONObject updatePrice(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,

@@ -35,7 +35,7 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("subStatus").is(subStatus));
 		return mongoTemplate.find(query, Express.class);
 	}
-
+	
 	public List<Express> findRelationship(String userId) {
 		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
 		query.with(new Sort(Sort.Direction.DESC, "createTime"));
