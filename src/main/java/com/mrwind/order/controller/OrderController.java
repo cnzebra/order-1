@@ -27,6 +27,17 @@ public class OrderController {
 	@Autowired
 	private OrderService orderService;
 
+	/**
+	 * 催单
+	 * @param expressNo
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/reminder/{expressNo}",method = RequestMethod.POST)
+	public JSONObject reminder(@PathVariable("expressNo")String expressNo){
+		return orderService.reminder(expressNo);
+	}
+
 	@ResponseBody
 	@RequestMapping(value = "/pay/{userId}", method = RequestMethod.POST)
 	public JSONObject pay(@RequestBody List<String> listExpress,@PathVariable("userId")String userId) {
