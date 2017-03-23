@@ -109,7 +109,7 @@ public class TaskService {
 			//MessageFormat.format(content,value.getExpressNo().size(),value.getTotalPrice());
 			count = value.getExpressNo().size();
 			price = value.getTotalPrice();
-			HttpUtil.sendSMSToUserId(getContent(nowDate,count,price), userIds);
+			HttpUtil.sendSMSToShopId(getContent(nowDate,count,price), userIds);
 		}
 		String jsonString = JSONObject.toJSONString(map);
 		redisCache.set(App.RDKEY_AFTER_ORDER, 3600*4,jsonString);
@@ -143,7 +143,7 @@ public class TaskService {
 			Collection<String> userIds=new HashSet<>();
 			userIds.add(entry.getKey());
 
-			HttpUtil.sendSMSToUserId(content, userIds);
+			HttpUtil.sendSMSToShopId(content, userIds);
 			System.out.println("chargeBack");
 		}
 		
@@ -199,7 +199,7 @@ public class TaskService {
 					expressDao.updateSubStatus(expressNo, App.ORDER_PRE_PAY_PRICED);
 				}
 			}
-			HttpUtil.sendSMSToUserId(content, userIds);
+			HttpUtil.sendSMSToShopId(content, userIds);
 		}
 	}
 

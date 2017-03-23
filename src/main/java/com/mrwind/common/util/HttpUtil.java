@@ -1,6 +1,7 @@
 package com.mrwind.common.util;
 
 import java.util.Collection;
+import java.util.Iterator;
 
 import javax.ws.rs.core.MediaType;
 
@@ -53,6 +54,37 @@ public class HttpUtil {
 	public static void sendSMSToUserId(String content, Collection<String> userIds) {
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("userIds", userIds);
+		jsonObject.put("mrContent", content);
+		// 暂时随意填，防止被过滤
+		jsonObject.put("eventId", 1);
+		jsonObject.put("modelId", 12);
+		post(ConfigConstant.API_JAVA_HOST + App.MSG_SEND_USERID, jsonObject.toJSONString());
+	}
+	
+	/**
+	 * 发送给指定shop短信
+	 * 
+	 * @param content
+	 * @param shop
+	 */
+	public static void sendSMSToShopId(String content, Collection<String> shopIds) {
+		JSONObject res = post(ConfigConstant.API_JAVA_HOST +"merchant/info/address/findByIds",JSON.toJSONString(shopIds));
+		StringBuffer sb=new StringBuffer();
+		if(res!=null){
+			JSONArray users = res.getJSONArray("content");
+			Iterator<Object> iterator = users.iterator();
+			while(iterator.hasNext()){
+				JSONObject user = (JSONObject) iterator.next();
+				String tel = user.getString("tel");
+				sb.append(tel+",");
+			}
+			if (sb.length() > 0) {
+				sb.substring(0, sb.length() - 1);
+			}
+		}
+		
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("tel", sb.toString());
 		jsonObject.put("mrContent", content);
 		// 暂时随意填，防止被过滤
 		jsonObject.put("eventId", 1);

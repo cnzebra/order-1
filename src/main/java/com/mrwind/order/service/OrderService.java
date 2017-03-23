@@ -27,6 +27,7 @@ import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.common.util.SetUtil;
 import com.mrwind.common.util.UUIDUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
@@ -170,6 +171,7 @@ public class OrderService {
 
 		Iterator<Express> iterator = list.iterator();
 		String shopId = "";
+		String shopTel="";
 		StringBuffer sb = new StringBuffer();
 		JSONArray json = new JSONArray();
 		
@@ -190,6 +192,9 @@ public class OrderService {
 			if (next.getShop() != null) {
 				if (shopId.equals("")) {
 					shopId = next.getShop().getId();
+				}
+				if(shopTel.equals("")){
+					shopTel=next.getShop().getTel();
 				}
 				if (!shopId.equals(next.getShop().getId())) {
 					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
@@ -213,10 +218,10 @@ public class OrderService {
 			sendExpressLog21004(express);
 		}
 		
-		Collection<String> userIds=new HashSet<>();
+		Collection<String> tels=new HashSet<>();
 		String content="您的货物我们已经收到，即将开始为您配送，消费额会在今天21:00从余额中扣除，对该笔消费有疑问，欢迎致电：0571-28216560";
-		userIds.add(shopId);
-		HttpUtil.sendSMSToUserId(content, userIds);
+		tels.add(shopTel);
+		HttpUtil.sendSMSToUserTel(content, SetUtil.ParseToString(tels));
 		
 		HttpUtil.compileExpressMission(json);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
