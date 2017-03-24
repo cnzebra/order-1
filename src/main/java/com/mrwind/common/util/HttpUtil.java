@@ -394,6 +394,21 @@ public class HttpUtil {
 		}.start();
 	}
 
+	//完成后收件任务，查找轨迹创建下一阶段任务
+	public static void findLineAndCreateMission(final List<Express> expresses){
+		new Thread() {
+			public void run() {
+				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(expresses);
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/findLineAndCreateMission", jsonArray.toJSONString());
+				if (result.containsKey("errorCode")) {
+					log.info("类HttpUtil 方法findLineAndCreateMission");
+					log.info("errorCode" + result.getInteger("errCode"));
+					log.info("errorMessage" + result.getString("errMsg"));
+				}
+			}
+		}.start();
+	}
+
 	public static JSONObject sendMessage(Collection<String> tels, Collection<String> userIds, String content){
 		JSONObject param = new JSONObject();
 		param.put("eventId", 1);

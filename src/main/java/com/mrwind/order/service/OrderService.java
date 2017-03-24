@@ -257,7 +257,7 @@ public class OrderService {
 		redisCache.delete("transaction_"+tranNo);
 		log.info("付款回调:" + tranNo);
 		JSONArray json=new JSONArray();
-		Set<String> expressNos = Collections.emptySet();
+		List<Express> expresses = new ArrayList<>();
 		for (OrderReceipt orderReceipt : list){
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(),App.ORDER_SENDING,App.ORDER_PRE_PAY_PRICED);
 			JSONObject tmp=new JSONObject();
@@ -275,11 +275,11 @@ public class OrderService {
 				String content = "尊敬的客户您好，"+orderReceipt.getSender().getName()+"寄给您的快件已由风先生配送，单号:" + expressNo + "，点此链接跟踪运单："+API_WECHAT_HOST+"#/phone/orderTrace/"+expressNo;
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
-			expressNos.add(orderReceipt.getExpressNo());
+			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
-		if(expressNos.size() > 0){
+		if(expresses.size() > 0){
 			// TODO: 2017/3/22 此处应异步 
-			HttpUtil.createReceiveMission(expressRepository.findByExpressNoIn(expressNos));
+			HttpUtil.findLineAndCreateMission(expresses);
 //			sendExpressLog21004(express);
 		}
 		log.info("需要完成的单号 : " + json.toJSONString());
