@@ -3,6 +3,8 @@ package com.mrwind.order.controller;
 import javax.servlet.http.HttpServletResponse;
 
 import com.mrwind.common.cache.RedisCache;
+import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.App;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -36,10 +38,21 @@ public class ExpressController {
 	}
 
 	@ResponseBody
+	@RequestMapping(value = "/encode",method = RequestMethod.GET)
+	public JSONObject expressEncode(String expressNo){
+		JSONObject jsonObject = JSONFactory.getSuccessJSON();
+		jsonObject.put("data", Md5Util.string2MD5(expressNo + App.SESSION_KEY));
+		return jsonObject;
+	}
+
+	@ResponseBody
 	@RequestMapping(value = "/select/encode", method = RequestMethod.GET)
 	public JSONObject selectEncode(String encode,String count) {
 		String expressNo = redisCache.getString(encode);
 		Express res = expressService.selectByNo(expressNo);
+		if (StringUtils.isBlank(expressNo) || res == null){
+			return JSONFactory.getErrorJSON("查不到运单号");
+		}
 		redisCache.set(expressNo,60*60*24*15,count);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", res);
