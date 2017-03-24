@@ -616,7 +616,6 @@ public class ExpressService {
 			express.setCurrentLine(lines.size());
 			express.setLines(lines);
 			express.setStatus(App.ORDER_COMPLETE);
-			express.setSubStatus(App.ORDER_COMPLETE);
 			expressDao.updateExpress(express);
 
 			JSONObject tmp = new JSONObject();
