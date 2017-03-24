@@ -55,17 +55,17 @@ public class OrderService {
 	@Autowired
 	RedisCache redisCache;
 
-	public JSONObject reminder(String expressNo){
-		//根据运单号查找当前派送人
+	public JSONObject reminder(String expressNo) {
+		// 根据运单号查找当前派送人
 		Express express = expressService.selectByNo(expressNo);
 		User user = express.getLines().get(express.getCurrentLine() - 1).getExecutorUser();
-		//推送派送人手机
+		// 推送派送人手机
 		JSONObject phoneJson = new JSONObject();
-		phoneJson.put("uid",user.getId());
+		phoneJson.put("uid", user.getId());
 		JSONObject contentJson = new JSONObject();
-		contentJson.put("title","催单任务提醒");
-		contentJson.put("content","运单"+expressNo+ "被催单，请优先配送！");
-		phoneJson.put("data",contentJson);
+		contentJson.put("title", "催单任务提醒");
+		contentJson.put("content", "运单" + expressNo + "被催单，请优先配送！");
+		phoneJson.put("data", contentJson);
 		HttpUtil.pushJsonDateToPhone(phoneJson);
 		return JSONFactory.getSuccessJSON();
 	}
@@ -188,10 +188,10 @@ public class OrderService {
 
 		Iterator<Express> iterator = list.iterator();
 		String shopId = "";
-		String shopTel="";
+		String shopTel = "";
 		StringBuffer sb = new StringBuffer();
 		JSONArray json = new JSONArray();
-		
+
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
 			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
@@ -210,8 +210,8 @@ public class OrderService {
 				if (shopId.equals("")) {
 					shopId = next.getShop().getId();
 				}
-				if(shopTel.equals("")){
-					shopTel=next.getShop().getTel();
+				if (shopTel.equals("")) {
+					shopTel = next.getShop().getTel();
 				}
 				if (!shopId.equals(next.getShop().getId())) {
 					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
@@ -234,12 +234,12 @@ public class OrderService {
 			String express = sb.substring(0, sb.length() - 1);
 			sendExpressLog21004(express);
 		}
-		
-		Collection<String> tels=new HashSet<>();
-		String content="您的货物我们已经收到，即将开始为您配送，消费额会在今天21:00从余额中扣除，对该笔消费有疑问，欢迎致电：0571-28216560";
+
+		Collection<String> tels = new HashSet<>();
+		String content = "您的货物我们已经收到，即将开始为您配送，消费额会在今天21:00从余额中扣除，对该笔消费有疑问，欢迎致电：0571-28216560";
 		tels.add(shopTel);
 		HttpUtil.sendSMSToUserTel(content, SetUtil.ParseToString(tels));
-		
+
 		HttpUtil.compileExpressMission(json);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		return successJSON;
@@ -268,9 +268,6 @@ public class OrderService {
 		int i = 0;
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
-//			if (!App.ORDER_TYPE_AFTER.equals(next.getType())) {
-//				return null;
-//			}
 
 			if (next.getShop() != null) {
 				if (shopId.equals("")) {
@@ -335,6 +332,8 @@ public class OrderService {
 		JSONArray json = new JSONArray();
 		StringBuffer sb = new StringBuffer();
 		for (OrderReceipt orderReceipt : list) {
+			if(App.ORDER_PRE_PAY_CREDIT.equals(orderReceipt.getPayType()))continue;   //后付款不处理
+			
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
 					App.ORDER_PRE_PAY_PRICED);
 			JSONObject tmp = new JSONObject();
