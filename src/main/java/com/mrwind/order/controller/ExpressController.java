@@ -51,11 +51,20 @@ public class ExpressController {
 
     @ResponseBody
     @RequestMapping(value = "/select/encode", method = RequestMethod.GET)
-    public JSONObject selectEncode(String encode, String count) {
+    public JSONObject selectEncode(String encode,String countString) {
         String expressNo = redisCache.getString(encode);
         Express res = expressService.selectByNo(expressNo);
         if (StringUtils.isBlank(expressNo) || res == null) {
             return JSONFactory.getErrorJSON("查不到运单号");
+        }
+        if (StringUtils.isBlank(countString)){
+            countString = "0";
+        }
+        int count;
+        try {
+            count = Integer.parseInt(countString);
+        }catch (NumberFormatException e){
+            return JSONFactory.getErrorJSON(e.getMessage());
         }
         //逆序lines
         descLines(res);
