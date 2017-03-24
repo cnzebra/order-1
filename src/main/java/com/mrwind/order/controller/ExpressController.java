@@ -27,7 +27,7 @@ public class ExpressController {
 	RedisCache redisCache;
 
 	@ResponseBody
-	@RequestMapping(value = "/selectDev",method = RequestMethod.GET)
+	@RequestMapping(value = "/select",method = RequestMethod.GET)
 	public JSONObject select(String expressNo) {
 		Express res = expressService.selectByNo(expressNo);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
@@ -36,8 +36,8 @@ public class ExpressController {
 	}
 
 	@ResponseBody
-	@RequestMapping(value = "/select", method = RequestMethod.GET)
-	public JSONObject select(String encode,String count) {
+	@RequestMapping(value = "/select/encode", method = RequestMethod.GET)
+	public JSONObject selectEncode(String encode,String count) {
 		String expressNo = redisCache.getString(encode);
 		Express res = expressService.selectByNo(expressNo);
 		redisCache.set(expressNo,60*60*24*15,count);
