@@ -8,6 +8,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.mrwind.order.App;
+
 /***
  * 订单收据
  * @author zhoujie
@@ -25,6 +27,7 @@ public class OrderReceipt {
 	private BigDecimal price;
 	private Date createTime;
 	private Category category;
+	private String payType;
 	private User sender;
 	private User receiver;
 	protected String bindExpressNo;
@@ -41,6 +44,9 @@ public class OrderReceipt {
 		this.sender = express.getSender();
 		this.bindExpressNo = express.getBindExpressNo();
 		this.receiver = express.getReceiver();
+		if(express.getSubStatus().equals(App.ORDER_PRE_PAY_CREDIT)){
+			this.payType=App.ORDER_PRE_PAY_CREDIT;
+		}
 	}
 	public String getId() {
 		return id;
@@ -105,5 +111,13 @@ public class OrderReceipt {
 
 	public void setReceiver(User receiver) {
 		this.receiver = receiver;
+	}
+
+	public String getPayType() {
+		return payType;
+	}
+
+	public void setPayType(String payType) {
+		this.payType = payType;
 	}
 }

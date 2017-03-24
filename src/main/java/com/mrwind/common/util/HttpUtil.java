@@ -15,7 +15,6 @@ import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.mrwind.common.constant.ConfigConstant;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Address;
-import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
@@ -237,8 +236,10 @@ public class HttpUtil {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		HashSet<String> shopIds = new HashSet<>();
-		shopIds.add("58ca5a6fc2dc80aaf5b07bf0");
-		sendSMSToShopId("ce是数据", shopIds);
+		shopIds.add("58d4b211c2dc01cfe4eb6440");
+		JSONObject res = post(ConfigConstant.API_JAVA_HOST +"merchant/info/address/findByIds",JSON.toJSONString(shopIds));
+		System.out.println(res);
+//		sendSMSToShopId("ce是数据", shopIds);
 	}
 
 	private static void update(Express express) {

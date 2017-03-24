@@ -49,6 +49,12 @@ public class TaskService {
 	RedisCache redisCache;
 
 	public void sendOrder() {
+		
+		if(redisCache.getObject(this.getClass().getName()+"sendOrder") !=null ){
+			return ;
+		}
+		redisCache.set(this.getClass().getName()+"sendOrder", 20, true);
+		
 		Calendar instance = Calendar.getInstance();
 		instance.add(Calendar.HOUR_OF_DAY, -2);
 
@@ -74,6 +80,12 @@ public class TaskService {
 	}
 
 	public void sendWarning() {
+		
+		if(redisCache.getObject(this.getClass().getName()+"sendWarning") !=null ){
+			return ;
+		}
+		redisCache.set(this.getClass().getName()+"sendWarning", 3600, true);
+		
 		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER,
 				App.ORDER_COMPLETE, App.ORDER_PRE_PRICED);
 		Map<String, ShopAfterExpress> map = new HashMap<>();
@@ -117,6 +129,12 @@ public class TaskService {
 	}
 
 	public void chargeBack() {
+		
+		if(redisCache.getObject(this.getClass().getName()+"chargeBack") !=null ){
+			return ;
+		}
+		redisCache.set(this.getClass().getName()+"chargeBack", 3600, true);
+		
 		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
 		if (jsonObject != null) {
 			for (Entry<String, Object> entry : jsonObject.entrySet()) {
