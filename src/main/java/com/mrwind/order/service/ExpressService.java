@@ -643,6 +643,9 @@ public class ExpressService {
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
 
+		if(express.getStatus().equals(App.ORDER_COMPLETE)){
+			return JSONFactory.getErrorJSON("运单已经妥投");
+		}
 		JSONObject tmp = new JSONObject();
 		tmp.put("order", expressNo);
 		tmp.put("status", "COMPLETE");
@@ -667,10 +670,10 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
-				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
-			express.setSubStatus(App.ORDER_COMPLETE);
-		}
+//		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+//				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
+//			express.setSubStatus(App.ORDER_COMPLETE);
+//		}
 		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 			if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
@@ -704,6 +707,12 @@ public class ExpressService {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 		JSONArray json = new JSONArray();
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		if (express == null)
+			return JSONFactory.getErrorJSON("运单不存在");
+		
+		if(express.getStatus().equals(App.ORDER_COMPLETE)){
+			return JSONFactory.getErrorJSON("运单已经妥投");
+		}
 		List<Line> lines = express.getLines();
 
 		Line line = new Line();
@@ -716,10 +725,10 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
-				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
-			express.setSubStatus(App.ORDER_COMPLETE);
-		}
+//		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+//				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
+//			express.setSubStatus(App.ORDER_COMPLETE);
+//		}
 		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 		}
