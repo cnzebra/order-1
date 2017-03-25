@@ -81,7 +81,7 @@ public class ExpressService {
 
 	public List<Express> createExpress(List<Order> orders) {
 
-		if(orders==null || orders.size()==0){
+		if (orders == null || orders.size() == 0) {
 			return null;
 		}
 
@@ -94,7 +94,7 @@ public class ExpressService {
 			user = JSONObject.toJavaObject(person, User.class);
 		}
 
-		for(Order order : orders){
+		for (Order order : orders) {
 			List<Date> dueTimes = order.getDueTimes();
 			if (dueTimes == null || dueTimes.size() == 0) {
 				list.add(initVIPExpress(order, user, nowDate));
@@ -149,26 +149,26 @@ public class ExpressService {
 	 */
 	public Express initExpress(Express express) {
 		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
-		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
-		calculatePrice.put("artificialPrice",0.3);
-		calculatePrice.put("totalPrice",calculatePrice.getBigDecimal("totalPrice").add(BigDecimal.valueOf(0.3)));
+		calculatePrice.put("serviceUser", express.getLines().get(0).getExecutorUser());
+		calculatePrice.put("artificialPrice", 0.3);
+		calculatePrice.put("totalPrice", calculatePrice.getBigDecimal("totalPrice").add(BigDecimal.valueOf(0.3)));
 		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
 		express.setCategory(javaObject);
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
 
-		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
 			express.setStatus(App.ORDER_SENDING);
-		}else{
+		} else {
 			express.setStatus(App.ORDER_BEGIN);
 		}
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
-	    express.setDueTime(DateUtils.getDateInHour());
+		express.setDueTime(DateUtils.getDateInHour());
 		expressRepository.save(express);
 
-		if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
 			return express;
 		}
 
@@ -178,12 +178,13 @@ public class ExpressService {
 
 	/**
 	 * 配送员后录单加单
+	 * 
 	 * @param express
 	 * @return
 	 */
-	public Express initAfterExpress(Express express){
+	public Express initAfterExpress(Express express) {
 		JSONObject calculatePrice = HttpUtil.calculatePrice((JSONObject) JSONObject.toJSON(express.getCategory()));
-		calculatePrice.put("serviceUser",express.getLines().get(0).getExecutorUser());
+		calculatePrice.put("serviceUser", express.getLines().get(0).getExecutorUser());
 
 		Category javaObject = JSON.toJavaObject(calculatePrice, Category.class);
 		express.setCategory(javaObject);
@@ -255,53 +256,56 @@ public class ExpressService {
 	/**
 	 * 发送妥投验证码
 	 *
-	 * @param expressNo 订单号
+	 * @param expressNo
+	 *            订单号
 	 * @return
 	 */
-    public JSONObject sendCode(String expressNo) {
-       String cacheCode = redisCache.getString(App.RDKEY_VERIFY_CODE+expressNo);
-    	if(cacheCode != null){
-    		return JSONFactory.getSuccessJSON("不要重复发送验证码");
+	public JSONObject sendCode(String expressNo) {
+		String cacheCode = redisCache.getString(App.RDKEY_VERIFY_CODE + expressNo);
+		if (cacheCode != null) {
+			return JSONFactory.getSuccessJSON("不要重复发送验证码");
 		}
-        Express express = selectByNo(expressNo);
-        if (express == null) {
+		Express express = selectByNo(expressNo);
+		if (express == null) {
 			return JSONFactory.getErrorJSON("查找不到该订单信息");
 		}
-        String code = CodeUtils.genSimpleCode(4);
-        String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
-        Collection<String> userIds = new HashSet<>();
-        userIds.add(express.getShop().getId());
-        HttpUtil.sendSMSToShopId(content, userIds);
-		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo,900,code);
-        ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
-                ExpressCodeLog.TypeConstant.TYPE_SEND, code);
-        expressCodeLogRepository.save(expressCodeLog);
+		String code = CodeUtils.genSimpleCode(4);
+		String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
+		Collection<String> userIds = new HashSet<>();
+		userIds.add(express.getShop().getId());
+		HttpUtil.sendSMSToShopId(content, userIds);
+		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo, 900, code);
+		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(), ExpressCodeLog.TypeConstant.TYPE_SEND,
+				code);
+		expressCodeLogRepository.save(expressCodeLog);
 		return JSONFactory.getSuccessJSON("发送成功");
-    }
+	}
 
 	/**
 	 * 验证码妥投
 	 *
-	 * @param expressNo 订单号
-	 * @param verifyCode 验证码
-	 * @param userInfo 用户信息
+	 * @param expressNo
+	 *            订单号
+	 * @param verifyCode
+	 *            验证码
+	 * @param userInfo
+	 *            用户信息
 	 * @return
 	 */
 	public JSONObject completeByCode(String expressNo, String verifyCode, JSONObject userInfo) {
-		String code = redisCache.getString(App.RDKEY_VERIFY_CODE+expressNo);
+		String code = redisCache.getString(App.RDKEY_VERIFY_CODE + expressNo);
 		if (!verifyCode.equals(code)) {
 			return JSONFactory.getErrorJSON("验证码错误");
 		}
-		redisCache.delete(App.RDKEY_VERIFY_CODE+expressNo);
-	    JSONObject jsonObject =	completeExpress(expressNo, null, userInfo);
+		redisCache.delete(App.RDKEY_VERIFY_CODE + expressNo);
+		JSONObject jsonObject = completeExpress(expressNo, null, userInfo);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
 				ExpressCodeLog.TypeConstant.TYPE_VERIFY, code);
 		expressCodeLogRepository.save(expressCodeLog);
 		return jsonObject;
 	}
 
-
-    public Express selectByExpress(Express express) {
+	public Express selectByExpress(Express express) {
 		Example<Express> example = Example.of(express);
 		return expressRepository.findOne(example);
 	}
@@ -319,7 +323,8 @@ public class ExpressService {
 				List<JSONObject> caseDetailList = new ArrayList<>();
 				while (iterator.hasNext()) {
 					Express next = iterator.next();
-					if(!next.getStatus().equals(App.ORDER_BEGIN))continue;
+					if (!next.getStatus().equals(App.ORDER_BEGIN))
+						continue;
 					JSONObject caseDetail = new JSONObject();
 					caseDetail.put("orderId", next.getExpressNo());
 					caseDetail.put("shopId", next.getShop().getId());
@@ -357,7 +362,7 @@ public class ExpressService {
 		}
 		return express;
 	}
-	
+
 	public Express selectByExpressNo(String expressNo) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		return express;
@@ -383,7 +388,7 @@ public class ExpressService {
 		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
 		}
-		if(!firstExpress.getStatus().equals(App.ORDER_BEGIN)){
+		if (!firstExpress.getStatus().equals(App.ORDER_BEGIN)) {
 			return JSONFactory.getErrorJSON("运单不允许改价！");
 		}
 		firstExpress.setCategory(category);
@@ -642,9 +647,9 @@ public class ExpressService {
 		tmp.put("sendLog", false);
 		tmp.put("des", "妥投");
 		json.add(tmp);
-		//妥投验证
+		// 妥投验证
 		boolean isComplete = HttpUtil.compileExpressMission(json);
-		if(!isComplete){
+		if (!isComplete) {
 			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
 		}
 
@@ -654,37 +659,41 @@ public class ExpressService {
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);
 		line.setTitle(user.getName() + "妥投了订单");
-		line.setIndex(lines.size()+1);
+		line.setIndex(lines.size() + 1);
 		lines.add(line);
 
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-		if (!App.ORDER_TYPE_AFTER.equals(express.getType())){
+		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
 			express.setSubStatus(App.ORDER_COMPLETE);
 		}
-		if(endAddress!=null){
+		if (endAddress != null) {
 			express.setEndAddress(endAddress);
-			if(App.ORDER_TYPE_AFTER.equals(express.getType())){
+			if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
 				updateAfterExpressPrice(endAddress, express);
 			}
 		}
 		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
 
-        if(express.getSender()!= null) {
-            HttpUtil.sendSMSToUserTel("您的包裹已妥投，妥投类型：本人签收，期待您再次使用风先生", express.getSender().getTel());
-        }
-        if(express.getReceiver()!= null){
-            HttpUtil.sendSMSToUserTel("我是配送员" + user.getName() + "，已不辱使命将你最宝贵的物品安全送达！ 期待你为我的全力以赴续满能量", express.getReceiver().getTel());
-        }
+		if (express.getSender() != null) {
+			HttpUtil.sendSMSToUserTel("您的包裹已妥投，妥投类型：本人签收，期待您再次使用风先生", express.getSender().getTel());
+		}
+		if (express.getReceiver() != null) {
+			HttpUtil.sendSMSToUserTel("我是配送员" + user.getName() + "，已不辱使命将你最宝贵的物品安全送达！ 期待你为我的全力以赴续满能量",
+					express.getReceiver().getTel());
+		}
 		return JSONFactory.getSuccessJSON();
 	}
 
 	private void updateAfterExpressPrice(Address endAddress, Express express) {
 		User sender = express.getSender();
-		Integer distance = HttpUtil.getDistance(endAddress.getLat(), endAddress.getLng(), sender.getLat(), sender.getLng());
-		JSONObject calculatePrice = HttpUtil.calculatePrice(express.getShop().getId(), express.getCategory().getWeight().intValue(), distance);
+		Integer distance = HttpUtil.getDistance(endAddress.getLat(), endAddress.getLng(), sender.getLat(),
+				sender.getLng());
+		JSONObject calculatePrice = HttpUtil.calculatePrice(express.getShop().getId(),
+				express.getCategory().getWeight().intValue(), distance);
 		Category category = JSONObject.toJavaObject(calculatePrice, Category.class);
 		express.setCategory(category);
 	}
@@ -705,8 +714,11 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-		express.setSubStatus(App.ORDER_ERROR_COMPLETE);
-		if(endAddress!=null){
+		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
+			express.setSubStatus(App.ORDER_COMPLETE);
+		}
+		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 		}
 		express.setRealEndTime(sysDate);
@@ -735,7 +747,7 @@ public class ExpressService {
 		return HttpUtil.findPersion(jsonObject);
 	}
 
-	public JSONObject findRelationship(String userId){
+	public JSONObject findRelationship(String userId) {
 		JSONObject jsonObject = JSONFactory.getSuccessJSON();
 		List<Express> expresses = expressDao.findRelationship(userId);
 
@@ -744,24 +756,26 @@ public class ExpressService {
 		return jsonObject;
 	}
 
-    public JSONObject updateExpressPrinted(List<String> expressList) {
+	public JSONObject updateExpressPrinted(List<String> expressList) {
 
-        int count = expressDao.updateExpressPrinted(expressList);
-        if (count > 0) {
-            return JSONFactory.getSuccessJSON();
-        }
-        return JSONFactory.getfailJSON("更新失败");
-    }
-
-	public Page<Express> selectByShopIdAndMode(String id,String status,String tel,String expressNo,Date date,Integer pageIndex, Integer pageSize) {
-		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC,"tel"));
-		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
-		return expressDao.selectByShopIdAndMode(id,status,tel,expressNo,date,page);
+		int count = expressDao.updateExpressPrinted(expressList);
+		if (count > 0) {
+			return JSONFactory.getSuccessJSON();
+		}
+		return JSONFactory.getfailJSON("更新失败");
 	}
 
-	public List<Express> selectByShopIdAndModeForWeChat(String id, String status,Date date, String dayType,String param, Integer pageIndex, Integer pageSize) {
+	public Page<Express> selectByShopIdAndMode(String id, String status, String tel, String expressNo, Date date,
+			Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC, "tel"));
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		return expressDao.selectByShopIdAndMode(id, status, tel, expressNo, date, page);
+	}
+
+	public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,
+			String param, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
-		PageRequest page = new PageRequest(pageIndex,pageSize,sort);
-		return expressDao.selectByShopIdAndModeForWeChat(id,status,date,dayType,param,page);
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		return expressDao.selectByShopIdAndModeForWeChat(id, status, date, dayType, param, page);
 	}
 }

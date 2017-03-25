@@ -169,8 +169,7 @@ public class ExpressController {
             return JSONFactory.getErrorJSON("请登录!");
         }
 
-        expressService.completeExpress(expressNo, endAddress, userInfo);
-        return JSONFactory.getSuccessJSON();
+        return expressService.completeExpress(expressNo, endAddress, userInfo);
     }
 
     @ResponseBody
