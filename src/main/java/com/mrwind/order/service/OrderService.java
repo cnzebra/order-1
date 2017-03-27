@@ -188,9 +188,8 @@ public class OrderService {
 		Iterator<Express> iterator = list.iterator();
 		String shopId = "";
 		String shopTel = "";
-		StringBuffer sb = new StringBuffer();
 		JSONArray json = new JSONArray();
-
+		List<Express> expresses = Collections.emptyList();
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
 			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
@@ -224,14 +223,14 @@ public class OrderService {
 			tmp.put("sendLog", true);
 			tmp.put("des", "支付完成");
 			json.add(tmp);
-			sb.append(next.getExpressNo() + ",");
 			next.setStatus(App.ORDER_SENDING);
 			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
 			expressService.updateExpress(next);
+			expresses.add(expressRepository.findFirstByExpressNo(next.getExpressNo()));
 		}
-		if (sb.length() > 0) {
-			String express = sb.substring(0, sb.length() - 1);
-			sendExpressLog21004(express);
+		if (expresses.size() > 0) {
+//			sendExpressLog21004(express);
+			HttpUtil.findLineAndCreateMission(expresses);
 		}
 
 		Collection<String> tels = new HashSet<>();
@@ -239,7 +238,7 @@ public class OrderService {
 		tels.add(shopTel);
 		HttpUtil.sendSMSToUserTel(content, SetUtil.ParseToString(tels));
 
-		HttpUtil.compileExpressMission(json);
+//		HttpUtil.compileExpressMission(json);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		return successJSON;
 	}
@@ -361,7 +360,7 @@ public class OrderService {
 			HttpUtil.findLineAndCreateMission(expresses);
 //			sendExpressLog21004(express);
 		}
-		HttpUtil.compileExpressMission(json);
+//		HttpUtil.compileExpressMission(json);
 
 		log.info("需要完成的单号 : " + json.toJSONString());
 		return null;

@@ -190,7 +190,7 @@ public class ExpressService {
 			return express;
 		}
 
-		sendExpressLog21003(express);
+//		sendExpressLog21003(express);
 		return express;
 	}
 
@@ -415,7 +415,7 @@ public class ExpressService {
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
-		sendExpressLog21003(firstExpress);
+//		sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 

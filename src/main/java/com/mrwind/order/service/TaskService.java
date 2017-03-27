@@ -74,9 +74,9 @@ public class TaskService {
 			map.put(express.getExpressNo(), listTmp);
 		}
 
-		for (Map.Entry<String, List<Express>> entry : map.entrySet()) {
-			expressService.sendExpressLog21010(entry.getValue());
-		}
+//		for (Map.Entry<String, List<Express>> entry : map.entrySet()) {
+//			expressService.sendExpressLog21010(entry.getValue());
+//		}
 	}
 
 	public void sendWarning() {

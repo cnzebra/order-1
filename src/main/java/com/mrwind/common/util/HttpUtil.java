@@ -422,7 +422,7 @@ public class HttpUtil {
 		}.start();
 	}
 
-	//完成后收件任务，查找轨迹创建下一阶段任务
+	//完成收件任务，查找轨迹创建下一阶段任务
 	public static void findLineAndCreateMission(final List<Express> expresses){
 		new Thread() {
 			public void run() {
