@@ -1,10 +1,8 @@
 package com.mrwind.order.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,8 +43,7 @@ public class LineController {
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
 	public JSONObject completeLine(@RequestBody JSONObject param) {
 		String expressNo = param.getString("expressNo");
-		expressService.updateLineIndex(expressNo,2);   //节点同时有两个，所以一次更新两个
-		return JSONFactory.getSuccessJSON();
+		return expressService.updateLineIndex(expressNo,1);
 	}
 
 	@ResponseBody
@@ -68,6 +65,12 @@ public class LineController {
 		return JSONFactory.getSuccessJSON();
 	}
 
+	/**
+	 * 修改轨迹（覆盖）
+	 * @param jsonString
+	 * @param expressNo
+	 * @return
+	 */
 	@ResponseBody
 	@RequestMapping(value = "/update/{expressNo}", method = RequestMethod.POST)
 	public JSONObject updateLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
@@ -82,21 +85,43 @@ public class LineController {
 		return JSONFactory.getSuccessJSON();
 	}
 
+	/**
+	 * 修改轨迹（追加）
+	 * @param param
+	 * @return
+	 */
 	@ResponseBody
-	@RequestMapping(value = "/modifi/{expressNo}", method = RequestMethod.POST)
-	public JSONObject modifiLine(@RequestBody JSONObject jsonString, @PathVariable("expressNo") String expressNo) {
-		JSONArray jsonArray = jsonString.getJSONArray("predict");
-		Iterator<Object> iterator = jsonArray.iterator();
-		List<Line> list = new ArrayList<>();
-		while (iterator.hasNext()) {
-			Line line = LineUtil.caseToLine((JSONObject) iterator.next());
-			list.add(line);
-		}
-		Date planTime = jsonString.getDate("predict_time");
+	@RequestMapping(value = "/modifi", method = RequestMethod.POST)
+	public JSONObject modifiLine(@RequestBody JSONObject param) {
+
+		JSONArray jsonArray = param.getJSONArray("lines");
+		List<Line> list = jsonArray.toJavaList(Line.class);
+		String expressNo = param.getString("expressNo");
+		Date planTime = param.getDate("preTime");
 		expressService.updateExpressPlanTime(expressNo,planTime);
 		
 		expressService.modifiLine(expressNo, list);
 		return JSONFactory.getSuccessJSON();
 	}
 
+	/**
+	 * 轨迹替换
+	 * @param param
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/replace", method = RequestMethod.POST)
+	public JSON replaceLine(@RequestBody final JSONObject param){
+		int index = param.getIntValue("startIndex");
+		String expressNo = param.getString("expressNo");
+		List<Line> lines = new ArrayList<Line>(){{addAll(param.getJSONArray("lines").toJavaList(Line.class));}};
+
+		if (StringUtils.isEmpty(expressNo)){
+			return JSONFactory.getErrorJSON("订单号不能为空");
+		}
+		if (lines == null || lines.size() == 0)
+			return JSONFactory.getErrorJSON("轨迹不能为空");
+		expressService.replaceLine(index, lines, expressNo);
+		return JSONFactory.getSuccessJSON();
+	}
 }

@@ -3,6 +3,7 @@ package com.mrwind.common.util;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
@@ -19,8 +20,11 @@ import com.mrwind.order.entity.Express;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
+import org.apache.log4j.Logger;
 
 public class HttpUtil {
+
+	private static Logger log = Logger.getLogger(HttpUtil.class);
 
 	/**
 	 * 余额支付接口
@@ -66,7 +70,7 @@ public class HttpUtil {
 	 * 发送给指定shop短信
 	 * 
 	 * @param content
-	 * @param shop
+	 * @param shopIds
 	 */
 	public static void sendSMSToShopId(String content, Collection<String> shopIds) {
 		JSONObject res = post(ConfigConstant.API_JAVA_HOST +"merchant/info/address/findByIds",JSON.toJSONString(shopIds));
@@ -121,7 +125,10 @@ public class HttpUtil {
 			String result = clientResponse.getEntity(String.class);
 			return JSON.parseObject(result);
 		}
-		return null;
+		JSONObject result = new JSONObject();
+		result.put("errCode", clientResponse.getStatus());
+		result.put("errMsg", clientResponse.getEntity(String.class));
+		return result;
 	}
 
 	/***
@@ -302,7 +309,7 @@ public class HttpUtil {
 	/***
 	 * 定价接口
 	 * 
-	 * @param json
+	 * @param distance
 	 * @return
 	 */
 	public static JSONObject calculatePrice(String shopId,Integer weight,Integer distance) {
@@ -398,5 +405,57 @@ public class HttpUtil {
 			}
 		}
 		return false;
+	}
+
+	//创建收件行程及订单
+	public static void createReceiveMission(final List<Express> express){
+		 new Thread() {
+			public void run() {
+				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(express);
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/createReceiveMission", jsonArray.toJSONString());
+				if (result.containsKey("errorCode")) {
+					log.info("类HttpUtil 方法createReceiveMission");
+					log.info("errorCode" + result.getInteger("errCode"));
+					log.info("errorMessage" + result.getString("errMsg"));
+				}
+			}
+		}.start();
+	}
+
+	//完成后收件任务，查找轨迹创建下一阶段任务
+	public static void findLineAndCreateMission(final List<Express> expresses){
+		new Thread() {
+			public void run() {
+				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(expresses);
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/findLineAndCreateMission", jsonArray.toJSONString());
+				if (result.containsKey("errorCode")) {
+					log.info("类HttpUtil 方法findLineAndCreateMission");
+					log.info("errorCode" + result.getInteger("errCode"));
+					log.info("errorMessage" + result.getString("errMsg"));
+				}
+			}
+		}.start();
+	}
+
+	public static JSONObject sendMessage(Collection<String> tels, Collection<String> userIds, String content){
+		JSONObject param = new JSONObject();
+		param.put("eventId", 1);
+		param.put("modelId", 12);
+		param.put("mrContent", content);
+		String url = "";
+		if (tels != null && tels.size() >0){
+			StringBuffer sb = new StringBuffer();
+			for (String tel: tels) {
+				sb.append(tel + ",");
+			}
+			param.put("tel", sb.substring(0, sb.length() - 1));
+			url = "msg/record/new";
+
+		}
+		else if (userIds != null && userIds.size() >0){
+			param.put("userIds", userIds);
+			url = "WindCloud/msg/info/batch";
+		}
+		return post(ConfigConstant.API_JAVA_HOST + url, param.toJSONString());
 	}
 }

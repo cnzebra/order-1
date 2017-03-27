@@ -72,10 +72,18 @@ public class ExpressService {
 			for (Date dueTime : dueTimes) {
 				list.add(initVIPExpress(order, user, dueTime));
 			}
+			Set<String> tels = new HashSet<>();
+			tels.add(order.getShop().getTel());
+			HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 		}
 
 		expressRepository.save(list);
-		sendExpressLog21010(list);
+
+
+		//通知任务系统创建任务
+		HttpUtil.createReceiveMission(list);
+//		sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -102,12 +110,17 @@ public class ExpressService {
 				for (Date dueTime : dueTimes) {
 					list.add(initVIPExpress(order, user, dueTime));
 				}
+				Set<String> tels = new HashSet<>();
+				tels.add(order.getShop().getTel());
+				HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 			}
 		}
-		System.out.println(System.currentTimeMillis());
 		expressRepository.save(list);
-		sendExpressLog21010(list);
-		System.out.println(System.currentTimeMillis());
+
+		//通知任务系统创建任务
+		HttpUtil.createReceiveMission(list);
+//		sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -138,6 +151,9 @@ public class ExpressService {
 				line.setNode(order.getSender().getAddress());
 				line.setIndex(1);
 				line.setPlanTime(dueTime);
+				line.setAddress(order.getSender().getAddress());
+				line.setLat(order.getSender().getLat());
+				line.setLng(order.getSender().getLng());
 				lineList.add(line);
 				express.setLines(lineList);
 			}
@@ -344,11 +360,13 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-
-	public Integer updateLineIndex(String expressNo, int addNumber) {
-		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
-		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),
-				findFirstByExpressNo.getCurrentLine() + addNumber);
+	public JSONObject updateLineIndex(String expressNo, int addNumber) {
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		JSONObject result = JSONFactory.getSuccessJSON();
+		result.put("express", express);
+		return result;
 	}
 
 	/**
@@ -504,6 +522,10 @@ public class ExpressService {
 
 	public void removeLine(String expressNo, Integer lineIndex) {
 		expressDao.removeLine(expressNo, lineIndex);
+	}
+
+	public void replaceLine(Integer startIndex, List<Line> lines, String expressNo){
+		expressDao.replaceLine(startIndex,lines,expressNo);
 	}
 
 	public void updateLine(String expressNo, List<Line> list) {

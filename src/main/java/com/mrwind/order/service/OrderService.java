@@ -3,16 +3,12 @@ package com.mrwind.order.service;
 import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.entity.User;
+
+import com.mrwind.order.repositories.ExpressRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +65,9 @@ public class OrderService {
 		HttpUtil.pushJsonDateToPhone(phoneJson);
 		return JSONFactory.getSuccessJSON();
 	}
+
+	@Autowired
+	ExpressRepository expressRepository;
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);
@@ -330,7 +329,7 @@ public class OrderService {
 		redisCache.delete("transaction_" + tranNo);
 		log.info("付款回调:" + tranNo);
 		JSONArray json = new JSONArray();
-		StringBuffer sb = new StringBuffer();
+		List<Express> expresses = Collections.emptyList();
 		for (OrderReceipt orderReceipt : list) {
 			if(App.ORDER_PRE_PAY_CREDIT.equals(orderReceipt.getPayType()))continue;   //后付款不处理
 			
@@ -343,7 +342,6 @@ public class OrderService {
 			tmp.put("sendLog", true);
 			tmp.put("des", "支付完成");
 			json.add(tmp);
-			sb.append(orderReceipt.getExpressNo() + ",");
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			// 发送短信
@@ -356,16 +354,16 @@ public class OrderService {
 				redisCache.set(encode,60*60*24*15,expressNo);
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
+			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
-		if (sb.length() > 0) {
-			String express = sb.substring(0, sb.length() - 1);
-			sendExpressLog21004(express);
+		if(expresses.size() > 0){
+			// TODO: 2017/3/22 此处应异步 
+			HttpUtil.findLineAndCreateMission(expresses);
+//			sendExpressLog21004(express);
 		}
 		HttpUtil.compileExpressMission(json);
 
 		log.info("需要完成的单号 : " + json.toJSONString());
-		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
-
 		return null;
 	}
 
