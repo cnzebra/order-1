@@ -43,7 +43,10 @@ public class LineController {
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
 	public JSONObject completeLine(@RequestBody JSONObject param) {
 		String expressNo = param.getString("expressNo");
-		return expressService.updateLineIndex(expressNo,1);
+		Express express = expressService.updateLineIndex(expressNo,1);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("express", express);
+		return successJSON;
 	}
 
 	@ResponseBody

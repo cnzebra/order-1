@@ -190,9 +190,7 @@ public class OrderService {
 		String shopTel = "";
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
-//			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
-//				continue;
-//			}
+
 			if (next.getSubStatus().equals(App.ORDER_PRE_CREATED)) {
 				return JSONFactory.getErrorJSON("未定价，订单号:" + next.getExpressNo()
 						+ (StringUtils.isBlank(next.getBindExpressNo()) ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
@@ -215,6 +213,8 @@ public class OrderService {
 			}
 			next.setStatus(App.ORDER_SENDING);
 			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
+			expressService.updateLineIndex(next, 1);
+			next.setCurrentLine(null);  //不要更新Index
 			expressService.updateExpress(next);
 			// 发送短信
 			if (next.getSender() != null && next.getReceiver() != null) {
@@ -325,21 +325,13 @@ public class OrderService {
 		List<OrderReceipt> list = orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_" + tranNo);
 		log.info("付款回调:" + tranNo);
-		JSONArray json = new JSONArray();
 		List<Express> expresses = Collections.emptyList();
 		for (OrderReceipt orderReceipt : list) {
+			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			if(App.ORDER_PRE_PAY_CREDIT.equals(orderReceipt.getPayType()))continue;   //后付款不处理
-			
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
 					App.ORDER_PRE_PAY_PRICED);
-			JSONObject tmp = new JSONObject();
-			tmp.put("order", orderReceipt.getExpressNo());
-			tmp.put("status", "COMPLETE");
-			tmp.put("orderType", "R");
-			tmp.put("sendLog", true);
-			tmp.put("des", "支付完成");
-			json.add(tmp);
-			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
+
 			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			// 发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
@@ -359,7 +351,6 @@ public class OrderService {
 		}
 //		HttpUtil.compileExpressMission(json);
 
-		log.info("需要完成的单号 : " + json.toJSONString());
 		return null;
 	}
 

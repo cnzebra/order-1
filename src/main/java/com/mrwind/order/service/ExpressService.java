@@ -1,7 +1,14 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,7 +37,6 @@ import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
-import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
 import com.mrwind.order.entity.vo.ShopExpressVO;
@@ -218,6 +224,8 @@ public class ExpressService {
 		return express;
 	}
 
+	/***
+	@Deprecated
 	private void sendExpressLog21003(final Express express) {
 		// TODO Auto-generated method stub
 		Thread thread = new Thread() {
@@ -244,7 +252,7 @@ public class ExpressService {
 			}
 		};
 		thread.start();
-	}
+	}*/
 
 	public void sendExpressLog21010(final Express express) {
 		Thread thread = new Thread() {
@@ -361,13 +369,17 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-	public JSONObject updateLineIndex(String expressNo, int addNumber) {
+	public Express updateLineIndex(String expressNo, int addNumber) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
 				express.getCurrentLine() + addNumber);
-		JSONObject result = JSONFactory.getSuccessJSON();
-		result.put("express", express);
-		return result;
+		return express;
+	}
+	
+	public Express updateLineIndex(Express express, int addNumber) {
+		expressDao.updateExpressLineIndex(express.getExpressNo(), express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		return express;
 	}
 
 	/**

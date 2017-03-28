@@ -8,6 +8,7 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -20,7 +21,6 @@ import com.mrwind.order.entity.Express;
 import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
-import org.apache.log4j.Logger;
 
 public class HttpUtil {
 
