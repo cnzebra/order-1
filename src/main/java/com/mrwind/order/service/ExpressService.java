@@ -700,6 +700,8 @@ public class ExpressService {
 
 		List<Line> lines = express.getLines();
 		Line line = new Line();
+		user.setLat(endAddress.getLat());
+		user.setLng(endAddress.getLng());
 		line.setExecutorUser(user);
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);
