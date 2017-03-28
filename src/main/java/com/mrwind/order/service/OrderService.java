@@ -188,8 +188,6 @@ public class OrderService {
 		Iterator<Express> iterator = list.iterator();
 		String shopId = "";
 		String shopTel = "";
-		JSONArray json = new JSONArray();
-		List<Express> expresses = Collections.emptyList();
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
 			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
@@ -215,22 +213,22 @@ public class OrderService {
 					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
 				}
 			}
-
-			JSONObject tmp = new JSONObject();
-			tmp.put("order", next.getExpressNo());
-			tmp.put("status", "COMPLETE");
-			tmp.put("orderType", "R");
-			tmp.put("sendLog", true);
-			tmp.put("des", "支付完成");
-			json.add(tmp);
 			next.setStatus(App.ORDER_SENDING);
 			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
 			expressService.updateExpress(next);
-			expresses.add(expressRepository.findFirstByExpressNo(next.getExpressNo()));
+			// 发送短信
+			if (next.getSender() != null && next.getReceiver() != null) {
+				String expressNo = next.getExpressNo();
+				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+				String content = "尊敬的客户您好，" + next.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+				redisCache.set(encode,60*60*24*15,expressNo);
+				HttpUtil.sendSMSToUserTel(content, next.getReceiver().getTel());
+			}
 		}
-		if (expresses.size() > 0) {
+		if (list.size() > 0) {
 //			sendExpressLog21004(express);
-			HttpUtil.findLineAndCreateMission(expresses);
+			HttpUtil.findLineAndCreateMission(list);
 		}
 
 		Collection<String> tels = new HashSet<>();
