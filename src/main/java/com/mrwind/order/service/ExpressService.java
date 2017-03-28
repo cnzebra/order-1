@@ -596,6 +596,11 @@ public class ExpressService {
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
+			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
+			if(userGPS!=null){
+				line.getExecutorUser().setLat(userGPS.getLat());
+				line.getExecutorUser().setLng(userGPS.getLng());
+			}
 			if (line == null)
 				continue;
 			newList.add(line);
