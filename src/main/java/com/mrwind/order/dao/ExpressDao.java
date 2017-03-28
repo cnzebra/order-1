@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +23,7 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.vo.ShopExpressVO;
 
 @Repository
 public class ExpressDao extends BaseDao {
@@ -309,5 +311,19 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(operator);
 		query.with(page);
 		return mongoTemplate.find(query, Express.class);
+	}
+
+	public List<ShopExpressVO> selectShopExpress(String shopId, PageRequest page) {
+		ObjectId objectId = new ObjectId(shopId);
+		Query query = new Query();
+		query.addCriteria(Criteria.where("shop._id").is(objectId));
+		query.addCriteria(Criteria.where("status").is(App.ORDER_BEGIN));
+		query.fields().include("expressNo");
+		query.fields().include("receiver");
+		query.fields().include("remark");
+		query.fields().include("bindExpressNo");
+		query.fields().include("dueTime");
+		query.with(page);
+		return mongoTemplate.find(query, ShopExpressVO.class, "express");
 	}
 }

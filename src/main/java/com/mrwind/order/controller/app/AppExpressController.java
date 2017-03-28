@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
@@ -21,6 +22,7 @@ import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.service.ExpressBindService;
 import com.mrwind.order.service.ExpressService;
 
@@ -88,8 +90,18 @@ public class AppExpressController {
 	public Result selectAll(@RequestBody Express express, @PathVariable("pageIndex") Integer pageIndex,
 			@PathVariable("pageSize") Integer pageSize) {
 		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express, pageIndex - 1, pageSize);
-		return Result.success(selectAllByExpress);
+		return Result.success(selectAllByExpress.getContent());
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/shop/{pageIndex}_{pageSize}", method = RequestMethod.GET)
+	public Result selectShop(@RequestParam("shopId") String shopId, @PathVariable("pageIndex") Integer pageIndex,
+			@PathVariable("pageSize") Integer pageSize) {
+		List<ShopExpressVO> shopExpress = expressService.selectShopExpress(shopId, pageIndex - 1, pageSize);
+		return Result.success(shopExpress);
+	}
+	
+	
 
 	@ResponseBody
 	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
