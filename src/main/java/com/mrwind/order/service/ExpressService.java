@@ -33,6 +33,7 @@ import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import com.mrwind.order.repositories.ExpressRepository;
 
@@ -788,5 +789,11 @@ public class ExpressService {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
 		return expressDao.selectByShopIdAndModeForWeChat(id, status, date, dayType, param, page);
+	}
+
+	public List<ShopExpressVO> selectShopExpress(String shopId, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		return expressDao.selectShopExpress(shopId,page);
 	}
 }
