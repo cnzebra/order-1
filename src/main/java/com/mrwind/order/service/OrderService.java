@@ -3,16 +3,12 @@ package com.mrwind.order.service;
 import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.entity.User;
+
+import com.mrwind.order.repositories.ExpressRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +65,9 @@ public class OrderService {
 		HttpUtil.pushJsonDateToPhone(phoneJson);
 		return JSONFactory.getSuccessJSON();
 	}
+
+	@Autowired
+	ExpressRepository expressRepository;
 
 	public List<Express> initAndInsert(Order order) {
 		Order resOrder = save(order);
@@ -189,14 +188,9 @@ public class OrderService {
 		Iterator<Express> iterator = list.iterator();
 		String shopId = "";
 		String shopTel = "";
-		StringBuffer sb = new StringBuffer();
-		JSONArray json = new JSONArray();
-
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
-				continue;
-			}
+
 			if (next.getSubStatus().equals(App.ORDER_PRE_CREATED)) {
 				return JSONFactory.getErrorJSON("未定价，订单号:" + next.getExpressNo()
 						+ (StringUtils.isBlank(next.getBindExpressNo()) ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
@@ -217,22 +211,24 @@ public class OrderService {
 					return JSONFactory.getErrorJSON("发送的订单数据异常，不属于同一个商户，无法支付");
 				}
 			}
-
-			JSONObject tmp = new JSONObject();
-			tmp.put("order", next.getExpressNo());
-			tmp.put("status", "COMPLETE");
-			tmp.put("orderType", "R");
-			tmp.put("sendLog", true);
-			tmp.put("des", "支付完成");
-			json.add(tmp);
-			sb.append(next.getExpressNo() + ",");
 			next.setStatus(App.ORDER_SENDING);
 			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
+			expressService.updateLineIndex(next, 1);
+			next.setCurrentLine(null);  //不要更新Index
 			expressService.updateExpress(next);
+			// 发送短信
+			if (next.getSender() != null && next.getReceiver() != null) {
+				String expressNo = next.getExpressNo();
+				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+				String content = "尊敬的客户您好，" + next.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + encode;
+				redisCache.set(encode,60*60*24*15,expressNo);
+				HttpUtil.sendSMSToUserTel(content, next.getReceiver().getTel());
+			}
 		}
-		if (sb.length() > 0) {
-			String express = sb.substring(0, sb.length() - 1);
-			sendExpressLog21004(express);
+		if (list.size() > 0) {
+//			sendExpressLog21004(express);
+			HttpUtil.findLineAndCreateMission(list);
 		}
 
 		Collection<String> tels = new HashSet<>();
@@ -240,7 +236,7 @@ public class OrderService {
 		tels.add(shopTel);
 		HttpUtil.sendSMSToUserTel(content, SetUtil.ParseToString(tels));
 
-		HttpUtil.compileExpressMission(json);
+//		HttpUtil.compileExpressMission(json);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		return successJSON;
 	}
@@ -329,42 +325,31 @@ public class OrderService {
 		List<OrderReceipt> list = orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_" + tranNo);
 		log.info("付款回调:" + tranNo);
-		JSONArray json = new JSONArray();
-		StringBuffer sb = new StringBuffer();
+		List<Express> expresses = Collections.emptyList();
 		for (OrderReceipt orderReceipt : list) {
+			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			if(App.ORDER_PRE_PAY_CREDIT.equals(orderReceipt.getPayType()))continue;   //后付款不处理
-			
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
 					App.ORDER_PRE_PAY_PRICED);
-			JSONObject tmp = new JSONObject();
-			tmp.put("order", orderReceipt.getExpressNo());
-			tmp.put("status", "COMPLETE");
-			tmp.put("orderType", "R");
-			tmp.put("sendLog", true);
-			tmp.put("des", "支付完成");
-			json.add(tmp);
-			sb.append(orderReceipt.getExpressNo() + ",");
-			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
+
 			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			// 发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
-				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo())
-						? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String expressNo = orderReceipt.getExpressNo();
 				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
 						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				redisCache.set(encode,60*60*24*15,expressNo);
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
+			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
-		if (sb.length() > 0) {
-			String express = sb.substring(0, sb.length() - 1);
-			sendExpressLog21004(express);
+		if(expresses.size() > 0){
+			// TODO: 2017/3/22 此处应异步 
+			HttpUtil.findLineAndCreateMission(expresses);
+//			sendExpressLog21004(express);
 		}
-		HttpUtil.compileExpressMission(json);
-
-		log.info("需要完成的单号 : " + json.toJSONString());
-		log.info("完成任务是否成功 :" + HttpUtil.compileExpressMission(json));
+//		HttpUtil.compileExpressMission(json);
 
 		return null;
 	}

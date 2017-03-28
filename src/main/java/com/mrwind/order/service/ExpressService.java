@@ -1,7 +1,14 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,9 +37,9 @@ import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
-import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import com.mrwind.order.repositories.ExpressRepository;
 
@@ -72,10 +79,18 @@ public class ExpressService {
 			for (Date dueTime : dueTimes) {
 				list.add(initVIPExpress(order, user, dueTime));
 			}
+			Set<String> tels = new HashSet<>();
+			tels.add(order.getShop().getTel());
+			HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 		}
 
 		expressRepository.save(list);
+
+
+		//通知任务系统创建任务
+//		HttpUtil.createReceiveMission(list);
 		sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -102,9 +117,15 @@ public class ExpressService {
 				for (Date dueTime : dueTimes) {
 					list.add(initVIPExpress(order, user, dueTime));
 				}
+				Set<String> tels = new HashSet<>();
+				tels.add(order.getShop().getTel());
+				HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
 			}
 		}
 		expressRepository.save(list);
+
+		//通知任务系统创建任务
+//		HttpUtil.createReceiveMission(list);
 		sendExpressLog21010(list);
 		return list;
 	}
@@ -136,6 +157,9 @@ public class ExpressService {
 				line.setNode(order.getSender().getAddress());
 				line.setIndex(1);
 				line.setPlanTime(dueTime);
+				line.setAddress(order.getSender().getAddress());
+				line.setLat(order.getSender().getLat());
+				line.setLng(order.getSender().getLng());
 				lineList.add(line);
 				express.setLines(lineList);
 			}
@@ -172,7 +196,7 @@ public class ExpressService {
 			return express;
 		}
 
-		sendExpressLog21003(express);
+//		sendExpressLog21003(express);
 		return express;
 	}
 
@@ -199,6 +223,8 @@ public class ExpressService {
 		return express;
 	}
 
+	/***
+	@Deprecated
 	private void sendExpressLog21003(final Express express) {
 		// TODO Auto-generated method stub
 		Thread thread = new Thread() {
@@ -225,7 +251,7 @@ public class ExpressService {
 			}
 		};
 		thread.start();
-	}
+	}*/
 
 	public void sendExpressLog21010(final Express express) {
 		Thread thread = new Thread() {
@@ -342,11 +368,17 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-
-	public Integer updateLineIndex(String expressNo, int addNumber) {
-		Express findFirstByExpressNo = expressRepository.findFirstByExpressNo(expressNo);
-		return expressDao.updateExpressLineIndex(expressNo, findFirstByExpressNo.getCurrentLine(),
-				findFirstByExpressNo.getCurrentLine() + addNumber);
+	public Express updateLineIndex(String expressNo, int addNumber) {
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		return express;
+	}
+	
+	public Express updateLineIndex(Express express, int addNumber) {
+		expressDao.updateExpressLineIndex(express.getExpressNo(), express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		return express;
 	}
 
 	/**
@@ -395,7 +427,7 @@ public class ExpressService {
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
-		sendExpressLog21003(firstExpress);
+//		sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 
@@ -504,6 +536,10 @@ public class ExpressService {
 		expressDao.removeLine(expressNo, lineIndex);
 	}
 
+	public void replaceLine(Integer startIndex, List<Line> lines, String expressNo){
+		expressDao.replaceLine(startIndex,lines,expressNo);
+	}
+
 	public void updateLine(String expressNo, List<Line> list) {
 		expressDao.updateLines(expressNo, list);
 	}
@@ -559,6 +595,11 @@ public class ExpressService {
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
+			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
+			if(userGPS!=null){
+				line.getExecutorUser().setLat(userGPS.getLat());
+				line.getExecutorUser().setLng(userGPS.getLng());
+			}
 			if (line == null)
 				continue;
 			newList.add(line);
@@ -658,6 +699,8 @@ public class ExpressService {
 
 		List<Line> lines = express.getLines();
 		Line line = new Line();
+		user.setLat(endAddress.getLat());
+		user.setLng(endAddress.getLng());
 		line.setExecutorUser(user);
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);
@@ -786,5 +829,11 @@ public class ExpressService {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
 		return expressDao.selectByShopIdAndModeForWeChat(id, status, date, dayType, param, page);
+	}
+
+	public List<ShopExpressVO> selectShopExpress(String shopId, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		return expressDao.selectShopExpress(shopId,page);
 	}
 }
