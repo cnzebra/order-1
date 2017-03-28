@@ -412,7 +412,7 @@ public class HttpUtil {
 		 new Thread() {
 			public void run() {
 				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(express);
-				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/createReceiveMission", jsonArray.toJSONString());
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/missonAdapter/createReceiveMission", jsonArray.toJSONString());
 				if (result.containsKey("errorCode")) {
 					log.info("类HttpUtil 方法createReceiveMission");
 					log.info("errorCode" + result.getInteger("errCode"));
@@ -427,7 +427,7 @@ public class HttpUtil {
 		new Thread() {
 			public void run() {
 				JSONArray jsonArray = (JSONArray) JSONArray.toJSON(expresses);
-				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/mission/findLineAndCreateMission", jsonArray.toJSONString());
+				JSONObject result = post(ConfigConstant.API_JAVA_HOST + "WindMissionAdapter/missonAdapter/findLineAndCreateMission", jsonArray.toJSONString());
 				if (result.containsKey("errorCode")) {
 					log.info("类HttpUtil 方法findLineAndCreateMission");
 					log.info("errorCode" + result.getInteger("errCode"));
