@@ -190,9 +190,9 @@ public class OrderService {
 		String shopTel = "";
 		while (iterator.hasNext()) {
 			Express next = iterator.next();
-			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
-				continue;
-			}
+//			if (App.ORDER_TYPE_AFTER.equals(next.getType())) {
+//				continue;
+//			}
 			if (next.getSubStatus().equals(App.ORDER_PRE_CREATED)) {
 				return JSONFactory.getErrorJSON("未定价，订单号:" + next.getExpressNo()
 						+ (StringUtils.isBlank(next.getBindExpressNo()) ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
@@ -221,7 +221,7 @@ public class OrderService {
 				String expressNo = next.getExpressNo();
 				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				String content = "尊敬的客户您好，" + next.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
-						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
+						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + encode;
 				redisCache.set(encode,60*60*24*15,expressNo);
 				HttpUtil.sendSMSToUserTel(content, next.getReceiver().getTel());
 			}
