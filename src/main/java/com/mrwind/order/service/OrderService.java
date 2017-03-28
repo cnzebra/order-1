@@ -345,8 +345,7 @@ public class OrderService {
 			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			// 发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
-				String expressNo = StringUtils.isNotBlank(orderReceipt.getBindExpressNo())
-						? orderReceipt.getBindExpressNo() : orderReceipt.getExpressNo();
+				String expressNo = orderReceipt.getExpressNo();
 				String encode = Md5Util.string2MD5(expressNo+App.SESSION_KEY);
 				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
 						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo+App.SESSION_KEY);
