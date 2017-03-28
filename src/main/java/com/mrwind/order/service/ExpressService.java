@@ -82,8 +82,8 @@ public class ExpressService {
 
 
 		//通知任务系统创建任务
-		HttpUtil.createReceiveMission(list);
-//		sendExpressLog21010(list);
+//		HttpUtil.createReceiveMission(list);
+		sendExpressLog21010(list);
 
 		return list;
 	}
@@ -119,8 +119,8 @@ public class ExpressService {
 		expressRepository.save(list);
 
 		//通知任务系统创建任务
-		HttpUtil.createReceiveMission(list);
-//		sendExpressLog21010(list);
+//		HttpUtil.createReceiveMission(list);
+		sendExpressLog21010(list);
 
 		return list;
 	}
