@@ -530,7 +530,7 @@ public class HttpUtil {
 				sb.append(tel + ",");
 			}
 			param.put("tel", sb.substring(0, sb.length() - 1));
-			url = "msg/record/new";
+			url = "WindCloud/msg/record/new";
 
 		}
 		else if (userIds != null && userIds.size() >0){
