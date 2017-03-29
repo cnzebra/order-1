@@ -151,6 +151,22 @@ public class ExpressController {
     }
 
     @ResponseBody
+    @RequestMapping(value = "/completeById", method = RequestMethod.POST)
+    public JSONObject completeById(@RequestBody JSONObject json){
+        String expressNo = json.getString("expressNo");
+        Address endAddress = JSON.toJavaObject(json, Address.class);
+        if (StringUtils.isEmpty(expressNo)) {
+            return JSONFactory.getErrorJSON("订单号不能为空");
+        }
+        String id = json.getString("id");
+        if (StringUtils.isBlank(id)) {
+            return JSONFactory.getErrorJSON("没有id参数");
+        }
+        JSONObject userInfo = HttpUtil.findShopById(id);
+        return expressService.completeExpress(expressNo, endAddress, userInfo);
+    }
+
+    @ResponseBody
     @RequestMapping(value = "/complete", method = RequestMethod.POST)
     public JSONObject complete(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
                                HttpServletResponse response) {
