@@ -1,11 +1,12 @@
 package com.mrwind.common.util;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
@@ -309,10 +310,10 @@ public class HttpUtil {
 //		sendSMSToShopId("ce是数据", shopIds);
 	}
 
-	private static void update(Express express) {
-		// TODO Auto-generated method stub
-		express.getCategory().setDistance(200.0);
-	}
+//	private static void update(Express express) {
+//		// TODO Auto-generated method stub
+//		express.getCategory().setDistance(200.0);
+//	}
 
 	public static String getUserIdByToken(String token) {
 		Client client = Client.create();

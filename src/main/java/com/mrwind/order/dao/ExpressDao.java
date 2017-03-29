@@ -43,7 +43,7 @@ public class ExpressDao extends BaseDao {
 		query.with(new Sort(Sort.Direction.DESC, "createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
-
+	
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex, Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
