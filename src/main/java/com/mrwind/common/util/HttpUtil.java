@@ -192,6 +192,26 @@ public class HttpUtil {
 		return result;
 	}
 
+	public static JSONObject findShopById(String id) {
+		if (StringUtils.isEmpty(id))
+			return null;
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/shop/findById?id=" + id);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED)
+				.get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					JSONObject json = JSONObject.parseObject(textEntity);
+					return json.getJSONObject("data");
+				}
+			}
+		}
+		return null;
+	}
+
 	/***
 	 * 查询内部用户的方法
 	 * 

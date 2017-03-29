@@ -71,7 +71,7 @@ public class ExpressController {
         }
         //逆序lines
         descLines(res);
-        redisCache.set(expressNo, 60 * 60 * 24 * 15, count);
+        redisCache.set(expressNo, 60 * 60 * 24 * 15, countString);
         JSONObject successJSON = JSONFactory.getSuccessJSON();
         successJSON.put("data", res);
         successJSON.put("count", count);
@@ -148,6 +148,22 @@ public class ExpressController {
 
         expressService.cancelExpress(expressNo);
         return JSONFactory.getSuccessJSON();
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/completeById", method = RequestMethod.POST)
+    public JSONObject completeById(@RequestBody JSONObject json){
+        String expressNo = json.getString("expressNo");
+        Address endAddress = JSON.toJavaObject(json, Address.class);
+        if (StringUtils.isEmpty(expressNo)) {
+            return JSONFactory.getErrorJSON("订单号不能为空");
+        }
+        String id = json.getString("id");
+        if (StringUtils.isBlank(id)) {
+            return JSONFactory.getErrorJSON("没有id参数");
+        }
+        JSONObject userInfo = HttpUtil.findShopById(id);
+        return expressService.completeExpress(expressNo, endAddress, userInfo);
     }
 
     @ResponseBody
