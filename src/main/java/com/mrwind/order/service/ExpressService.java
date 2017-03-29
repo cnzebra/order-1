@@ -373,6 +373,7 @@ public class ExpressService {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
 				express.getCurrentLine() + addNumber);
+		express.setCurrentLine(express.getCurrentLine() + addNumber);
 		return express;
 	}
 	
@@ -606,18 +607,18 @@ public class ExpressService {
 			newList.add(line);
 		}
 
-		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
-		Iterator<Object> iterator = expressMission.iterator();
-		Integer currentLine = (int) Short.MAX_VALUE;
-		while (iterator.hasNext()) {
-			JSONObject next = (JSONObject) iterator.next();
-			Integer index = next.getInteger("missionNodeIndex");
-			if (index < currentLine) {
-				currentLine = index;
-			}
-		}
+//		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
+//		Iterator<Object> iterator = expressMission.iterator();
+//		Integer currentLine = (int) Short.MAX_VALUE;
+//		while (iterator.hasNext()) {
+//			JSONObject next = (JSONObject) iterator.next();
+//			Integer index = next.getInteger("missionNodeIndex");
+//			if (index < currentLine) {
+//				currentLine = index;
+//			}
+//		}
 
-		expressDao.updateLines(expressNo, newList, currentLine);
+		expressDao.updateLines(expressNo, newList, express.getCurrentLine());
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
