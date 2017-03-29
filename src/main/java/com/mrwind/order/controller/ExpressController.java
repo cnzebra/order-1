@@ -71,7 +71,7 @@ public class ExpressController {
         }
         //逆序lines
         descLines(res);
-        redisCache.set(expressNo, 60 * 60 * 24 * 15, count);
+        redisCache.set(expressNo, 60 * 60 * 24 * 15, countString);
         JSONObject successJSON = JSONFactory.getSuccessJSON();
         successJSON.put("data", res);
         successJSON.put("count", count);
