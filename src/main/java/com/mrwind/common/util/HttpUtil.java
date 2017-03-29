@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.math.BigDecimal;
+import java.util.*;
 
 import javax.ws.rs.core.MediaType;
 
@@ -48,6 +50,64 @@ public class HttpUtil {
 		}
 		return false;
 	}
+
+	/**
+	 * 余额支付接口
+	 *
+	 * by 黄海凯
+	 *
+	 * @param tranNo
+	 * @return
+	 */
+	public static boolean creditPay(String tranNo) {
+		Client client = Client.create();
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/creditPay?tranNo=" + tranNo);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 通过Id查询商户余额信息
+	 * <p>
+	 * by 黄海凯
+	 *
+	 * @param ids
+	 * @return
+	 */
+	public static Map<String,BigDecimal> getShopBalanceAmount(Collection<String> ids){
+		Client client = new Client();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/account/balanceByIds");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,
+				JSONObject.toJSONString(ids));
+
+		if (clientResponse.getStatus() == 200) {
+			String result = clientResponse.getEntity(String.class);
+			JSONObject jsonObject = JSONObject.parseObject(result);
+			if (jsonObject.getInteger("code") == 1) {
+				Map<String, BigDecimal> map = new HashMap<>();
+				JSONArray array = jsonObject.getJSONArray("content");
+				for (int i = 0; i < array.size(); i++) {
+					JSONObject obj = array.getJSONObject(i);
+					BigDecimal balanceAmount = obj.getBigDecimal("balanceAmount");
+					BigDecimal backMoney = obj.getBigDecimal("backMoney");
+					map.put(obj.getString("shopId"),balanceAmount.add(backMoney));
+				}
+				return map;
+			}
+		}
+		return null;
+	}
+
 
 	/**
 	 * 发送给指定userid短信
