@@ -41,6 +41,8 @@ public class App
     public static String RDKEY_PAY_ORDER="rdkey_pay_order";
     
     public static String RDKEY_AFTER_ORDER="rdkey_after_order";
+    
+    public static String RDKEY_SHOP_TOTAL_PRICE="rdstp";
 
     public static String RDKEY_CREDIT_PAY_ORDER="rdkey_credit_pay_order";
 

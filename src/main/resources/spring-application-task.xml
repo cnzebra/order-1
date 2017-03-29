@@ -12,8 +12,8 @@
 	<task:scheduled-tasks>
 		<task:scheduled ref="taskService" method="sendOrder"
 			cron="0 0/1 *  * * ? " />
-		<task:scheduled ref="taskService" method="sendWarning" cron="0 0 20 * * ?"/>
-		<task:scheduled ref="taskService" method="chargeBack" cron="0 0 21 * * ? " />
+		<task:scheduled ref="taskService" method="generateBill" cron="5 0 0 * * ?"/>
+		<task:scheduled ref="taskService" method="sendBill" cron="0 0 9 * * ? " />
 		<!-- <task:scheduled ref="taskService" method="sendWarning" fixed-delay="5000"/>
 		<task:scheduled ref="taskService" method="chargeBack" fixed-delay="6000"/> -->
 	</task:scheduled-tasks>
