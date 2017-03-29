@@ -1,6 +1,9 @@
 package com.mrwind.order.controller;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +46,10 @@ public class LineController {
 	@RequestMapping(value = "/complete", method = RequestMethod.POST)
 	public JSONObject completeLine(@RequestBody JSONObject param) {
 		String expressNo = param.getString("expressNo");
-		return expressService.updateLineIndex(expressNo,1);
+		Express express = expressService.updateLineIndex(expressNo,1);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("express", express);
+		return successJSON;
 	}
 
 	@ResponseBody

@@ -1,7 +1,14 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -30,7 +37,6 @@ import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
-import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
 import com.mrwind.order.entity.vo.ShopExpressVO;
@@ -82,8 +88,8 @@ public class ExpressService {
 
 
 		//通知任务系统创建任务
-		HttpUtil.createReceiveMission(list);
-//		sendExpressLog21010(list);
+//		HttpUtil.createReceiveMission(list);
+		sendExpressLog21010(list);
 
 		return list;
 	}
@@ -119,8 +125,8 @@ public class ExpressService {
 		expressRepository.save(list);
 
 		//通知任务系统创建任务
-		HttpUtil.createReceiveMission(list);
-//		sendExpressLog21010(list);
+//		HttpUtil.createReceiveMission(list);
+		sendExpressLog21010(list);
 
 		return list;
 	}
@@ -218,6 +224,8 @@ public class ExpressService {
 		return express;
 	}
 
+	/***
+	@Deprecated
 	private void sendExpressLog21003(final Express express) {
 		// TODO Auto-generated method stub
 		Thread thread = new Thread() {
@@ -244,7 +252,7 @@ public class ExpressService {
 			}
 		};
 		thread.start();
-	}
+	}*/
 
 	public void sendExpressLog21010(final Express express) {
 		Thread thread = new Thread() {
@@ -361,13 +369,18 @@ public class ExpressService {
 		};
 		thread.start();
 	}
-	public JSONObject updateLineIndex(String expressNo, int addNumber) {
+	public Express updateLineIndex(String expressNo, int addNumber) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
 				express.getCurrentLine() + addNumber);
-		JSONObject result = JSONFactory.getSuccessJSON();
-		result.put("express", express);
-		return result;
+		express.setCurrentLine(express.getCurrentLine() + addNumber);
+		return express;
+	}
+	
+	public Express updateLineIndex(Express express, int addNumber) {
+		expressDao.updateExpressLineIndex(express.getExpressNo(), express.getCurrentLine(),
+				express.getCurrentLine() + addNumber);
+		return express;
 	}
 
 	/**
@@ -584,23 +597,28 @@ public class ExpressService {
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
+			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
+			if(userGPS!=null){
+				line.getExecutorUser().setLat(userGPS.getLat());
+				line.getExecutorUser().setLng(userGPS.getLng());
+			}
 			if (line == null)
 				continue;
 			newList.add(line);
 		}
 
-		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
-		Iterator<Object> iterator = expressMission.iterator();
-		Integer currentLine = (int) Short.MAX_VALUE;
-		while (iterator.hasNext()) {
-			JSONObject next = (JSONObject) iterator.next();
-			Integer index = next.getInteger("missionNodeIndex");
-			if (index < currentLine) {
-				currentLine = index;
-			}
-		}
+//		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
+//		Iterator<Object> iterator = expressMission.iterator();
+//		Integer currentLine = (int) Short.MAX_VALUE;
+//		while (iterator.hasNext()) {
+//			JSONObject next = (JSONObject) iterator.next();
+//			Integer index = next.getInteger("missionNodeIndex");
+//			if (index < currentLine) {
+//				currentLine = index;
+//			}
+//		}
 
-		expressDao.updateLines(expressNo, newList, currentLine);
+		expressDao.updateLines(expressNo, newList, express.getCurrentLine());
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
@@ -683,6 +701,8 @@ public class ExpressService {
 
 		List<Line> lines = express.getLines();
 		Line line = new Line();
+		user.setLat(endAddress.getLat());
+		user.setLng(endAddress.getLng());
 		line.setExecutorUser(user);
 		Date sysDate = Calendar.getInstance().getTime();
 		line.setRealTime(sysDate);

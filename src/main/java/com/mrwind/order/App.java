@@ -42,6 +42,8 @@ public class App
     
     public static String RDKEY_AFTER_ORDER="rdkey_after_order";
 
+    public static String RDKEY_CREDIT_PAY_ORDER="rdkey_credit_pay_order";
+
     //妥投验证码
     public static String RDKEY_VERIFY_CODE="rdkey_verify_code_";
 
