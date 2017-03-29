@@ -580,17 +580,20 @@ public class ExpressService {
 		List<Line> lines = express.getLines();
 		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
 
+		int num =0;
 		if (lines != null) {
-			for (Line line : lines) {
+			for (num = 0; num < lines.size(); num++) {
+				Line line = lines.get(num);
 				if (line == null)
 					continue;
-				newArray[line.getIndex() - 1] = line;
+				newArray[num] = line;
 			}
 		}
 
 		if (list != null) {
-			for (Line line : list) {
-				newArray[line.getIndex() - 1] = line;
+			for (; num < newArray.length; num++) {
+				Line line = list.get(num - lines.size());
+				newArray[num] = line;
 			}
 		}
 
