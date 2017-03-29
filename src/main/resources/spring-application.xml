@@ -18,9 +18,11 @@
 		<property name="API_JAVA_HOST" value="${mvn.api.java.host}" />
 		<property name="API_DFENG_XIN_HOST" value="${mvn.api.feng.xin.host}" />
 		<property name="API_WECHAT_HOST" value="${mvn.api.wechat.host}" />
+		
 		<property name="OUR_HOST" value="${mvn.our.host}" />
 		<property name="IS_FILTER" value="${mvn.is.filter}" />
 		<property name="FILTER_IP" value="${mvn.filter.ip}" />
+		
 	</bean>
 
 	<context:annotation-config />

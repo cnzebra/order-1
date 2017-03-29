@@ -1,8 +1,17 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +19,7 @@ import org.springframework.stereotype.Service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.cache.RedisCache;
+import com.mrwind.common.constant.ConfigConstant;
 import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.App;
@@ -208,37 +218,90 @@ public class TaskService {
 		redisCache.set(this.getClass().getName() + "sendBill", 360, true);
 
 		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_SHOP_TOTAL_PRICE));
-		if(jsonObject == null){
+		if (jsonObject == null) {
 			return;
 		}
 		Map<String, BigDecimal> balanceAmountMap = HttpUtil.getShopBalanceAmount(jsonObject.keySet());
 
 		if (jsonObject != null && balanceAmountMap != null) {
 			for (Entry<String, Object> entry : jsonObject.entrySet()) {
-				BigDecimal totalPrice = BigDecimal.valueOf((Double) entry.getValue());
+				if (entry.getValue() == null)
+					continue;
+				BigDecimal totalPrice = (BigDecimal) entry.getValue();
 				String date = DateUtils.formatDate(DateUtils.addDays(new Date(), -1), "MM月dd日");
 				Collection<String> userIds = new HashSet<>();
 				userIds.add(entry.getKey());
 				String content = "";
+
 				if (balanceAmountMap.containsKey(entry.getKey())) {
 					BigDecimal amount = balanceAmountMap.get(entry.getKey());
 					if (amount.compareTo(BigDecimal.ZERO) != -1) {
-						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，账户余额为" + amount
-								+ "元。请点击链接立即查看消费明细或充值https://ddd.html";
+						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，账户余额为" + amount + "元。请点击链接立即查看消费明细或充值"
+								+ ConfigConstant.API_WECHAT_HOST + "#/accountDetail?shopId=" + entry.getKey();
 
 					} else {
 						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，实际账户已欠费" + amount
-								+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值https://ddd.html";
+								+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值" + ConfigConstant.API_WECHAT_HOST
+								+ "#/accountDetail?shopId=" + entry.getKey();
 					}
 				} else {
 					// 没有该商户的余额信息
-					content = "你的账户" + date + "运力消费金额为" + totalPrice
-							+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值https://ddd.html";
+					content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值"
+							+ ConfigConstant.API_WECHAT_HOST + "#/accountDetail?shopId=" + entry.getKey();
 				}
 				HttpUtil.sendSMSToShopId(content, userIds);
 			}
 		}
 
+	}
+
+	public void sendTodayDetail() {
+		if (redisCache.getObject(this.getClass().getName() + "sendTodayDetail") != null) {
+			return;
+		}
+		redisCache.set(this.getClass().getName() + "sendTodayDetail", 3600, true);
+
+		Date startTime = DateUtils.getStartTime();
+		List<Express> list = expressRepository.findAllByDueTimeGreaterThanEqual(startTime);
+		String date = DateUtils.formatDate(DateUtils.addDays(new Date(), -1), "MM月dd日");
+
+		JSONObject json = new JSONObject();
+		for (Express express : list) {
+			String shopid = express.getShop().getId();
+			JSONObject shopJson = json.getJSONObject(shopid);
+			if (shopJson == null) {
+				shopJson = new JSONObject();
+				shopJson.put("id", shopid);
+				shopJson.put("count", 1);
+				if (App.ORDER_COMPLETE.equals(express.getStatus())) {
+					shopJson.put("receiveCount", 1);
+					shopJson.put("goodCount", 1);
+				} else {
+					shopJson.put("receiveCount", 0);
+					shopJson.put("goodCount", 0);
+				}
+
+			} else {
+				shopJson.put("count", shopJson.getInteger("count") + 1);
+				if (App.ORDER_COMPLETE.equals(express.getStatus())) {
+					shopJson.put("receiveCount", shopJson.getInteger("receiveCount") + 1);
+					shopJson.put("goodCount", shopJson.getInteger("goodCount") + 1);
+				}
+			}
+			json.put(shopid, shopJson);
+		}
+
+		Set<Entry<String, Object>> entrySet = json.entrySet();
+		for (Entry<String, Object> entry : entrySet) {
+			JSONObject tmp = (JSONObject) entry.getValue();
+			String shopId = entry.getKey();
+			Set<String> userIds = new HashSet<>();
+			userIds.add(shopId);
+			String content = "[风先生]尊敬的客户您好！为您呈上风先生" + date + "的服务汇总报告，请检阅！今日您的发件" + tmp.getInteger("count") + "个，已送达"
+					+ tmp.getInteger("receiveCount") + "个，好评" + tmp.getInteger("goodCount") + "个。查看报告详情，请点击"
+					+ ConfigConstant.API_WECHAT_HOST + "#/summary/1";
+			HttpUtil.sendSMSToShopId(content, userIds);
+		}
 	}
 
 	@Deprecated
