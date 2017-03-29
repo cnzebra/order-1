@@ -5,7 +5,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
-import com.mrwind.common.util.DateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.JsonUtil;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.service.ExpressService;
@@ -59,6 +59,16 @@ public class WebExpressController {
 		Object filterProperty = JsonUtil.filterProperty(res, "");
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", filterProperty);
+		return successJSON;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/group", method = RequestMethod.GET)
+	public JSONObject selectGroup(String shopId) {
+		
+		JSONObject res= expressService.findShopExpressGroup(shopId);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", res);
 		return successJSON;
 	}
 

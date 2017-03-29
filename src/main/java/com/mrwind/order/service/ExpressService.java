@@ -86,9 +86,8 @@ public class ExpressService {
 
 		expressRepository.save(list);
 
-
-		//通知任务系统创建任务
-//		HttpUtil.createReceiveMission(list);
+		// 通知任务系统创建任务
+		// HttpUtil.createReceiveMission(list);
 		sendExpressLog21010(list);
 
 		return list;
@@ -124,8 +123,8 @@ public class ExpressService {
 		}
 		expressRepository.save(list);
 
-		//通知任务系统创建任务
-//		HttpUtil.createReceiveMission(list);
+		// 通知任务系统创建任务
+		// HttpUtil.createReceiveMission(list);
 		sendExpressLog21010(list);
 		return list;
 	}
@@ -196,7 +195,7 @@ public class ExpressService {
 			return express;
 		}
 
-//		sendExpressLog21003(express);
+		// sendExpressLog21003(express);
 		return express;
 	}
 
@@ -224,34 +223,28 @@ public class ExpressService {
 	}
 
 	/***
-	@Deprecated
-	private void sendExpressLog21003(final Express express) {
-		// TODO Auto-generated method stub
-		Thread thread = new Thread() {
-			public void run() {
-				JSONObject param = new JSONObject();
-				Line currentLine = LineUtil.getLine(express.getLines(), express.getCurrentLine());
-				if (currentLine == null) {
-					return;
-				}
-				param.put("creatorId", currentLine.getExecutorUser().getId());
-				param.put("createTime", DateUtils.convertToUtcTime(Calendar.getInstance().getTime()));
-				param.put("type", "21003");
-				param.put("orderId", express.getExpressNo());
-				param.put("orderSum", express.getCategory().getTotalPrice());
-				param.put("orderUserType", express.getMode());
-
-				JSONObject caseDetail = new JSONObject();
-				caseDetail.put("shopId", express.getShop().getId());
-				caseDetail.put("receiver", express.getReceiver());
-				caseDetail.put("sender", express.getSender());
-
-				param.put("caseDetail", caseDetail);
-				HttpUtil.sendWindDataLog(param);
-			}
-		};
-		thread.start();
-	}*/
+	 * @Deprecated private void sendExpressLog21003(final Express express) { //
+	 *             TODO Auto-generated method stub Thread thread = new Thread()
+	 *             { public void run() { JSONObject param = new JSONObject();
+	 *             Line currentLine = LineUtil.getLine(express.getLines(),
+	 *             express.getCurrentLine()); if (currentLine == null) { return;
+	 *             } param.put("creatorId",
+	 *             currentLine.getExecutorUser().getId());
+	 *             param.put("createTime",
+	 *             DateUtils.convertToUtcTime(Calendar.getInstance().getTime()))
+	 *             ; param.put("type", "21003"); param.put("orderId",
+	 *             express.getExpressNo()); param.put("orderSum",
+	 *             express.getCategory().getTotalPrice());
+	 *             param.put("orderUserType", express.getMode());
+	 * 
+	 *             JSONObject caseDetail = new JSONObject();
+	 *             caseDetail.put("shopId", express.getShop().getId());
+	 *             caseDetail.put("receiver", express.getReceiver());
+	 *             caseDetail.put("sender", express.getSender());
+	 * 
+	 *             param.put("caseDetail", caseDetail);
+	 *             HttpUtil.sendWindDataLog(param); } }; thread.start(); }
+	 */
 
 	public void sendExpressLog21010(final Express express) {
 		Thread thread = new Thread() {
@@ -368,13 +361,14 @@ public class ExpressService {
 		};
 		thread.start();
 	}
+
 	public Express updateLineIndex(String expressNo, int addNumber) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(),
-				express.getCurrentLine() + addNumber);
+		expressDao.updateExpressLineIndex(expressNo, express.getCurrentLine(), express.getCurrentLine() + addNumber);
+		express.setCurrentLine(express.getCurrentLine() + addNumber);
 		return express;
 	}
-	
+
 	public Express updateLineIndex(Express express, int addNumber) {
 		expressDao.updateExpressLineIndex(express.getExpressNo(), express.getCurrentLine(),
 				express.getCurrentLine() + addNumber);
@@ -427,7 +421,7 @@ public class ExpressService {
 		firstExpress.setStatus(App.ORDER_BEGIN);
 		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
-//		sendExpressLog21003(firstExpress);
+		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
 
@@ -536,8 +530,8 @@ public class ExpressService {
 		expressDao.removeLine(expressNo, lineIndex);
 	}
 
-	public void replaceLine(Integer startIndex, List<Line> lines, String expressNo){
-		expressDao.replaceLine(startIndex,lines,expressNo);
+	public void replaceLine(Integer startIndex, List<Line> lines, String expressNo) {
+		expressDao.replaceLine(startIndex, lines, expressNo);
 	}
 
 	public void updateLine(String expressNo, List<Line> list) {
@@ -578,17 +572,20 @@ public class ExpressService {
 		List<Line> lines = express.getLines();
 		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
 
+		int num = 0;
 		if (lines != null) {
-			for (Line line : lines) {
+			for (num = 0; num < lines.size(); num++) {
+				Line line = lines.get(num);
 				if (line == null)
 					continue;
-				newArray[line.getIndex() - 1] = line;
+				newArray[num] = line;
 			}
 		}
 
 		if (list != null) {
-			for (Line line : list) {
-				newArray[line.getIndex() - 1] = line;
+			for (; num < newArray.length; num++) {
+				Line line = list.get(num - lines.size());
+				newArray[num] = line;
 			}
 		}
 
@@ -596,7 +593,7 @@ public class ExpressService {
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
 			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
-			if(userGPS!=null){
+			if (userGPS != null) {
 				line.getExecutorUser().setLat(userGPS.getLat());
 				line.getExecutorUser().setLng(userGPS.getLng());
 			}
@@ -605,18 +602,18 @@ public class ExpressService {
 			newList.add(line);
 		}
 
-		JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
-		Iterator<Object> iterator = expressMission.iterator();
-		Integer currentLine = (int) Short.MAX_VALUE;
-		while (iterator.hasNext()) {
-			JSONObject next = (JSONObject) iterator.next();
-			Integer index = next.getInteger("missionNodeIndex");
-			if (index < currentLine) {
-				currentLine = index;
-			}
-		}
+		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
+		// Iterator<Object> iterator = expressMission.iterator();
+		// Integer currentLine = (int) Short.MAX_VALUE;
+		// while (iterator.hasNext()) {
+		// JSONObject next = (JSONObject) iterator.next();
+		// Integer index = next.getInteger("missionNodeIndex");
+		// if (index < currentLine) {
+		// currentLine = index;
+		// }
+		// }
 
-		expressDao.updateLines(expressNo, newList, currentLine);
+		expressDao.updateLines(expressNo, newList, express.getCurrentLine());
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
@@ -682,7 +679,7 @@ public class ExpressService {
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
 
-		if(express.getStatus().equals(App.ORDER_COMPLETE)){
+		if (express.getStatus().equals(App.ORDER_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
 		JSONObject tmp = new JSONObject();
@@ -711,10 +708,10 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-//		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
-//				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
-//			express.setSubStatus(App.ORDER_COMPLETE);
-//		}
+		// if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+		// && (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
+		// express.setSubStatus(App.ORDER_COMPLETE);
+		// }
 		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 			if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
@@ -750,8 +747,8 @@ public class ExpressService {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
-		
-		if(express.getStatus().equals(App.ORDER_COMPLETE)){
+
+		if (express.getStatus().equals(App.ORDER_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
 		List<Line> lines = express.getLines();
@@ -766,10 +763,10 @@ public class ExpressService {
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
 		express.setStatus(App.ORDER_COMPLETE);
-//		if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
-//				&& (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
-//			express.setSubStatus(App.ORDER_COMPLETE);
-//		}
+		// if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
+		// && (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
+		// express.setSubStatus(App.ORDER_COMPLETE);
+		// }
 		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 		}
@@ -834,6 +831,16 @@ public class ExpressService {
 	public List<ShopExpressVO> selectShopExpress(String shopId, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.selectShopExpress(shopId,page);
+		return expressDao.selectShopExpress(shopId, page);
+	}
+
+	public JSONObject findShopExpressGroup(String shopId) {
+		ObjectId objectId = new ObjectId(shopId);
+		Long sendCount = expressRepository.countByShopId(objectId);
+		Long receiveCount=expressRepository.countByShopIdAndStatus(objectId, "complete");
+		JSONObject json=new JSONObject();
+		json.put("sendCount", sendCount);
+		json.put("receiveCount",receiveCount);
+		return json;
 	}
 }

@@ -25,4 +25,12 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 	Page<Express> findByShopId(String shopId, Pageable pageable);
 	
 	List<Express> findBySubStatus(String subStatus);
+	
+	Long countByShopId(ObjectId shopId);
+	
+	Long countByShopId(String shopId);
+	
+	Long countByShopIdAndStatus(ObjectId shopId,String status);
+	
+	Long countByShopIdAndStatus(String shopId,String status);
 }

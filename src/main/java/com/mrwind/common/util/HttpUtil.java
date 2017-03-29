@@ -1,9 +1,12 @@
 package com.mrwind.common.util;
 
+import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
@@ -48,6 +51,64 @@ public class HttpUtil {
 		}
 		return false;
 	}
+
+	/**
+	 * 余额支付接口
+	 *
+	 * by 黄海凯
+	 *
+	 * @param tranNo
+	 * @return
+	 */
+	public static boolean creditPay(String tranNo) {
+		Client client = Client.create();
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/creditPay?tranNo=" + tranNo);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * 通过Id查询商户余额信息
+	 * <p>
+	 * by 黄海凯
+	 *
+	 * @param ids
+	 * @return
+	 */
+	public static Map<String,BigDecimal> getShopBalanceAmount(Collection<String> ids){
+		Client client = new Client();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/account/balanceByIds");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON).post(ClientResponse.class,
+				JSONObject.toJSONString(ids));
+
+		if (clientResponse.getStatus() == 200) {
+			String result = clientResponse.getEntity(String.class);
+			JSONObject jsonObject = JSONObject.parseObject(result);
+			if (jsonObject.getInteger("code") == 1) {
+				Map<String, BigDecimal> map = new HashMap<>();
+				JSONArray array = jsonObject.getJSONArray("content");
+				for (int i = 0; i < array.size(); i++) {
+					JSONObject obj = array.getJSONObject(i);
+					BigDecimal balanceAmount = obj.getBigDecimal("balanceAmount");
+					BigDecimal backMoney = obj.getBigDecimal("backMoney");
+					map.put(obj.getString("shopId"),balanceAmount.add(backMoney));
+				}
+				return map;
+			}
+		}
+		return null;
+	}
+
 
 	/**
 	 * 发送给指定userid短信
@@ -129,6 +190,26 @@ public class HttpUtil {
 		result.put("errCode", clientResponse.getStatus());
 		result.put("errMsg", clientResponse.getEntity(String.class));
 		return result;
+	}
+
+	public static JSONObject findShopById(String id) {
+		if (StringUtils.isEmpty(id))
+			return null;
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/shop/findById?id=" + id);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED)
+				.get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					JSONObject json = JSONObject.parseObject(textEntity);
+					return json.getJSONObject("data");
+				}
+			}
+		}
+		return null;
 	}
 
 	/***
@@ -249,10 +330,10 @@ public class HttpUtil {
 //		sendSMSToShopId("ce是数据", shopIds);
 	}
 
-	private static void update(Express express) {
-		// TODO Auto-generated method stub
-		express.getCategory().setDistance(200.0);
-	}
+//	private static void update(Express express) {
+//		// TODO Auto-generated method stub
+//		express.getCategory().setDistance(200.0);
+//	}
 
 	public static String getUserIdByToken(String token) {
 		Client client = Client.create();

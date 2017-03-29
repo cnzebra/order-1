@@ -43,7 +43,7 @@ public class ExpressDao extends BaseDao {
 		query.with(new Sort(Sort.Direction.DESC, "createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
-
+	
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex, Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
@@ -145,7 +145,7 @@ public class ExpressDao extends BaseDao {
 	public List<Express> findUnBegin(Date date) {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("status").is(App.ORDER_CREATE));
-		query.addCriteria(Criteria.where("dueTime").lte(date));
+		query.addCriteria(Criteria.where("dueTime").gte(date));
 		return mongoTemplate.find(query, Express.class);
 	}
 

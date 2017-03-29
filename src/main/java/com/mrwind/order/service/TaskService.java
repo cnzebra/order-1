@@ -1,16 +1,8 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,12 +41,12 @@ public class TaskService {
 	RedisCache redisCache;
 
 	public void sendOrder() {
-		
-		if(redisCache.getObject(this.getClass().getName()+"sendOrder") !=null ){
-			return ;
+
+		if (redisCache.getObject(this.getClass().getName() + "sendOrder") != null) {
+			return;
 		}
-		redisCache.set(this.getClass().getName()+"sendOrder", 20, true);
-		
+		redisCache.set(this.getClass().getName() + "sendOrder", 20, true);
+
 		Calendar instance = Calendar.getInstance();
 		instance.add(Calendar.HOUR_OF_DAY, -2);
 
@@ -79,13 +71,181 @@ public class TaskService {
 		}
 	}
 
-	public void sendWarning() {
-		
-		if(redisCache.getObject(this.getClass().getName()+"sendWarning") !=null ){
-			return ;
+	/**
+	 * 生成账单 信用扣款
+	 */
+	public void generateBill() {
+
+		if (redisCache.getObject(this.getClass().getName() + "generateBill") != null) {
+			return;
 		}
-		redisCache.set(this.getClass().getName()+"sendWarning", 3600, true);
-		
+		redisCache.set(this.getClass().getName() + "generateBill", 360, true);
+
+		Map<String, BigDecimal> totalPriceMap = new HashMap<>();
+
+		Map<String, ShopAfterExpress> afterMap = new HashMap<>();
+		List<Express> afterPayList = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER,
+				App.ORDER_COMPLETE, App.ORDER_PRE_PRICED);
+
+		// 遍历获取到shopId对应的订单号
+		List<Express> creditPayList = expressRepository.findBySubStatus(App.ORDER_PRE_PAY_CREDIT);
+		Map<String, ShopAfterExpress> creditMap = new HashMap<>();
+		for (Express e : creditPayList) {
+
+			ShopAfterExpress shopAfterExpress = creditMap.get(e.getShop().getId());
+			if (shopAfterExpress == null) {
+				shopAfterExpress = new ShopAfterExpress();
+				shopAfterExpress.setShopId(e.getShop().getId());
+				shopAfterExpress.setTotalPrice(e.getCategory().getTotalPrice());
+				Set<String> expressNo = new HashSet<>();
+				expressNo.add(e.getExpressNo());
+				shopAfterExpress.setExpressNo(expressNo);
+				creditMap.put(e.getShop().getId(), shopAfterExpress);
+				continue;
+			}
+
+			BigDecimal totalPrice = shopAfterExpress.getTotalPrice();
+			shopAfterExpress.setTotalPrice(totalPrice.add(e.getCategory().getTotalPrice()));
+			Set<String> expressNoSet = shopAfterExpress.getExpressNo();
+			expressNoSet.add(e.getExpressNo());
+		}
+
+		for (Express e : afterPayList) {
+			ShopAfterExpress shopAfterExpress = afterMap.get(e.getShop().getId());
+
+			if (shopAfterExpress == null) {
+				shopAfterExpress = new ShopAfterExpress();
+				shopAfterExpress.setShopId(e.getShop().getId());
+				shopAfterExpress.setTotalPrice(e.getCategory().getTotalPrice());
+				Set<String> expressNo = new HashSet<>();
+				expressNo.add(e.getExpressNo());
+				shopAfterExpress.setExpressNo(expressNo);
+				afterMap.put(e.getShop().getId(), shopAfterExpress);
+				continue;
+			}
+
+			BigDecimal totalPrice = shopAfterExpress.getTotalPrice();
+			shopAfterExpress.setTotalPrice(totalPrice.add(e.getCategory().getTotalPrice()));
+			Set<String> expressNoSet = shopAfterExpress.getExpressNo();
+			expressNoSet.add(e.getExpressNo());
+		}
+
+		for (Entry<String, ShopAfterExpress> entry : creditMap.entrySet()) {
+			String key = entry.getKey();
+			ShopAfterExpress value = entry.getValue();
+			Set<String> userIds = new HashSet<>();
+			userIds.add(key);
+			JSONObject resJson = orderService.systemPay(value.getExpressNo(), "系统定时收款");
+			if (resJson == null) {
+				System.out.println("系统收款失败!");
+				continue;
+			}
+
+			boolean balancePay = HttpUtil.creditPay(resJson.getString("tranNo"));
+			if (balancePay) {
+				// 保存总共的消费额
+				BigDecimal totalPrice = resJson.getBigDecimal("totalPrice");
+				BigDecimal money = totalPriceMap.get(key);
+				if (money == null) {
+					totalPriceMap.put(key, totalPrice);
+				} else {
+					totalPriceMap.put(key, money.add(totalPrice));
+				}
+
+				Set<String> set = value.getExpressNo();
+				Iterator<String> it = set.iterator();
+				while (it.hasNext()) {
+					String expressNo = it.next();
+					expressDao.updateSubStatus(expressNo, App.ORDER_PRE_PAY_PRICED);
+				}
+			}
+		}
+
+		for (Entry<String, ShopAfterExpress> entry : afterMap.entrySet()) {
+			String key = entry.getKey();
+			ShopAfterExpress value = entry.getValue();
+			HashSet<String> userIds = new HashSet<>();
+			userIds.add(key);
+			JSONObject resJson = orderService.systemPay(value.getExpressNo(), "系统定时收款");
+			if (resJson == null) {
+				System.out.println("系统收款失败!");
+				continue;
+			}
+
+			boolean balancePay = HttpUtil.creditPay(resJson.getString("tranNo"));
+			if (balancePay) {
+				// 保存总共的消费额
+				BigDecimal totalPrice = resJson.getBigDecimal("totalPrice");
+				BigDecimal money = totalPriceMap.get(key);
+				if (money == null) {
+					totalPriceMap.put(key, totalPrice);
+				} else {
+					totalPriceMap.put(key, money.add(totalPrice));
+				}
+				// content = "您的账户于21：00成功支付" +
+				// resJson.getBigDecimal("totalPrice") + "元。感谢使用风先生，祝您生活愉快。";
+				Set<String> set = value.getExpressNo();
+				Iterator<String> it = set.iterator();
+				while (it.hasNext()) {
+					String expressNo = it.next();
+					expressDao.updateStatus(expressNo, App.ORDER_COMPLETE, App.ORDER_COMPLETE);
+				}
+			}
+		}
+
+		// 保存钱
+		String jsonString = JSONObject.toJSONString(totalPriceMap);
+		redisCache.set(App.RDKEY_SHOP_TOTAL_PRICE, 3600 * 12, jsonString);
+		System.out.println("generateBill");
+
+	}
+
+	public void sendBill() {
+
+		if (redisCache.getObject(this.getClass().getName() + "sendBill") != null) {
+			return;
+		}
+		redisCache.set(this.getClass().getName() + "sendBill", 360, true);
+
+		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
+		Map<String, BigDecimal> balanceAmountMap = HttpUtil.getShopBalanceAmount(jsonObject.keySet());
+
+		if (jsonObject != null && balanceAmountMap != null) {
+			for (Entry<String, Object> entry : jsonObject.entrySet()) {
+				BigDecimal totalPrice = BigDecimal.valueOf((Double) entry.getValue());
+				String date = DateUtils.formatDate(DateUtils.addDays(new Date(), -1), "MM月dd日");
+				Collection<String> userIds = new HashSet<>();
+				userIds.add(entry.getKey());
+				String content = "";
+				if (balanceAmountMap.containsKey(entry.getKey())) {
+					BigDecimal amount = balanceAmountMap.get(entry.getKey());
+					if (amount.compareTo(BigDecimal.ZERO) != -1) {
+						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，账户余额为" + amount
+								+ "元。请点击链接立即查看消费明细或充值https://ddd.html";
+
+					} else {
+						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，实际账户已欠费" + amount
+								+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值https://ddd.html";
+					}
+				} else {
+					// 没有该商户的余额信息
+					content = "你的账户" + date + "运力消费金额为" + totalPrice
+							+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值https://ddd.html";
+				}
+				HttpUtil.sendSMSToShopId(content, userIds);
+			}
+		}
+
+	}
+
+	@Deprecated
+	public void sendWarning() {
+
+		if (redisCache.getObject(this.getClass().getName() + "sendWarning") != null) {
+			return;
+		}
+		redisCache.set(this.getClass().getName() + "sendWarning", 3600, true);
+
 		List<Express> specialExpresses = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER,
 				App.ORDER_COMPLETE, App.ORDER_PRE_PRICED);
 		Map<String, ShopAfterExpress> map = new HashMap<>();
@@ -128,13 +288,14 @@ public class TaskService {
 		System.out.println("sendWarning");
 	}
 
+	@Deprecated
 	public void chargeBack() {
-		
-		if(redisCache.getObject(this.getClass().getName()+"chargeBack") !=null ){
-			return ;
+
+		if (redisCache.getObject(this.getClass().getName() + "chargeBack") != null) {
+			return;
 		}
-		redisCache.set(this.getClass().getName()+"chargeBack", 3600, true);
-		
+		redisCache.set(this.getClass().getName() + "chargeBack", 3600, true);
+
 		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
 		if (jsonObject != null) {
 			for (Entry<String, Object> entry : jsonObject.entrySet()) {
@@ -171,6 +332,7 @@ public class TaskService {
 
 	}
 
+	@Deprecated
 	private void creditPay() {
 		// TODO Auto-generated method stub
 		List<Express> findBySubStatus = expressRepository.findBySubStatus(App.ORDER_PRE_PAY_CREDIT);
@@ -227,7 +389,7 @@ public class TaskService {
 	}
 	/***
 	 * 商户 后录单
-	 * 
+	 *
 	 * @author imacyf0012
 	 *
 	 */
