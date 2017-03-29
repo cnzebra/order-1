@@ -207,7 +207,10 @@ public class TaskService {
 		}
 		redisCache.set(this.getClass().getName() + "sendBill", 360, true);
 
-		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_AFTER_ORDER));
+		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_SHOP_TOTAL_PRICE));
+		if(jsonObject == null){
+			return;
+		}
 		Map<String, BigDecimal> balanceAmountMap = HttpUtil.getShopBalanceAmount(jsonObject.keySet());
 
 		if (jsonObject != null && balanceAmountMap != null) {
