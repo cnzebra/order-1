@@ -58,7 +58,10 @@ public class ExpressController {
             return JSONFactory.getErrorJSON("查不到运单号");
         }
         if (StringUtils.isBlank(countString)){
-            countString = "0";
+            countString = redisCache.getString(expressNo);
+            if (StringUtils.isBlank(countString)){
+                countString = "0";
+            }
         }
         int count;
         try {
