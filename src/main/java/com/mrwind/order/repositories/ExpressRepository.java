@@ -2,6 +2,7 @@ package com.mrwind.order.repositories;
 
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 
 import org.bson.types.ObjectId;
@@ -33,4 +34,6 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 	Long countByShopIdAndStatus(ObjectId shopId,String status);
 	
 	Long countByShopIdAndStatus(String shopId,String status);
+	
+	List<Express> findAllByDueTimeGreaterThanEqual(Date beginTime);
 }
