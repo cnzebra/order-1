@@ -586,6 +586,7 @@ public class ExpressService {
 		if (list != null) {
 			for (; num < newArray.length; num++) {
 				Line line = list.get(num - lines.size());
+				line.setIndex(num + 1);
 				newArray[num] = line;
 			}
 		}
@@ -614,7 +615,7 @@ public class ExpressService {
 		// }
 		// }
 
-		expressDao.updateLines(expressNo, newList, express.getCurrentLine());
+		expressDao.updateLines(expressNo, newList, express.getCurrentLine() + 1);
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
