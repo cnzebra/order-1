@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.SerializableUtil;
 
 import redis.clients.jedis.Jedis;
@@ -45,6 +46,43 @@ public class RedisCache {
 			redis.close();
 		}
 	}
+	
+	public Long setnx(String key,String value) {
+		Jedis redis = null;
+		try {
+			redis = redisPool.getResource();
+			return redis.setnx(key, value);
+		} finally {
+			redis.close();
+		}
+	}
+	
+	public boolean unLock(String key){
+		return delete(key) != null;
+	}
+
+	public boolean checkLock(String key, int second) {
+
+		String lockKey = "lock:" + key;
+		try {
+			// 1表示之前不存在，设置成功
+			if (setnx(lockKey, "lock") == 1) {
+				// 设置有限期
+				expire(lockKey, second);
+				return true;
+			} else {
+				// 50毫秒的延迟，避免过多请求
+				try {
+					Thread.sleep(50L);
+				} catch (InterruptedException e) {
+				}
+				return false;
+			}
+
+		} catch (Exception e) {
+			return true;
+		}
+	}
 
 	public Object set(String key, int expire, String value) {
 		Jedis redis = null;
@@ -61,15 +99,25 @@ public class RedisCache {
 		}
 
 	}
+	
+	public String setex(String key, int seconds, String value) {
+		Jedis redis = null;
+		try {
+			redis = redisPool.getResource();
+			String setex = redis.setex(key, seconds, value);
+			return setex;
+		} finally {
+			redis.close();
+		}
+
+	}
 
 	public Long getPK(String tableName, int interval) {
 		long pk = this.incr("PK" + tableName, interval);
 		if (pk < 1000000000) {
-			Calendar instance = Calendar.getInstance();
-			this.set("PK" + tableName, Integer.MAX_VALUE,Integer.valueOf(instance.getWeekYear()).toString()+"00000000");
-			String strPk = this.getString("PK" + tableName);
-			return Long.valueOf(strPk);
-//			pk =Long.valueOf(Integer.valueOf(instance.getWeekYear()).toString()+instance.get(Calendar.DAY_OF_YEAR)+"000000");
+			pk = Long.valueOf(DateUtils.getDate("yyyyMMdd")+"000000");
+			this.set("PK" + tableName, Integer.MAX_VALUE,pk);
+			return pk;
 		}
 		return pk;
 	}
@@ -408,10 +456,9 @@ public class RedisCache {
 		try {
 			redis = redisPool.getResource();
 			return redis.hincrBy(key, field, value);
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			redis.close();
 		}
 		return 0l;
@@ -472,7 +519,7 @@ public class RedisCache {
 			redis.close();
 		}
 	}
-	
+
 	public String hgetString(String key, String field) {
 		Jedis redis = null;
 		try {

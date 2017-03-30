@@ -2,6 +2,7 @@ package com.mrwind.common.cache;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.InetAddress;
 
 import javax.annotation.Resource;
 
@@ -24,6 +25,7 @@ import com.mrwind.common.annotation.CacheKey;
 import com.mrwind.common.annotation.Cacheable;
 import com.mrwind.common.annotation.Cacheable.KeyMode;
 import com.mrwind.common.annotation.CacheableLong;
+import com.mrwind.common.annotation.QuartzSync;
 import com.mrwind.common.util.SerializableUtil;
 
 @Aspect
@@ -41,6 +43,7 @@ public class CacheAspect {
 	@Pointcut("@annotation(com.mrwind.common.annotation.CacheableLong)")
 	public void cacheLongFilter() {
 	}
+	
 
 	/**
 	 * 定义缓存逻辑
@@ -108,6 +111,46 @@ public class CacheAspect {
 
 		// 使用redis 的hash进行存取，易于管理
 		return redisCache.hdel(cacheEvict.key().getBytes(), fieldKey.getBytes());
+	}
+	
+	@Around(value="@annotation(com.mrwind.common.annotation.QuartzSync)")
+	public void quartzSync(ProceedingJoinPoint pjp) throws Throwable{
+		Method method = getMethod(pjp);
+		QuartzSync quartzSync = method.getAnnotation(QuartzSync.class);
+		String key=quartzSync.key();
+		int lockTime = quartzSync.lockTime();
+		Boolean checkKeyStatus = checkKeyStatus(key,lockTime);
+		if(checkKeyStatus){
+			pjp.proceed();
+		}
+	}
+
+	private Boolean checkKeyStatus(String key, int lockTime) {
+		try {
+			while(true){
+				boolean lock = redisCache.checkLock(key, lockTime);
+				if(lock)break;
+			}
+			String ip = InetAddress.getLocalHost().getHostAddress();
+            // 获取服务器上的工作ip
+            String currentIp = redisCache.getString(key);
+            // 如果为空的时候，设置进去
+            if(currentIp == null){
+                redisCache.setex(key, 10, ip);
+                return true;
+            }
+            // 就是当前机器，则返回true
+            if(currentIp.equals(ip)){
+                return true;
+            }else{
+                return false;
+            }
+		} catch (Exception e) {
+			// TODO: handle exception
+			return false;
+		}finally{
+			redisCache.unLock(key);
+		}
 	}
 
 	/**
