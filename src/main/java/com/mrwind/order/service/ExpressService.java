@@ -604,6 +604,8 @@ public class ExpressService {
 			newList.add(line);
 		}
 
+		//更新时间
+		newList.get(newList.size() - 2).setRealTime(new Date());
 		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
 		// Iterator<Object> iterator = expressMission.iterator();
 		// Integer currentLine = (int) Short.MAX_VALUE;
