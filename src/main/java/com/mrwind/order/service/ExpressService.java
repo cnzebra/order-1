@@ -585,6 +585,7 @@ public class ExpressService {
 		if (list != null) {
 			for (; num < newArray.length; num++) {
 				Line line = list.get(num - lines.size());
+				line.setIndex(num + 1);
 				newArray[num] = line;
 			}
 		}
@@ -602,6 +603,8 @@ public class ExpressService {
 			newList.add(line);
 		}
 
+		//更新时间
+		newList.get(newList.size() - 2).setRealTime(new Date());
 		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
 		// Iterator<Object> iterator = expressMission.iterator();
 		// Integer currentLine = (int) Short.MAX_VALUE;
@@ -613,7 +616,7 @@ public class ExpressService {
 		// }
 		// }
 
-		expressDao.updateLines(expressNo, newList, express.getCurrentLine());
+		expressDao.updateLines(expressNo, newList, express.getCurrentLine() + 1);
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {

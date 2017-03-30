@@ -213,7 +213,7 @@ public class OrderService {
 			}
 			next.setStatus(App.ORDER_SENDING);
 			next.setSubStatus(App.ORDER_PRE_PAY_CREDIT);
-			expressService.updateLineIndex(next, 1);
+//			expressService.updateLineIndex(next, 1);
 			next.setCurrentLine(null);  //不要更新Index
 			expressService.updateExpress(next);
 			// 发送短信
@@ -332,7 +332,7 @@ public class OrderService {
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
 					App.ORDER_PRE_PAY_PRICED);
 
-			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
+//			expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			// 发送短信
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
 				String expressNo = orderReceipt.getExpressNo();
