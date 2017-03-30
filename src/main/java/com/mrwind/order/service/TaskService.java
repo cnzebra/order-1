@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.annotation.QuartzSync;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.constant.ConfigConstant;
 import com.mrwind.common.util.DateUtils;
@@ -50,12 +51,8 @@ public class TaskService {
 	@Autowired
 	RedisCache redisCache;
 
+	@QuartzSync(key="generateBill")
 	public void sendOrder() {
-
-		if (redisCache.getObject(this.getClass().getName() + "sendOrder") != null) {
-			return;
-		}
-		redisCache.set(this.getClass().getName() + "sendOrder", 20, true);
 
 		Calendar instance = Calendar.getInstance();
 		instance.add(Calendar.HOUR_OF_DAY, -2);
@@ -84,6 +81,7 @@ public class TaskService {
 	/**
 	 * 生成账单 信用扣款
 	 */
+	@QuartzSync(key="generateBill")
 	public void generateBill() {
 
 		if (redisCache.getObject(this.getClass().getName() + "generateBill") != null) {
@@ -210,6 +208,7 @@ public class TaskService {
 
 	}
 
+	@QuartzSync(key="generateBill")
 	public void sendBill() {
 
 		if (redisCache.getObject(this.getClass().getName() + "sendBill") != null) {
@@ -255,11 +254,8 @@ public class TaskService {
 
 	}
 
+	@QuartzSync(key="generateBill")
 	public void sendTodayDetail() {
-		if (redisCache.getObject(this.getClass().getName() + "sendTodayDetail") != null) {
-			return;
-		}
-		redisCache.set(this.getClass().getName() + "sendTodayDetail", 3600, true);
 
 		Date startTime = DateUtils.getStartTime();
 		List<Express> list = expressRepository.findAllByDueTimeGreaterThanEqual(startTime);
@@ -305,6 +301,7 @@ public class TaskService {
 	}
 
 	@Deprecated
+	@QuartzSync(key="generateBill")
 	public void sendWarning() {
 
 		if (redisCache.getObject(this.getClass().getName() + "sendWarning") != null) {
@@ -355,6 +352,7 @@ public class TaskService {
 	}
 
 	@Deprecated
+	@QuartzSync(key="generateBill")
 	public void chargeBack() {
 
 		if (redisCache.getObject(this.getClass().getName() + "chargeBack") != null) {
@@ -399,6 +397,7 @@ public class TaskService {
 	}
 
 	@Deprecated
+	@QuartzSync(key="generateBill")
 	private void creditPay() {
 		// TODO Auto-generated method stub
 		List<Express> findBySubStatus = expressRepository.findBySubStatus(App.ORDER_PRE_PAY_CREDIT);
