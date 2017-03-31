@@ -1,9 +1,6 @@
 package com.mrwind.order.controller;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,7 +103,7 @@ public class LineController {
 		Date planTime = param.getDate("preTime");
 		expressService.updateExpressPlanTime(expressNo,planTime);
 		
-		expressService.modifiLine(expressNo, list);
+		expressService.modifiLine(expressNo, list == null ? Collections.<Line>emptyList() : list);
 		return JSONFactory.getSuccessJSON();
 	}
 

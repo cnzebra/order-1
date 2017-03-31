@@ -1,14 +1,7 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -573,25 +566,21 @@ public class ExpressService {
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		List<Line> lines = express.getLines();
+		List<Line> lines = express.getLines() == null ? Collections.<Line>emptyList() : express.getLines();
 		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
-
+		if (list.contains(null))
+			list.remove(null);
 		int num = 0;
-		if (lines != null) {
-			for (num = 0; num < lines.size(); num++) {
-				Line line = lines.get(num);
-				if (line == null)
-					continue;
-				newArray[num] = line;
-			}
+		for (num = 0; num < lines.size(); num++) {
+			Line line = lines.get(num);
+			if (line == null)
+				continue;
+			newArray[num] = line;
 		}
-
-		if (list != null) {
-			for (; num < newArray.length; num++) {
-				Line line = list.get(num - lines.size());
-				line.setIndex(num + 1);
-				newArray[num] = line;
-			}
+		for (; num < newArray.length; num++) {
+			Line line = list.get(num - lines.size());
+			line.setIndex(num + 1);
+			newArray[num] = line;
 		}
 
 		List<Line> newList = new ArrayList<>();
