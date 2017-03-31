@@ -850,7 +850,7 @@ public class ExpressService {
 	}
 
 	public List<MapExpressVO> selectAll(Integer pageIndex, Integer pageSize) {
-		PageRequest pageRequest = new PageRequest(pageIndex, pageSize);
+		PageRequest pageRequest = new PageRequest(pageIndex-1, pageSize);
 		List<MapExpressVO> findAll = expressDao.findAll(pageRequest);
 		return findAll;
 	}
