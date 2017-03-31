@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.naming.directory.DirContext;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -850,7 +852,8 @@ public class ExpressService {
 	}
 
 	public List<MapExpressVO> selectAll(Integer pageIndex, Integer pageSize) {
-		PageRequest pageRequest = new PageRequest(pageIndex-1, pageSize);
+		Sort sort = new Sort(Direction.DESC, "dueTime");
+		PageRequest pageRequest = new PageRequest(pageIndex-1, pageSize,sort);
 		List<MapExpressVO> findAll = expressDao.findAll(pageRequest);
 		return findAll;
 	}
