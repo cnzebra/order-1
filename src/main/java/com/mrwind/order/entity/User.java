@@ -1,10 +1,16 @@
 package com.mrwind.order.entity;
 
+import java.io.Serializable;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 
-public class User {
+public class User implements Serializable{
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -413821825072396537L;
 	@Id
 	private String id;
 	private String name;

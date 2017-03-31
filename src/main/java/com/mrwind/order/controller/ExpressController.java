@@ -6,6 +6,8 @@ import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.vo.MapExpressVO;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,6 +40,15 @@ public class ExpressController {
         Express res = expressService.selectByNo(expressNo);
         JSONObject successJSON = JSONFactory.getSuccessJSON();
         successJSON.put("data", res);
+        return successJSON;
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/select/map", method = RequestMethod.GET)
+    public JSONObject selectMap(Integer pageIndex,Integer pageSize) {
+        List<MapExpressVO> all = expressService.selectAll(pageIndex,pageSize);
+        JSONObject successJSON = JSONFactory.getSuccessJSON();
+        successJSON.put("data", all);
         return successJSON;
     }
 

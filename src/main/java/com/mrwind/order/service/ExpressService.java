@@ -39,6 +39,7 @@ import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import com.mrwind.order.repositories.ExpressRepository;
@@ -594,13 +595,13 @@ public class ExpressService {
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
+			if (line == null)
+				continue;
 			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
 			if (userGPS != null) {
 				line.getExecutorUser().setLat(userGPS.getLat());
 				line.getExecutorUser().setLng(userGPS.getLng());
 			}
-			if (line == null)
-				continue;
 			newList.add(line);
 		}
 
@@ -846,5 +847,11 @@ public class ExpressService {
 		json.put("sendCount", sendCount);
 		json.put("receiveCount",receiveCount);
 		return json;
+	}
+
+	public List<MapExpressVO> selectAll(Integer pageIndex, Integer pageSize) {
+		PageRequest pageRequest = new PageRequest(pageIndex, pageSize);
+		List<MapExpressVO> findAll = expressDao.findAll(pageRequest);
+		return findAll;
 	}
 }

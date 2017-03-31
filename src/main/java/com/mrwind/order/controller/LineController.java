@@ -120,6 +120,7 @@ public class LineController {
 	public JSON replaceLine(@RequestBody final JSONObject param){
 		int index = param.getIntValue("startIndex");
 		String expressNo = param.getString("expressNo");
+		@SuppressWarnings("serial")
 		List<Line> lines = new ArrayList<Line>(){{addAll(param.getJSONArray("lines").toJavaList(Line.class));}};
 
 		if (StringUtils.isEmpty(expressNo)){
