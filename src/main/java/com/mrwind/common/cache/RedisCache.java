@@ -1,6 +1,5 @@
 package com.mrwind.common.cache;
 
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +9,7 @@ import javax.annotation.Resource;
 
 import org.springframework.stereotype.Component;
 
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.SerializableUtil;
 
 import redis.clients.jedis.Jedis;
@@ -113,11 +113,10 @@ public class RedisCache {
 
 	public Long getPK(String tableName, int interval) {
 		long pk = this.incr("PK" + tableName, interval);
-		if (pk < 10000000) {
-			Calendar instance = Calendar.getInstance();
-			this.set("PK" + tableName, Integer.MAX_VALUE,
-					instance.getWeekYear() + instance.get(Calendar.DAY_OF_YEAR) + "000000");
-			pk = Long.valueOf(instance.getWeekYear() + instance.get(Calendar.DAY_OF_YEAR) + "000000");
+		if (pk < 1000000000) {
+			pk = Long.valueOf(DateUtils.getDate("yyyyMMdd")+"000000");
+			this.set("PK" + tableName, Integer.MAX_VALUE,pk);
+			return pk;
 		}
 		return pk;
 	}
