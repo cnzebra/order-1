@@ -408,7 +408,8 @@ public class ExpressService {
 
 	public List<Express> selectByExpressNoSortByDueTime(Collection<String> express) {
 		// TODO Auto-generated method stub
-		List<Express> list = expressRepository.findByExpressNoInSortByDueTimeDesc(express);
+		Sort sort = new Sort(Direction.DESC,"dueTime");
+		List<Express> list = expressRepository.findByExpressNoIn(express,sort);
 		return list;
 	}
 

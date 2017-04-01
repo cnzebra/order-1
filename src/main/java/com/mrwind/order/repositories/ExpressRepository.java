@@ -8,6 +8,7 @@ import java.util.List;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.QueryByExampleExecutor;
 
@@ -21,7 +22,7 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 
 	List<Express> findByExpressNoIn(Collection<String> express);
 
-	List<Express> findByExpressNoInSortByDueTimeDesc(Collection<String> express);
+	List<Express> findByExpressNoIn(Collection<String> express,Sort sort);
 	
 	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 
