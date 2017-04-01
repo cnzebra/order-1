@@ -406,6 +406,13 @@ public class ExpressService {
 		return list;
 	}
 
+	public List<Express> selectByExpressNoSortByDueTime(Collection<String> express) {
+		// TODO Auto-generated method stub
+		List<Express> list = expressRepository.findByExpressNoInSortByDueTimeDesc(express);
+		return list;
+	}
+
+
 	public JSONObject updateCategory(String expressNo, Category category) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
 		if (firstExpress == null) {

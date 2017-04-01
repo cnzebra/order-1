@@ -20,6 +20,8 @@ public interface ExpressRepository extends QueryByExampleExecutor<Express>,Pagin
 	Express findFirstByBindExpressNo(String bindExpressNo);
 
 	List<Express> findByExpressNoIn(Collection<String> express);
+
+	List<Express> findByExpressNoInSortByDueTimeDesc(Collection<String> express);
 	
 	Page<Express> findByShopId(ObjectId shopId,Pageable pageable);
 
