@@ -338,4 +338,12 @@ public class ExpressDao extends BaseDao {
 		query.with(pageRequest);
 		return mongoTemplate.find(query, MapExpressVO.class, "express");
 	}
+
+	public Express judgeBind(String tel, String shopId){
+		Query query = new Query();
+		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
+		query.addCriteria(Criteria.where("receiver.tel").is(tel));
+		query.addCriteria(Criteria.where("bindExpressNo").is(null));
+		return mongoTemplate.findOne(query, Express.class);
+	}
 }
