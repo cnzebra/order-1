@@ -294,9 +294,8 @@ public class ExpressService {
 		}
 		String code = CodeUtils.genSimpleCode(4);
 		String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
-		Collection<String> userIds = new HashSet<>();
-		userIds.add(express.getShop().getId());
-		HttpUtil.sendSMSToShopId(content, userIds);
+		//send code to receiver
+		HttpUtil.sendSMSToUserTel(content, express.getReceiver().getTel());
 		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo, 900, code);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(), ExpressCodeLog.TypeConstant.TYPE_SEND,
 				code);
