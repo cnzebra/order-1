@@ -1,11 +1,17 @@
 package com.mrwind.order.service;
 
 import java.math.BigDecimal;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import javax.naming.directory.DirContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
@@ -185,7 +191,7 @@ public class ExpressService {
 		}
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
-		express.setDueTime(DateUtils.getDateInHour());
+		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
 
 		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
@@ -214,6 +220,7 @@ public class ExpressService {
 		express.setStatus(App.ORDER_SENDING);
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
+		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
 
 		return express;
