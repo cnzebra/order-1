@@ -343,7 +343,7 @@ public class ExpressDao extends BaseDao {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
 		query.addCriteria(Criteria.where("receiver.tel").is(tel));
-		query.addCriteria(Criteria.where("bindExpressNo").is(null));
+		query.addCriteria(Criteria.where("bindExpressNo").is(""));
 		return mongoTemplate.findOne(query, Express.class);
 	}
 }
