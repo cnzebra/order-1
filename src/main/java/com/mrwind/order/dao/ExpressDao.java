@@ -343,6 +343,7 @@ public class ExpressDao extends BaseDao {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
 		query.addCriteria(Criteria.where("receiver.tel").is(tel));
+		query.addCriteria(Criteria.where("status").ne(App.ORDER_COMPLETE));
 		Criteria criteria = new Criteria();
 		criteria.orOperator(Criteria.where("bindExpressNo").is(""),Criteria.where("bindExpressNo").is(null));
 		query.addCriteria(criteria);

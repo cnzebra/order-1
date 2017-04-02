@@ -435,6 +435,20 @@ public class ExpressService {
 		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
+	
+	public JSONObject updateCategoryNoStatus(String expressNo, Category category) {
+		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
+		if (firstExpress == null) {
+			return JSONFactory.getErrorJSON("查无该订单");
+		}
+		if (!firstExpress.getStatus().equals(App.ORDER_BEGIN)) {
+			return JSONFactory.getErrorJSON("运单不允许改价！");
+		}
+		firstExpress.setCategory(category);
+		expressDao.updateCategoryAndStatus(firstExpress);
+		// sendExpressLog21003(firstExpress);
+		return JSONFactory.getSuccessJSON();
+	}
 
 	public synchronized JSONObject saveExpress(final Express express) {
 		Runnable runnable = new Runnable() {
