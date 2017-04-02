@@ -705,6 +705,8 @@ public class ExpressService {
 		}
 
 		List<Line> lines = express.getLines();
+		if (lines == null)
+			lines = new ArrayList<>(1);
 		Line line = new Line();
 		user.setLat(endAddress.getLat());
 		user.setLng(endAddress.getLng());
