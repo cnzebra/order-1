@@ -5,12 +5,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mrwind.common.util.NumberUtils;
+import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.Express;
 
 @Service
 public class ExpressBindService {
 	
 	@Autowired ExpressService expressService;
+	@Autowired ExpressDao expressDao;
 
 	public String bindExpress(String expressNo, String bindExpressNo) {
 		// TODO Auto-generated method stub
@@ -25,6 +27,14 @@ public class ExpressBindService {
 		
 		expressService.updateExpressBindNo(expressNo, bindExpressNo);
 		return null;
+	}
+	
+	public Boolean bindExpressByTel(String tel, String shopId, String bindExpressNo) {
+		Express express = expressDao.judgeBind(tel, shopId);
+		if (express == null)
+			return false;
+		String res = this.bindExpress(express.getExpressNo(), bindExpressNo);
+		return StringUtils.isEmpty(res);
 	}
 
 	public String cancelExpressBindNo(String expressNo) {
