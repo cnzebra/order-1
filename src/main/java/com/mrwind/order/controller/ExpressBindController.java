@@ -44,5 +44,18 @@ public class ExpressBindController {
 		}
 		return JSONFactory.getSuccessJSON();
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/tel", method = RequestMethod.POST)
+	public JSONObject bindByTel(JSONObject json) {
+		String shopId = json.getString("shopId");
+		String bindExpressNo = json.getString("bindExpressNo");
+		String tel = json.getString("tel");
+		Boolean res = expressBindService.bindExpressByTel(tel, shopId, bindExpressNo);
+		if(!res){
+			return JSONFactory.getErrorJSON("没有可绑定的运单");
+		}
+		return JSONFactory.getSuccessJSON();
+	}
 
 }
