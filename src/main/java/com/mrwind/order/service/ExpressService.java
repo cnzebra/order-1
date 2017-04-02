@@ -445,6 +445,8 @@ public class ExpressService {
 			return JSONFactory.getErrorJSON("运单不允许改价！");
 		}
 		firstExpress.setCategory(category);
+		firstExpress.setStatus(App.ORDER_SENDING);
+		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
 		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
