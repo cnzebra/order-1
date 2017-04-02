@@ -23,6 +23,7 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 
 @Repository
@@ -325,5 +326,26 @@ public class ExpressDao extends BaseDao {
 		query.fields().include("dueTime");
 		query.with(page);
 		return mongoTemplate.find(query, ShopExpressVO.class, "express");
+	}
+
+	public List<MapExpressVO> findAll(PageRequest pageRequest) {
+		Query query = new Query();
+		query.fields().include("expressNo");
+		query.fields().include("receiver");
+		query.fields().include("sender");
+		query.fields().include("bindExpressNo");
+		query.fields().include("dueTime");
+		query.with(pageRequest);
+		return mongoTemplate.find(query, MapExpressVO.class, "express");
+	}
+
+	public Express judgeBind(String tel, String shopId){
+		Query query = new Query();
+		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
+		query.addCriteria(Criteria.where("receiver.tel").is(tel));
+		Criteria criteria = new Criteria();
+		criteria.orOperator(Criteria.where("bindExpressNo").is(""),Criteria.where("bindExpressNo").is(null));
+		query.addCriteria(criteria);
+		return mongoTemplate.findOne(query, Express.class);
 	}
 }

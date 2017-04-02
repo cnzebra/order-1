@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.User;
 
 import com.mrwind.order.repositories.ExpressRepository;
@@ -50,6 +51,9 @@ public class OrderService {
 
 	@Autowired
 	RedisCache redisCache;
+
+	@Autowired
+	ExpressDao expressDao;
 
 	public JSONObject reminder(String expressNo) {
 		// 根据运单号查找当前派送人
@@ -407,5 +411,9 @@ public class OrderService {
 		order.setSubStatus(App.ORDER_PRE_CREATED);
 		Order save = orderRepository.save(order);
 		return save;
+	}
+
+	public boolean judgeBind(String tel,String shopId){
+		return expressDao.judgeBind(tel,shopId) != null;
 	}
 }

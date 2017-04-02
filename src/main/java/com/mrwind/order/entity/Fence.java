@@ -1,7 +1,13 @@
 package com.mrwind.order.entity;
 
-public class Fence {
+import java.io.Serializable;
 
+public class Fence implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7447875263060014604L;
 	private String id;
 	private String name;
 

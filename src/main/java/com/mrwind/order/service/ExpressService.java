@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,6 +40,7 @@ import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
 import com.mrwind.order.repositories.ExpressRepository;
@@ -188,7 +190,7 @@ public class ExpressService {
 		}
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
-		express.setDueTime(DateUtils.getDateInHour());
+		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
 
 		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
@@ -217,6 +219,7 @@ public class ExpressService {
 		express.setStatus(App.ORDER_SENDING);
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
+		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
 
 		return express;
@@ -290,9 +293,8 @@ public class ExpressService {
 		}
 		String code = CodeUtils.genSimpleCode(4);
 		String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
-		Collection<String> userIds = new HashSet<>();
-		userIds.add(express.getShop().getId());
-		HttpUtil.sendSMSToShopId(content, userIds);
+		//send code to receiver
+		HttpUtil.sendSMSToUserTel(content, express.getReceiver().getTel());
 		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo, 900, code);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(), ExpressCodeLog.TypeConstant.TYPE_SEND,
 				code);
@@ -408,6 +410,14 @@ public class ExpressService {
 		List<Express> list = expressRepository.findByExpressNoIn(express);
 		return list;
 	}
+
+	public List<Express> selectByExpressNoSortByDueTime(Collection<String> express) {
+		// TODO Auto-generated method stub
+		Sort sort = new Sort(Direction.DESC,"dueTime");
+		List<Express> list = expressRepository.findByExpressNoIn(express,sort);
+		return list;
+	}
+
 
 	public JSONObject updateCategory(String expressNo, Category category) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
@@ -569,37 +579,33 @@ public class ExpressService {
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		List<Line> lines = express.getLines();
+		List<Line> lines = express.getLines() == null ? Collections.<Line>emptyList() : express.getLines();
 		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
-
+		if (list.contains(null))
+			list.remove(null);
 		int num = 0;
-		if (lines != null) {
-			for (num = 0; num < lines.size(); num++) {
-				Line line = lines.get(num);
-				if (line == null)
-					continue;
-				newArray[num] = line;
-			}
+		for (num = 0; num < lines.size(); num++) {
+			Line line = lines.get(num);
+			if (line == null)
+				continue;
+			newArray[num] = line;
 		}
-
-		if (list != null) {
-			for (; num < newArray.length; num++) {
-				Line line = list.get(num - lines.size());
-				line.setIndex(num + 1);
-				newArray[num] = line;
-			}
+		for (; num < newArray.length; num++) {
+			Line line = list.get(num - lines.size());
+			line.setIndex(num + 1);
+			newArray[num] = line;
 		}
 
 		List<Line> newList = new ArrayList<>();
 		for (int i = 0; i < newArray.length; i++) {
 			Line line = newArray[i];
+			if (line == null)
+				continue;
 			Address userGPS = HttpUtil.findUserGPS(line.getExecutorUser().getId());
 			if (userGPS != null) {
 				line.getExecutorUser().setLat(userGPS.getLat());
 				line.getExecutorUser().setLng(userGPS.getLng());
 			}
-			if (line == null)
-				continue;
 			newList.add(line);
 		}
 
@@ -845,5 +851,12 @@ public class ExpressService {
 		json.put("sendCount", sendCount);
 		json.put("receiveCount",receiveCount);
 		return json;
+	}
+
+	public List<MapExpressVO> selectAll(Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "dueTime");
+		PageRequest pageRequest = new PageRequest(pageIndex-1, pageSize,sort);
+		List<MapExpressVO> findAll = expressDao.findAll(pageRequest);
+		return findAll;
 	}
 }

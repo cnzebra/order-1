@@ -2,15 +2,12 @@ package com.mrwind.order.controller;
 
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.factory.JSONFactory;
@@ -101,5 +98,15 @@ public class OrderController {
 			return JSONFactory.getSuccessJSON(tranSactionDetail.getString("totalPrice"));
 		}
 		return JSONFactory.getErrorJSON("交易已过期");
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/bind/judge" , method = RequestMethod.GET)
+	public JSON judgeBind(@RequestParam String tel, @RequestParam String shopId){
+		if (StringUtils.isEmpty(tel) || StringUtils.isEmpty(shopId))
+			return JSONFactory.getErrorJSON("信息不能为空");
+		JSONObject result = JSONFactory.getSuccessJSON();
+		result.put("judeBind", orderService.judgeBind(tel, shopId));
+		return result;
 	}
 }

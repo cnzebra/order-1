@@ -61,6 +61,21 @@ public class WebExpressController {
 		successJSON.put("data", filterProperty);
 		return successJSON;
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/select/allSortByDueTime", method = RequestMethod.POST)
+	public JSONObject selectAllByDueTime(@RequestBody List<Object> express) {
+		List<String> expressList = new ArrayList<>();
+		Iterator<Object> iterator = express.iterator();
+		while (iterator.hasNext()) {
+			expressList.add(iterator.next().toString());
+		}
+		List<Express> res = expressService.selectByExpressNoSortByDueTime(expressList);
+		Object filterProperty = JsonUtil.filterProperty(res, "");
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", filterProperty);
+		return successJSON;
+	}
 	
 	@ResponseBody
 	@RequestMapping(value = "/select/group", method = RequestMethod.GET)

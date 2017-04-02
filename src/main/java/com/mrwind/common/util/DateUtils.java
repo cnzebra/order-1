@@ -309,5 +309,12 @@ public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
 		today.set(Calendar.MILLISECOND, 0);
 		return today.getTime();
 	}
+	
+	public static Date getDateInMinute() {
+		Calendar today = Calendar.getInstance();
+		today.set(Calendar.SECOND, 0);
+		today.set(Calendar.MILLISECOND, 0);
+		return today.getTime();
+	}
 
 }
