@@ -254,7 +254,11 @@ public class ExpressController {
             response.setStatus(401);
             return JSONFactory.getErrorJSON("请登录!");
         }
-        return expressService.completeByCode(expressNo, verifyCode, userInfo);
+        Address endAddress = new Address();
+        endAddress.setLng(json.getDouble("lng"));
+        endAddress.setLat(json.getDouble("lat"));
+        endAddress.setAddress(json.getString("address"));
+        return expressService.completeByCode(expressNo, verifyCode,endAddress, userInfo);
     }
 
 
