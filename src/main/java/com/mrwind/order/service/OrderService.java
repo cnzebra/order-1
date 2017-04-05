@@ -232,7 +232,7 @@ public class OrderService {
 		}
 		if (list.size() > 0) {
 			// sendExpressLog21004(express);
-			HttpUtil.findLineAndCreateMission(list);
+//			HttpUtil.findLineAndCreateMission(list);
 		}
 
 		Collection<String> tels = new HashSet<>();
@@ -329,7 +329,7 @@ public class OrderService {
 		List<OrderReceipt> list = orderReceiptRepository.findAllByTranNo(tranNo);
 		redisCache.delete("transaction_" + tranNo);
 		log.info("付款回调:" + tranNo);
-		List<Express> expresses = Collections.emptyList();
+//		List<Express> expresses = Collections.emptyList();
 		for (OrderReceipt orderReceipt : list) {
 			redisCache.hdel(App.RDKEY_PAY_ORDER.getBytes(), orderReceipt.getExpressNo().toString().getBytes());
 			if (App.ORDER_PRE_PAY_CREDIT.equals(orderReceipt.getPayType()))
@@ -342,19 +342,18 @@ public class OrderService {
 			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
 				String expressNo = orderReceipt.getExpressNo();
 				String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-				String content = "尊敬的客户您好，" + orderReceipt.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
-						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/"
+				String content = "【风先生】"+ orderReceipt.getSender().getName() +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
 						+ Md5Util.string2MD5(expressNo + App.SESSION_KEY);
 				redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
 				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
 			}
-			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
+//			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
-		if (expresses.size() > 0) {
+//		if (expresses.size() > 0) {
 			// TODO: 2017/3/22 此处应异步
-			HttpUtil.findLineAndCreateMission(expresses);
+//			HttpUtil.findLineAndCreateMission(expresses);
 			// sendExpressLog21004(express);
-		}
+//		}
 		// HttpUtil.compileExpressMission(json);
 
 		return null;

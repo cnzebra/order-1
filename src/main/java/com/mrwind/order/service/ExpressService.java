@@ -311,15 +311,18 @@ public class ExpressService {
 	 *            验证码
 	 * @param userInfo
 	 *            用户信息
+	 * @param endAddress
+	 *            送达地址信息
 	 * @return
 	 */
-	public JSONObject completeByCode(String expressNo, String verifyCode, JSONObject userInfo) {
+	public JSONObject completeByCode(String expressNo, String verifyCode,Address endAddress, JSONObject userInfo) {
 		String code = redisCache.getString(App.RDKEY_VERIFY_CODE + expressNo);
 		if (!verifyCode.equals(code)) {
 			return JSONFactory.getErrorJSON("验证码错误");
 		}
 		redisCache.delete(App.RDKEY_VERIFY_CODE + expressNo);
-		JSONObject jsonObject = completeExpress(expressNo, null, userInfo);
+
+		JSONObject jsonObject = completeExpress(expressNo, endAddress, userInfo);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
 				ExpressCodeLog.TypeConstant.TYPE_VERIFY, code);
 		expressCodeLogRepository.save(expressCodeLog);
@@ -700,7 +703,7 @@ public class ExpressService {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
 		JSONArray json = new JSONArray();
-		Express express = expressRepository.findFirstByExpressNo(expressNo);
+ 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
 
