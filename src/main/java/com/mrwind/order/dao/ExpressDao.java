@@ -263,9 +263,14 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
-	public Page<Express> selectByShopIdAndMode(String id, String status, String tel, String expressNo, Date date, PageRequest page) {
+	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date, PageRequest page) {
 		Criteria operator = new Criteria();
-		Query query = Query.query(Criteria.where("shop.id").is(id));
+		Query query = new Query();
+		if(ObjectId.isValid(shopId)){
+			query.addCriteria(Criteria.where("shop.id").is(new ObjectId(shopId)));
+		} else {
+			query.addCriteria(Criteria.where("shop.id").is(shopId));
+		}
 		if (StringUtils.isNotBlank(tel)) {
 			operator.orOperator(Criteria.where("sender.tel").regex(tel), Criteria.where("receiver.tel").regex(tel));
 		}
@@ -285,10 +290,15 @@ public class ExpressDao extends BaseDao {
 
 	}
 
-	public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,
+	public List<Express> selectByShopIdAndModeForWeChat(String shopId, String status, Date date, String dayType,
 			String param, PageRequest page) {
 		Criteria operator = new Criteria();
-		Query query = Query.query(Criteria.where("shop.id").is(id));
+		Query query = new Query();
+		if(ObjectId.isValid(shopId)){
+			query.addCriteria(Criteria.where("shop.id").is(new ObjectId(shopId)));
+		} else {
+			query.addCriteria(Criteria.where("shop.id").is(shopId));
+		}
 		if (status != null) {
 			query.addCriteria(Criteria.where("status").is(status));
 		}

@@ -845,18 +845,18 @@ public class ExpressService {
 		return JSONFactory.getfailJSON("更新失败");
 	}
 
-	public Page<Express> selectByShopIdAndMode(String id, String status, String tel, String expressNo, Date date,
+	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date,
 			Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC, "tel"));
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.selectByShopIdAndMode(id, status, tel, expressNo, date, page);
+		return expressDao.selectByShopIdAndMode(shopId, status, tel, expressNo, date, page);
 	}
 
-	public List<Express> selectByShopIdAndModeForWeChat(String id, String status, Date date, String dayType,
+	public List<Express> selectByShopIdAndModeForWeChat(String shopId, String status, Date date, String dayType,
 			String param, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.selectByShopIdAndModeForWeChat(id, status, date, dayType, param, page);
+		return expressDao.selectByShopIdAndModeForWeChat(shopId, status, date, dayType, param, page);
 	}
 
 	public List<ShopExpressVO> selectShopExpress(String shopId, Integer pageIndex, Integer pageSize) {
