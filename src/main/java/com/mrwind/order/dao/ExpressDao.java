@@ -363,6 +363,8 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
 		query.addCriteria(Criteria.where("receiver.tel").is(tel));
 		query.addCriteria(Criteria.where("status").ne(App.ORDER_COMPLETE));
+		Date today = DateUtils.getStartTime();
+		query.addCriteria(Criteria.where("dueTime").gte(today).lt(DateUtils.addDays(today, 1)));
 		Criteria criteria = new Criteria();
 		criteria.orOperator(Criteria.where("bindExpressNo").is(""), Criteria.where("bindExpressNo").is(null));
 		query.addCriteria(criteria);
