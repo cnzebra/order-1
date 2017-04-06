@@ -120,6 +120,12 @@ public class RedisCache {
 		}
 		return pk;
 	}
+	
+	public String getShortPK(String tableName, int interval) {
+		Long pk = this.incr("PKS" + tableName, interval);
+		String res="000000"+pk;
+		return res.substring(res.length()-6);
+	}
 
 	public Long getTestPK(String tableName, int interval) {
 		long pk = this.incr("PK" + tableName, interval);
