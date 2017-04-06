@@ -1,5 +1,8 @@
 package com.mrwind.order.service;
 
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -45,6 +48,10 @@ public class ExpressBindService {
 		}
 		expressService.updateExpressBindNo(express.getExpressNo(), "");
 		return null;
+	}
+	
+	public List<Express> selectCanBindExpress(String shopId,Date dueTime) {
+		return expressDao.selectCanBindExpress(shopId,dueTime);
 	}
 	
 	public boolean checkBind(String bindExpressNo){

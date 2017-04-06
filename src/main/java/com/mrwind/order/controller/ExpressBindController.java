@@ -1,5 +1,8 @@
 package com.mrwind.order.controller;
 
+import java.util.Date;
+import java.util.List;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -9,8 +12,10 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.NumberUtils;
+import com.mrwind.order.entity.Express;
 import com.mrwind.order.service.ExpressBindService;
 import com.mrwind.order.service.ExpressService;
 
@@ -57,6 +62,13 @@ public class ExpressBindController {
 			return JSONFactory.getErrorJSON("没有可绑定的运单");
 		}
 		return JSONFactory.getSuccessJSON();
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select", method = RequestMethod.GET)
+	public Result bindByTel(String shopId,Date dueTime) {
+		List<Express> selectCanBindExpress = expressBindService.selectCanBindExpress(shopId, dueTime);
+		return Result.success(selectCanBindExpress);
 	}
 
 }
