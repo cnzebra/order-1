@@ -55,6 +55,6 @@ public class App
     public static final String MSG_SEND_USERID = "WindCloud/msg/info/batch";
 
     //根据用户手机号码发送短信
-    public static final String MSG_SEND_TEL = "/WindCloud/msg/record/new";
+    public static final String MSG_SEND_TEL = "WindCloud/msg/record/new";
 
 }
