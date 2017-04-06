@@ -1,10 +1,12 @@
 package com.mrwind.order.controller.app;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.DateUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
@@ -105,9 +108,13 @@ public class AppExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
-	public Result selectParamAll(String param, String fenceName, String mode, String status, String day, Date dueTime,
-			@PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) {
-		List<Express> selectAll = expressService.selectAll(param, fenceName, mode, status, day, dueTime, pageIndex - 1,
+	public Result selectParamAll(String param, String fenceName,String shopId, String mode, String status, String day,String dueTime,
+			@PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) throws ParseException {
+		Date dueTime2=null;
+		if(StringUtils.isNotBlank(dueTime)){
+			dueTime2=DateUtils.parseDate(dueTime, "yyyy-MM-dd HH:mm:ss","yyyy-MM-dd'T'HH:mm:ssZ");
+		}
+		List<Express> selectAll = expressService.selectAll(param, shopId,fenceName, mode, status, day, dueTime2, pageIndex - 1,
 				pageSize);
 		return Result.success(selectAll);
 	}

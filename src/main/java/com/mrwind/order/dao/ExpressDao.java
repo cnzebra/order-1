@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -38,13 +39,13 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("subStatus").is(subStatus));
 		return mongoTemplate.find(query, Express.class);
 	}
-	
+
 	public List<Express> findRelationship(String userId) {
 		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
 		query.with(new Sort(Sort.Direction.DESC, "createTime"));
 		return mongoTemplate.find(query, Express.class);
 	}
-	
+
 	public Integer updateExpressLineIndex(String expressNo, Integer oldLineIndex, Integer newLineIndex) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		query.addCriteria(Criteria.where("lines.index").is(oldLineIndex));
@@ -81,22 +82,29 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, basicUpdate, Express.class).getN();
 	}
 
-	public int replaceLine(Integer startIndex, List<Line> lines, String expressNo){
+	public int replaceLine(Integer startIndex, List<Line> lines, String expressNo) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
-		String cmd = "{ '$pull' : {'lines':{ 'index' : {'$gte':{ " + startIndex +"}}}}})";
+		String cmd = "{ '$pull' : {'lines':{ 'index' : {'$gte':{ " + startIndex + "}}}}})";
 		BasicUpdate basicUpdate = new BasicUpdate(cmd);
 		mongoTemplate.updateFirst(query, basicUpdate, Express.class);
 		return addLines(expressNo, lines);
 	}
 
-	public List<Express> findExpress(String param, String fenceName, String mode, String status, String day,
-			Date dueTime, PageRequest page) {
+	public List<Express> findExpress(String param, String shopId, String fenceName, String mode, String status,
+			String day, Date dueTime, PageRequest page) {
 		Criteria operator = new Criteria();
 		if (StringUtils.isNotBlank(param)) {
 			operator.orOperator(Criteria.where("bindExpressNo").regex(param), Criteria.where("shop.name").regex(param),
 					Criteria.where("expressNo").regex(param));
 		}
 		List<Criteria> list = new ArrayList<>();
+		if (StringUtils.isNoneBlank(shopId)) {
+			if (ObjectId.isValid(shopId)) {
+				list.add(Criteria.where("shop.id").is(new ObjectId(shopId)));
+			} else {
+				list.add(Criteria.where("shop.id").is(shopId));
+			}
+		}
 		if (StringUtils.isNotBlank(fenceName)) {
 			list.add(Criteria.where("sender.fence.name").is(fenceName));
 		}
@@ -263,10 +271,11 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
-	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date, PageRequest page) {
+	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date,
+			PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = new Query();
-		if(ObjectId.isValid(shopId)){
+		if (ObjectId.isValid(shopId)) {
 			query.addCriteria(Criteria.where("shop.id").is(new ObjectId(shopId)));
 		} else {
 			query.addCriteria(Criteria.where("shop.id").is(shopId));
@@ -294,7 +303,7 @@ public class ExpressDao extends BaseDao {
 			String param, PageRequest page) {
 		Criteria operator = new Criteria();
 		Query query = new Query();
-		if(ObjectId.isValid(shopId)){
+		if (ObjectId.isValid(shopId)) {
 			query.addCriteria(Criteria.where("shop.id").is(new ObjectId(shopId)));
 		} else {
 			query.addCriteria(Criteria.where("shop.id").is(shopId));
@@ -349,14 +358,35 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.find(query, MapExpressVO.class, "express");
 	}
 
-	public Express judgeBind(String tel, String shopId){
+	public Express judgeBind(String tel, String shopId) {
 		Query query = new Query();
 		query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
 		query.addCriteria(Criteria.where("receiver.tel").is(tel));
 		query.addCriteria(Criteria.where("status").ne(App.ORDER_COMPLETE));
 		Criteria criteria = new Criteria();
-		criteria.orOperator(Criteria.where("bindExpressNo").is(""),Criteria.where("bindExpressNo").is(null));
+		criteria.orOperator(Criteria.where("bindExpressNo").is(""), Criteria.where("bindExpressNo").is(null));
 		query.addCriteria(criteria);
 		return mongoTemplate.findOne(query, Express.class);
+	}
+
+	public List<Express> selectCanBindExpress(String shopId, Date dueTime) {
+		Query query = new Query();
+		if (StringUtils.isNotBlank(shopId)) {
+			if (ObjectId.isValid(shopId)) {
+				query.addCriteria(Criteria.where("shop._id").is(new ObjectId(shopId)));
+			} else {
+				query.addCriteria(Criteria.where("shop.id").is(shopId));
+			}
+		}
+		if (dueTime == null) {
+			dueTime = DateUtils.getStartTime();
+		}
+		query.addCriteria(Criteria.where("dueTime").gte(dueTime).lt(DateUtils.addDays(dueTime, 1)));
+		Criteria criteria = new Criteria();
+		criteria.orOperator(Criteria.where("bindExpressNo").is(""), Criteria.where("bindExpressNo").is(null));
+		query.addCriteria(criteria);
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		query.with(sort);
+		return mongoTemplate.find(query, Express.class);
 	}
 }

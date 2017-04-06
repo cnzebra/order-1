@@ -590,11 +590,11 @@ public class ExpressService {
 		return expressRepository.findAll(example, page);
 	}
 
-	public List<Express> selectAll(String param, String fenceName, String mode, String status, String day, Date dueTime,
+	public List<Express> selectAll(String param, String shopId,String fenceName, String mode, String status, String day, Date dueTime,
 			Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.findExpress(param, fenceName, mode, status, day, dueTime, page);
+		return expressDao.findExpress(param,shopId, fenceName, mode, status, day, dueTime, page);
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {
@@ -663,7 +663,7 @@ public class ExpressService {
 		json.add(tmp);
 		HttpUtil.compileExpressMission(json);
 		expressDao.updateExpressBindNo(expressNo, "");
-		expressDao.updateStatus(expressNo, App.ORDER_CANCEL, App.ORDER_CANCEL);
+		expressDao.updateStatus(expressNo, App.ORDER_BEGIN, App.ORDER_PRE_CREATED);
 	}
 
 	public JSONObject completeExpress(List<String> list, JSONObject userInfo) {

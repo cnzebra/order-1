@@ -22,7 +22,6 @@
 	<!-- 默认的注解映射的支持，org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping -->
 	<mvc:annotation-driven
 		content-negotiation-manager="contentNegotiationManager">
-
 		<mvc:argument-resolvers>
 			<bean class="com.mrwind.common.spring.JsonHandlerMethodArgumentResolver" />
 			<bean class="com.mrwind.common.spring.JsonParamArgumentResolver" />
