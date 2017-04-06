@@ -51,7 +51,7 @@ public class TaskService {
 	@Autowired
 	RedisCache redisCache;
 
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="sendOrder")
 	public void sendOrder() {
 
 		Calendar instance = Calendar.getInstance();
@@ -84,10 +84,6 @@ public class TaskService {
 	@QuartzSync(key="generateBill")
 	public void generateBill() {
 
-		if (redisCache.getObject(this.getClass().getName() + "generateBill") != null) {
-			return;
-		}
-		redisCache.set(this.getClass().getName() + "generateBill", 360, true);
 
 		Map<String, BigDecimal> totalPriceMap = new HashMap<>();
 
@@ -208,13 +204,8 @@ public class TaskService {
 
 	}
 
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="sendBill")
 	public void sendBill() {
-
-		if (redisCache.getObject(this.getClass().getName() + "sendBill") != null) {
-			return;
-		}
-		redisCache.set(this.getClass().getName() + "sendBill", 360, true);
 
 		JSONObject jsonObject = JSON.parseObject(redisCache.getString(App.RDKEY_SHOP_TOTAL_PRICE));
 		if (jsonObject == null) {
@@ -254,7 +245,7 @@ public class TaskService {
 
 	}
 
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="sendTodayDetail")
 	public void sendTodayDetail() {
 
 		Date startTime = DateUtils.getStartTime();
@@ -301,7 +292,7 @@ public class TaskService {
 	}
 
 	@Deprecated
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="sendWarning")
 	public void sendWarning() {
 
 		if (redisCache.getObject(this.getClass().getName() + "sendWarning") != null) {
@@ -352,7 +343,7 @@ public class TaskService {
 	}
 
 	@Deprecated
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="chargeBack")
 	public void chargeBack() {
 
 		if (redisCache.getObject(this.getClass().getName() + "chargeBack") != null) {
@@ -397,7 +388,7 @@ public class TaskService {
 	}
 
 	@Deprecated
-	@QuartzSync(key="generateBill")
+	@QuartzSync(key="creditPay")
 	private void creditPay() {
 		// TODO Auto-generated method stub
 		List<Express> findBySubStatus = expressRepository.findBySubStatus(App.ORDER_PRE_PAY_CREDIT);
