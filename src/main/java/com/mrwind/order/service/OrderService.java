@@ -221,7 +221,7 @@ public class OrderService {
 			next.setCurrentLine(null); // 不要更新Index
 			expressService.updateExpress(next);
 			// 发送短信
-			sendReceiveMessage(next.getSender().getName(), next.getReceiver().getName(), next.getReceiver().getTel(), next.getExpressNo());
+			sendReceiveMessage(next.getSender().getName(), next.getReceiver().getTel(), next.getExpressNo());
 		}
 		if (list.size() > 0) {
 			// sendExpressLog21004(express);
