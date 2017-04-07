@@ -221,14 +221,7 @@ public class OrderService {
 			next.setCurrentLine(null); // 不要更新Index
 			expressService.updateExpress(next);
 			// 发送短信
-			if (next.getSender() != null && next.getReceiver() != null) {
-				String expressNo = next.getExpressNo();
-				String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-				String content = "尊敬的客户您好，" + next.getSender().getName() + "寄给您的快件已由风先生配送，单号:" + expressNo
-						+ "，点此链接跟踪运单：" + API_WECHAT_HOST + "#/phone/orderTrace/" + encode;
-				redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
-				HttpUtil.sendSMSToUserTel(content, next.getReceiver().getTel());
-			}
+			sendReceiveMessage(next.getSender().getName(), next.getReceiver().getName(), next.getReceiver().getTel(), next.getExpressNo());
 		}
 		if (list.size() > 0) {
 			// sendExpressLog21004(express);
@@ -338,15 +331,8 @@ public class OrderService {
 					App.ORDER_PRE_PAY_PRICED);
 
 			// expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
-			// 发送短信
-			if (orderReceipt.getSender() != null && orderReceipt.getReceiver() != null) {
-				String expressNo = orderReceipt.getExpressNo();
-				String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-				String content = "【风先生】"+ orderReceipt.getSender().getName() +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
-						+ Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-				redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
-				HttpUtil.sendSMSToUserTel(content, orderReceipt.getReceiver().getTel());
-			}
+			sendReceiveMessage(orderReceipt.getSender().getName(), orderReceipt.getReceiver().getName(), orderReceipt.getReceiver().getTel(), orderReceipt.getExpressNo());
+
 //			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
 //		if (expresses.size() > 0) {
@@ -357,6 +343,17 @@ public class OrderService {
 		// HttpUtil.compileExpressMission(json);
 
 		return null;
+	}
+
+	public void sendReceiveMessage(String sendName, String receiveTel, String expressNo) {
+		// 发送短信
+		if (StringUtils.isNotEmpty(sendName)) {
+            String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
+            String content = "【风先生】"+ sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
+                    + Md5Util.string2MD5(expressNo + App.SESSION_KEY);
+            redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
+            HttpUtil.sendSMSToUserTel(content, receiveTel);
+        }
 	}
 
 	/***
