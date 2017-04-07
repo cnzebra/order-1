@@ -109,4 +109,23 @@ public class OrderController {
 		result.put("judeBind", orderService.judgeBind(tel, shopId));
 		return result;
 	}
+
+	/**
+	 * 收件任务完成时发送短信
+	 * @param param
+	 * @return
+	 */
+	@ResponseBody
+	@RequestMapping(value = "/send/message/receive", method = RequestMethod.POST)
+	public JSON sendReceiveMessage(@RequestBody JSONObject param){
+		String sendName = param.getString("sendName");
+		String receiveTel = param.getString("receiveTel");
+		String expressNo = param.getString("expressNo");
+		if (StringUtils.isEmpty(sendName) ||
+				StringUtils.isEmpty(receiveTel) ||
+				StringUtils.isEmpty(expressNo))
+			return JSONFactory.getErrorJSON("参数错误");
+			orderService.sendReceiveMessage(sendName,receiveTel,expressNo);
+		return JSONFactory.getSuccessJSON();
+	}
 }

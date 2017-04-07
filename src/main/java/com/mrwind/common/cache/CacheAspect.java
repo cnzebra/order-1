@@ -119,12 +119,13 @@ public class CacheAspect {
 		QuartzSync quartzSync = method.getAnnotation(QuartzSync.class);
 		String key=quartzSync.key();
 		int lockTime = quartzSync.lockTime();
-		Boolean checkKeyStatus = checkKeyStatus(key,lockTime);
+		Boolean checkKeyStatus = redisCache.checkLock(key,lockTime);
 		if(checkKeyStatus){
 			pjp.proceed();
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private Boolean checkKeyStatus(String key, int lockTime) {
 		try {
 			while(true){
