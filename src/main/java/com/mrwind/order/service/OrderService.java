@@ -331,7 +331,7 @@ public class OrderService {
 					App.ORDER_PRE_PAY_PRICED);
 
 			// expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
-			sendReceiveMessage(orderReceipt.getSender().getName(), orderReceipt.getReceiver().getName(), orderReceipt.getReceiver().getTel(), orderReceipt.getExpressNo());
+			sendReceiveMessage(orderReceipt.getSender().getName(), orderReceipt.getReceiver().getTel(), orderReceipt.getExpressNo());
 
 //			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
