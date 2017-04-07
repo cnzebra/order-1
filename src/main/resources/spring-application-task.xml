@@ -20,8 +20,8 @@
 			cron="5 0 0 * * ?" />
 		<!--<task:scheduled ref="taskService" method="sendBill"-->
 			<!--cron="0 0 9 * * ? " />-->
-		<task:scheduled ref="taskService" method="sendTodayDetail"
-			cron="0 0 21 * * ? " />
+		<!--<task:scheduled ref="taskService" method="sendTodayDetail"-->
+			<!--cron="0 0 21 * * ? " />-->
 
 		<!-- <task:scheduled ref="taskService" method="sendWarning" fixed-delay="5000"/> 
 			<task:scheduled ref="taskService" method="chargeBack" fixed-delay="6000"/> -->

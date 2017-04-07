@@ -204,6 +204,7 @@ public class TaskService {
 
 	}
 
+	@Deprecated
 	@QuartzSync(key="sendBill")
 	public void sendBill() {
 
@@ -245,6 +246,7 @@ public class TaskService {
 
 	}
 
+	@Deprecated
 	@QuartzSync(key="sendTodayDetail")
 	public void sendTodayDetail() {
 
