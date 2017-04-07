@@ -152,7 +152,7 @@ public class WebExpressController {
 	@RequestMapping(value = "/select/wechat/selectByShopIdAndMode", method = RequestMethod.GET)
 	public JSONObject selectByShopIdForWeChat(String id, String status, String date, String dayType, String param,
 											  @RequestParam(value = "pageIndex", defaultValue = "1") Integer pageIndex,
-											  @RequestParam(value = "pageSize", defaultValue = "20") Integer pageSize) {
+											  @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
 		if (StringUtils.isBlank(id)) {
 			return JSONFactory.getfailJSON("商户Id不能为空");
 		}
