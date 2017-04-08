@@ -90,7 +90,7 @@ public class ExpressService {
 
 		// 通知任务系统创建任务
 		// HttpUtil.createReceiveMission(list);
-		sendExpressLog21010(list);
+//		sendExpressLog21010(list);
 
 		return list;
 	}
