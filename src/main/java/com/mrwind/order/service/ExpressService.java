@@ -906,4 +906,11 @@ public class ExpressService {
 		// TODO Auto-generated method stub
 		expressDao.updateExpressReceiverAddress(expressNo,receiverAddress);
 	}
+	public boolean updateExpressReminded(String expressNo) {
+		int count = expressDao.updateExpressReminded(expressNo);
+		if (count > 0) {
+			return true;
+		}
+		return false;
+	}
 }

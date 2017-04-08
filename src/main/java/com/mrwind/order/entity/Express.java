@@ -32,6 +32,11 @@ public class Express extends OrderBase {
 	private String endType;
 
 	/**
+	 * 是否已催派
+	 */
+	private boolean reminded;
+
+	/**
 	 * 是否打印
 	 */
 	private boolean printed;
@@ -165,4 +170,11 @@ public class Express extends OrderBase {
 		this.endType = endType;
 	}
 
+	public boolean isReminded() {
+		return reminded;
+	}
+
+	public void setReminded(boolean reminded) {
+		this.reminded = reminded;
+	}
 }

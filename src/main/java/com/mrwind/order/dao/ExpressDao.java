@@ -408,4 +408,11 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("receiver.address", receiverAddress);
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+
+	public int updateExpressReminded(String expressNo) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("reminded", true);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 }
