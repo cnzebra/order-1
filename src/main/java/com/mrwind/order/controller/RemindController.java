@@ -49,10 +49,13 @@ public class RemindController {
         if (express == null) {
             return JSONFactory.getfailJSON("查找不到该订单");
         }
-        if(express.isReminded()){
+        if (express.isReminded()) {
             return JSONFactory.getfailJSON("已发起催派,不要重复发起");
         }
-       return remindService.remindUser(express);
+        if ("sending".equals(express.getStatus())) {
+            return remindService.remindUser(express);
+        }
+        return JSONFactory.getfailJSON("该订单不支持催派");
     }
 
     @ResponseBody

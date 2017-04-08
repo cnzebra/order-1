@@ -42,6 +42,9 @@ public class RemindService {
         if (lines == null || currentLine < 1) {
             return JSONFactory.getfailJSON("没有执行人信息");
         }
+        if(currentLine > lines.size()){
+            return JSONFactory.getfailJSON("订单轨迹有错，无法找到当前执行人");
+        }
         User executorUser = lines.get(currentLine - 1).getExecutorUser();
         String content = executorUser.getName() + "你好,收件人" + receiver.getName() + receiver.getTel() + "向你发起了催派,请尽快送达或联系收件人";
         HttpUtil.sendSMSToUserTel(content, executorUser.getTel());
