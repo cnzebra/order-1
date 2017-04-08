@@ -110,6 +110,10 @@ public class ExpressController {
 		}
 
 		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
+		String receiverAddress = json.remove("receiverAddress").toString();
+		if (StringUtils.isNotBlank(receiverAddress)) {
+			expressService.updateExpressReceiverAddress(expressNo, receiverAddress);
+		}
 		Category category = JSON.toJavaObject(calculatePrice, Category.class);
 		expressService.updateCategory(expressNo, category);
 		return JSONFactory.getSuccessJSON();
@@ -144,6 +148,35 @@ public class ExpressController {
 		expressService.updateCategoryNoStatus(expressNo, category);
 		return JSONFactory.getSuccessJSON();
 	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/update/receiver/address", method = RequestMethod.POST)
+	public JSONObject updateReceiverAddress(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
+			HttpServletResponse response) {
+
+		if (StringUtils.isEmpty(token)) {
+			JSONFactory.getErrorJSON("没有登录信息");
+		}
+		token = token.substring(6);
+		String adminUserId = HttpUtil.getUserIdByToken(token);
+		if (StringUtils.isEmpty(adminUserId)) {
+			response.setStatus(401);
+			return JSONFactory.getErrorJSON("请登录!");
+		}
+		String expressNo = json.remove("expressNo").toString();
+
+		if (StringUtils.isBlank(expressNo)) {
+			return JSONFactory.getErrorJSON("运单号不能为空");
+		}
+
+		String receiverAddress = json.remove("receiverAddress").toString();
+		if (StringUtils.isNotBlank(receiverAddress)) {
+			expressService.updateExpressReceiverAddress(expressNo, receiverAddress);
+		}
+		return JSONFactory.getSuccessJSON();
+	}
+	
+	
 
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.POST)

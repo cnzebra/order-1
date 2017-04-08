@@ -90,6 +90,9 @@ public class TaskService {
 		Map<String, ShopAfterExpress> afterMap = new HashMap<>();
 		List<Express> afterPayList = expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER,
 				App.ORDER_COMPLETE, App.ORDER_PRE_PRICED);
+		
+		afterPayList.addAll(expressDao.findByTypeAndStatusAndSubStatus(App.ORDER_TYPE_AFTER,
+				App.ORDER_WAIT_COMPLETE, App.ORDER_PRE_PRICED));
 
 		// 遍历获取到shopId对应的订单号
 		List<Express> creditPayList = expressRepository.findBySubStatus(App.ORDER_PRE_PAY_CREDIT);
