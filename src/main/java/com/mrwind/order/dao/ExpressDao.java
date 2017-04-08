@@ -401,4 +401,11 @@ public class ExpressDao extends BaseDao {
 		query.with(sort);
 		return mongoTemplate.find(query, Express.class);
 	}
+
+	public int updateExpressReceiverAddress(String expressNo, String receiverAddress) {
+		// TODO Auto-generated method stub
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("receiver.address", receiverAddress);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 }

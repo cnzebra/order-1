@@ -901,4 +901,9 @@ public class ExpressService {
 				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}
+
+	public void updateExpressReceiverAddress(String expressNo, String receiverAddress) {
+		// TODO Auto-generated method stub
+		expressDao.updateExpressReceiverAddress(expressNo,receiverAddress);
+	}
 }
