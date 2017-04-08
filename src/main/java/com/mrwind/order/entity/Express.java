@@ -29,6 +29,7 @@ public class Express extends OrderBase {
 	private Date realEndTime;
 	@JSONField(serialize=false)
 	private Address endAddress;
+	private String endType;
 
 	/**
 	 * 是否打印
@@ -154,6 +155,14 @@ public class Express extends OrderBase {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public String getEndType() {
+		return endType;
+	}
+
+	public void setEndType(String endType) {
+		this.endType = endType;
 	}
 
 }

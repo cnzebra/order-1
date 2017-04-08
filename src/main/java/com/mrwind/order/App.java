@@ -21,6 +21,8 @@ public class App
     
     public static String ORDER_END="end";  //已经结束
     
+    public static String ORDER_WAIT_COMPLETE="wait_complete";
+    
     public static String ORDER_COMPLETE="complete";  //完成订单
     
     public static String ORDER_ERROR_COMPLETE="pre_error_complete";  //异常妥投

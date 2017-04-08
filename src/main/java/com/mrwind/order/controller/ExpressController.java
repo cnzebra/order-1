@@ -200,7 +200,17 @@ public class ExpressController {
             return JSONFactory.getErrorJSON("没有id参数");
         }
         JSONObject userInfo = HttpUtil.findShopById(id);
-        return expressService.completeExpress(expressNo, endAddress, userInfo);
+        return expressService.completeExpress(expressNo, endAddress, userInfo,"商户妥投");
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/confirm/complete", method = RequestMethod.POST)
+    public JSONObject confirmComplete(@RequestBody JSONObject json){
+        String expressNo = json.getString("expressNo");
+        if (StringUtils.isEmpty(expressNo)) {
+            return JSONFactory.getErrorJSON("订单号不能为空");
+        }
+        return expressService.confirmComplete(expressNo);
     }
 
     @ResponseBody
@@ -214,6 +224,8 @@ public class ExpressController {
 
         String expressNo = json.getString("expressNo");
         Address endAddress = JSON.toJavaObject(json, Address.class);
+        
+        String endType = json.getString("endType");
 
         if (StringUtils.isEmpty(expressNo)) {
             return JSONFactory.getErrorJSON("订单号不能为空");
@@ -225,7 +237,18 @@ public class ExpressController {
             return JSONFactory.getErrorJSON("请登录!");
         }
 
-        return expressService.completeExpress(expressNo, endAddress, userInfo);
+        return expressService.completeExpress(expressNo, endAddress, userInfo,endType);
+    }
+    
+    @ResponseBody
+    @RequestMapping(value = "/send/confirm/sms", method = RequestMethod.GET)
+    public JSONObject sendConfirmSms(String expressNo) {
+        if (StringUtils.isEmpty(expressNo)) {
+            return JSONFactory.getErrorJSON("订单号不能为空");
+        }
+
+        expressService.sendConfirmSms(expressNo);
+        return JSONFactory.getSuccessJSON();
     }
 
     @ResponseBody
