@@ -29,8 +29,8 @@ public class App
     
     public static String ORDER_PRE_CREATED="pre_created";//待确认运费
     
-    public static String ORDER_PRE_PRICED="pre_priced";//已确认运费
-    
+    public static String ORDER_PRE_PRICED="pre_priced";//已确认运费z
+                              
     public static String ORDER_PRE_PAY_PRICED="pre_pay_priced";//支付完成
     
     public static String ORDER_PRE_PAY_CREDIT="pre_pay_credit";//信用支付完成

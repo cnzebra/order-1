@@ -705,7 +705,7 @@ public class ExpressService {
 	public JSONObject completeExpress(String expressNo, Address endAddress, JSONObject userInfo, String endType) {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
-		JSONArray json = new JSONArray();
+
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
@@ -713,18 +713,18 @@ public class ExpressService {
 		if (express.getStatus().equals(App.ORDER_COMPLETE) || express.getStatus().equals(App.ORDER_WAIT_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
-
-		JSONObject tmp = new JSONObject();
-		tmp.put("order", expressNo);
-		tmp.put("status", "COMPLETE");
-		tmp.put("sendLog", false);
-		tmp.put("des", "妥投");
-		json.add(tmp);
-		// 妥投验证
-		boolean isComplete = HttpUtil.compileExpressMission(json);
-		if (!isComplete) {
-			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
-		}
+//
+//		JSONObject tmp = new JSONObject();
+//		tmp.put("order", expressNo);
+//		tmp.put("status", "COMPLETE");
+//		tmp.put("sendLog", false);
+//		tmp.put("des", "妥投");
+//		json.add(tmp);
+//		// 妥投验证
+//		boolean isComplete = HttpUtil.compileExpressMission(json);
+//		if (!isComplete) {
+//			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+//		}
 
 		List<Line> lines = express.getLines();
 		if (lines == null)
@@ -888,6 +888,20 @@ public class ExpressService {
 	}
 
 	public JSONObject confirmComplete(String expressNo) {
+		
+
+		JSONArray json = new JSONArray();
+		JSONObject tmp = new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "COMPLETE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "妥投");
+		json.add(tmp);
+		// 妥投验证
+		boolean isComplete = HttpUtil.compileExpressMission(json);
+		if (!isComplete) {
+			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+		}
 		expressDao.updateStatus(expressNo, App.ORDER_COMPLETE);
 		return JSONFactory.getSuccessJSON();
 	}
