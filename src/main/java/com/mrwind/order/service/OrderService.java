@@ -349,7 +349,7 @@ public class OrderService {
 		// 发送短信
 		if (StringUtils.isNotEmpty(sendName)) {
             String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-            String content = "【风先生】"+ sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
+            String content = sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
                     + Md5Util.string2MD5(expressNo + App.SESSION_KEY);
             redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
             HttpUtil.sendSMSToUserTel(content, receiveTel);

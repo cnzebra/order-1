@@ -289,7 +289,7 @@ public class TaskService {
 			String shopId = entry.getKey();
 			Set<String> userIds = new HashSet<>();
 			userIds.add(shopId);
-			String content = "[风先生]尊敬的客户您好！为您呈上风先生" + date + "的服务汇总报告，请检阅！今日您的发件" + tmp.getInteger("count") + "个，已送达"
+			String content = "尊敬的客户您好！为您呈上风先生" + date + "的服务汇总报告，请检阅！今日您的发件" + tmp.getInteger("count") + "个，已送达"
 					+ tmp.getInteger("receiveCount") + "个，好评" + tmp.getInteger("goodCount") + "个。查看报告详情，请点击"
 					+ ConfigConstant.API_WECHAT_HOST + "#/summary/1";
 			HttpUtil.sendSMSToShopId(content, userIds);
