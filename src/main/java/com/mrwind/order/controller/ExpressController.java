@@ -112,7 +112,8 @@ public class ExpressController {
 		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
 		String receiverAddress = (String) json.remove("receiverAddress");
 		if (StringUtils.isNotBlank(receiverAddress)) {
-			expressService.updateExpressReceiverAddress(expressNo, receiverAddress);
+			String receiverName = json.getString("receiverName");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
 		}
 		Category category = JSON.toJavaObject(calculatePrice, Category.class);
 		expressService.updateCategory(expressNo, category);
@@ -141,13 +142,14 @@ public class ExpressController {
 		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
 		String receiverAddress = (String) json.remove("receiverAddress");
 		if (StringUtils.isNotBlank(receiverAddress)) {
-			expressService.updateExpressReceiverAddress(expressNo, receiverAddress);
+			String receiverName = json.getString("receiverName");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
 		}
 		Category category = JSON.toJavaObject(calculatePrice, Category.class);
 		expressService.updateCategoryNoStatus(expressNo, category);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	@ResponseBody
 	@RequestMapping(value = "/update/receiver/address", method = RequestMethod.POST)
 	public JSONObject updateReceiverAddress(@RequestBody JSONObject json, @RequestHeader("Authorization") String token,
@@ -170,12 +172,11 @@ public class ExpressController {
 
 		String receiverAddress = json.remove("receiverAddress").toString();
 		if (StringUtils.isNotBlank(receiverAddress)) {
-			expressService.updateExpressReceiverAddress(expressNo, receiverAddress);
+			String receiverName = json.getString("receiverName");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
 		}
 		return JSONFactory.getSuccessJSON();
 	}
-	
-	
 
 	@ResponseBody
 	@RequestMapping(value = "/update", method = RequestMethod.POST)

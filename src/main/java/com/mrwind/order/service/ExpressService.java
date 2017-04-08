@@ -902,9 +902,9 @@ public class ExpressService {
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}
 
-	public void updateExpressReceiverAddress(String expressNo, String receiverAddress) {
+	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress) {
 		// TODO Auto-generated method stub
-		expressDao.updateExpressReceiverAddress(expressNo,receiverAddress);
+		expressDao.updateExpressReceiverAddress(expressNo,receiverName,receiverAddress);
 	}
 	public boolean updateExpressReminded(String expressNo) {
 		int count = expressDao.updateExpressReminded(expressNo);
