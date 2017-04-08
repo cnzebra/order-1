@@ -29,6 +29,12 @@ public class Express extends OrderBase {
 	private Date realEndTime;
 	@JSONField(serialize=false)
 	private Address endAddress;
+	private String endType;
+
+	/**
+	 * 是否已催派
+	 */
+	private boolean reminded;
 
 	/**
 	 * 是否打印
@@ -156,4 +162,19 @@ public class Express extends OrderBase {
 		return serialVersionUID;
 	}
 
+	public String getEndType() {
+		return endType;
+	}
+
+	public void setEndType(String endType) {
+		this.endType = endType;
+	}
+
+	public boolean isReminded() {
+		return reminded;
+	}
+
+	public void setReminded(boolean reminded) {
+		this.reminded = reminded;
+	}
 }

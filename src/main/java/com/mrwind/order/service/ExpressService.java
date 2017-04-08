@@ -1,5 +1,7 @@
 package com.mrwind.order.service;
 
+import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
+
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -31,6 +33,7 @@ import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.CodeUtils;
 import com.mrwind.common.util.DateUtils;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
 import com.mrwind.order.entity.Address;
@@ -90,7 +93,7 @@ public class ExpressService {
 
 		// 通知任务系统创建任务
 		// HttpUtil.createReceiveMission(list);
-		sendExpressLog21010(list);
+		// sendExpressLog21010(list);
 
 		return list;
 	}
@@ -127,7 +130,8 @@ public class ExpressService {
 
 		// 通知任务系统创建任务
 		// HttpUtil.createReceiveMission(list);
-		sendExpressLog21010(list);
+		// sendExpressLog21010(list);
+
 		return list;
 	}
 
@@ -293,7 +297,7 @@ public class ExpressService {
 		}
 		String code = CodeUtils.genSimpleCode(4);
 		String content = "您的妥投验证码为:" + code + ".签收前请检查货物是否损坏.";
-		//send code to receiver
+		// send code to receiver
 		HttpUtil.sendSMSToUserTel(content, express.getReceiver().getTel());
 		redisCache.set(App.RDKEY_VERIFY_CODE + expressNo, 900, code);
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(), ExpressCodeLog.TypeConstant.TYPE_SEND,
@@ -315,14 +319,14 @@ public class ExpressService {
 	 *            送达地址信息
 	 * @return
 	 */
-	public JSONObject completeByCode(String expressNo, String verifyCode,Address endAddress, JSONObject userInfo) {
+	public JSONObject completeByCode(String expressNo, String verifyCode, Address endAddress, JSONObject userInfo) {
 		String code = redisCache.getString(App.RDKEY_VERIFY_CODE + expressNo);
 		if (!verifyCode.equals(code)) {
 			return JSONFactory.getErrorJSON("验证码错误");
 		}
 		redisCache.delete(App.RDKEY_VERIFY_CODE + expressNo);
 
-		JSONObject jsonObject = completeExpress(expressNo, endAddress, userInfo);
+		JSONObject jsonObject = completeExpress(expressNo, endAddress, userInfo, "验证码妥投");
 		ExpressCodeLog expressCodeLog = new ExpressCodeLog(expressNo, new Date(),
 				ExpressCodeLog.TypeConstant.TYPE_VERIFY, code);
 		expressCodeLogRepository.save(expressCodeLog);
@@ -416,11 +420,10 @@ public class ExpressService {
 
 	public List<Express> selectByExpressNoSortByDueTime(Collection<String> express) {
 		// TODO Auto-generated method stub
-		Sort sort = new Sort(Direction.DESC,"dueTime");
-		List<Express> list = expressRepository.findByExpressNoIn(express,sort);
+		Sort sort = new Sort(Direction.DESC, "dueTime");
+		List<Express> list = expressRepository.findByExpressNoIn(express, sort);
 		return list;
 	}
-
 
 	public JSONObject updateCategory(String expressNo, Category category) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
@@ -437,7 +440,7 @@ public class ExpressService {
 		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
 	}
-	
+
 	public JSONObject updateCategoryNoStatus(String expressNo, Category category) {
 		Express firstExpress = expressRepository.findFirstByExpressNo(expressNo);
 		if (firstExpress == null) {
@@ -589,16 +592,16 @@ public class ExpressService {
 		return expressRepository.findAll(example, page);
 	}
 
-	public List<Express> selectAll(String param, String shopId,String fenceName, String mode, String status, String day, Date dueTime,
-			Integer pageIndex, Integer pageSize) {
+	public List<Express> selectAll(String param, String shopId, String fenceName, String mode, String status,
+			String day, Date dueTime, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.findExpress(param,shopId, fenceName, mode, status, day, dueTime, page);
+		return expressDao.findExpress(param, shopId, fenceName, mode, status, day, dueTime, page);
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		List<Line> lines = express.getLines() == null ? Collections.<Line>emptyList() : express.getLines();
+		List<Line> lines = express.getLines() == null ? Collections.<Line> emptyList() : express.getLines();
 		Line[] newArray = new Line[(lines == null ? 0 : lines.size()) + list.size()];
 		if (list.contains(null))
 			list.remove(null);
@@ -628,7 +631,7 @@ public class ExpressService {
 			newList.add(line);
 		}
 
-		//更新时间
+		// 更新时间
 		newList.get(newList.size() - 2).setRealTime(new Date());
 		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
 		// Iterator<Object> iterator = expressMission.iterator();
@@ -699,28 +702,29 @@ public class ExpressService {
 		return JSONFactory.getSuccessJSON();
 	}
 
-	public JSONObject completeExpress(String expressNo, Address endAddress, JSONObject userInfo) {
+	public JSONObject completeExpress(String expressNo, Address endAddress, JSONObject userInfo, String endType) {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
-		JSONArray json = new JSONArray();
- 		Express express = expressRepository.findFirstByExpressNo(expressNo);
+
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
 
-		if (express.getStatus().equals(App.ORDER_COMPLETE)) {
+		if (express.getStatus().equals(App.ORDER_COMPLETE) || express.getStatus().equals(App.ORDER_WAIT_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
-		JSONObject tmp = new JSONObject();
-		tmp.put("order", expressNo);
-		tmp.put("status", "COMPLETE");
-		tmp.put("sendLog", false);
-		tmp.put("des", "妥投");
-		json.add(tmp);
-		// 妥投验证
-		boolean isComplete = HttpUtil.compileExpressMission(json);
-		if (!isComplete) {
-			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
-		}
+//
+//		JSONObject tmp = new JSONObject();
+//		tmp.put("order", expressNo);
+//		tmp.put("status", "COMPLETE");
+//		tmp.put("sendLog", false);
+//		tmp.put("des", "妥投");
+//		json.add(tmp);
+//		// 妥投验证
+//		boolean isComplete = HttpUtil.compileExpressMission(json);
+//		if (!isComplete) {
+//			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+//		}
 
 		List<Line> lines = express.getLines();
 		if (lines == null)
@@ -737,11 +741,9 @@ public class ExpressService {
 
 		express.setCurrentLine(lines.size());
 		express.setLines(lines);
-		express.setStatus(App.ORDER_COMPLETE);
-		// if ((!App.ORDER_TYPE_AFTER.equals(express.getType()))
-		// && (!App.ORDER_PRE_PAY_CREDIT.equals(express.getSubStatus()))) {
-		// express.setSubStatus(App.ORDER_COMPLETE);
-		// }
+		express.setEndType(endType);
+		express.setStatus(App.ORDER_WAIT_COMPLETE);
+
 		if (endAddress != null) {
 			express.setEndAddress(endAddress);
 			if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
@@ -751,12 +753,16 @@ public class ExpressService {
 		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
 
+		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH时mm分");
 		if (express.getSender() != null) {
-			HttpUtil.sendSMSToUserTel("您的包裹已妥投，妥投类型：本人签收，期待您再次使用风先生", express.getSender().getTel());
+			String fromStr="您发送的快递【"+expressNo+"】已经被【"+user.getName() + user.getTel() +"】签收，签收方式为：【"+endType+"】，感谢使用风先生！";
+			HttpUtil.sendSMSToUserTel(fromStr, express.getSender().getTel());
 		}
 		if (express.getReceiver() != null) {
-			HttpUtil.sendSMSToUserTel("我是配送员" + user.getName() + "，已不辱使命将你最宝贵的物品安全送达！ 期待你为我的全力以赴续满能量",
-					express.getReceiver().getTel());
+			String toStr = "您的快递" + expressNo + "由风先生【" + user.getName() + user.getTel() + "】已经在【" + nowDate
+					+ "】完成了妥投。签收方式为【" + endType + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
+					+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 		}
 		return JSONFactory.getSuccessJSON();
 	}
@@ -867,17 +873,58 @@ public class ExpressService {
 	public JSONObject findShopExpressGroup(String shopId) {
 		ObjectId objectId = new ObjectId(shopId);
 		Long sendCount = expressRepository.countByShopId(objectId);
-		Long receiveCount=expressRepository.countByShopIdAndStatus(objectId, "complete");
-		JSONObject json=new JSONObject();
+		Long receiveCount = expressRepository.countByShopIdAndStatus(objectId, "complete");
+		JSONObject json = new JSONObject();
 		json.put("sendCount", sendCount);
-		json.put("receiveCount",receiveCount);
+		json.put("receiveCount", receiveCount);
 		return json;
 	}
 
 	public List<MapExpressVO> selectAll(Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "dueTime");
-		PageRequest pageRequest = new PageRequest(pageIndex-1, pageSize,sort);
+		PageRequest pageRequest = new PageRequest(pageIndex - 1, pageSize, sort);
 		List<MapExpressVO> findAll = expressDao.findAll(pageRequest);
 		return findAll;
+	}
+
+	public JSONObject confirmComplete(String expressNo) {
+		
+
+		JSONArray json = new JSONArray();
+		JSONObject tmp = new JSONObject();
+		tmp.put("order", expressNo);
+		tmp.put("status", "COMPLETE");
+		tmp.put("sendLog", false);
+		tmp.put("des", "妥投");
+		json.add(tmp);
+		// 妥投验证
+		boolean isComplete = HttpUtil.compileExpressMission(json);
+		if (!isComplete) {
+			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+		}
+		expressDao.updateStatus(expressNo, App.ORDER_COMPLETE);
+		return JSONFactory.getSuccessJSON();
+	}
+
+	public void sendConfirmSms(String expressNo) {
+		Express express = expressRepository.findFirstByExpressNo(expressNo);
+		if(express==null ||express.getLines()==null ||express.getLines().size()<1)return ;
+		Line line = express.getLines().get(express.getLines().size()-1);
+		String toStr = "您的快递" + expressNo + "由风先生【" + line.getExecutorUser().getName() + line.getExecutorUser().getTel() + "】已经在【" + DateUtils.formatDate(express.getRealEndTime(),"yyyy年MM月dd日 HH时mm分")
+				+ "】完成了妥投。签收方式为【" + express.getEndType() + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
+				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
+	}
+
+	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress) {
+		// TODO Auto-generated method stub
+		expressDao.updateExpressReceiverAddress(expressNo,receiverName,receiverAddress);
+	}
+	public boolean updateExpressReminded(String expressNo) {
+		int count = expressDao.updateExpressReminded(expressNo);
+		if (count > 0) {
+			return true;
+		}
+		return false;
 	}
 }

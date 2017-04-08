@@ -143,6 +143,13 @@ public class ExpressDao extends BaseDao {
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
+	
+	public int updateStatus(String expressNo, String status) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("status", status);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
 
 	public int updateSubStatus(String expressNo, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
@@ -249,6 +256,9 @@ public class ExpressDao extends BaseDao {
 				}
 				if (express.getEndAddress() != null) {
 					update.set("endAddress", express.getEndAddress());
+				}
+				if(express.getEndType()!=null){
+					update.set("endType", express.getEndType());
 				}
 
 				update.set("updateTime", Calendar.getInstance().getTime());
@@ -390,5 +400,19 @@ public class ExpressDao extends BaseDao {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		query.with(sort);
 		return mongoTemplate.find(query, Express.class);
+	}
+
+	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress) {
+		// TODO Auto-generated method stub
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("receiver.address", receiverAddress).set("receiver.name", recevierName);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
+	public int updateExpressReminded(String expressNo) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("reminded", true);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 }
