@@ -113,7 +113,9 @@ public class ExpressController {
 		String receiverAddress = (String) json.remove("receiverAddress");
 		if (StringUtils.isNotBlank(receiverAddress)) {
 			String receiverName = json.getString("receiverName");
-			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
+			Double lat = json.getDouble("lat");
+			Double lng = json.getDouble("lng");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress,lat,lng);
 		}
 		Category category = JSON.toJavaObject(calculatePrice, Category.class);
 		expressService.updateCategory(expressNo, category);
@@ -143,7 +145,9 @@ public class ExpressController {
 		String receiverAddress = (String) json.remove("receiverAddress");
 		if (StringUtils.isNotBlank(receiverAddress)) {
 			String receiverName = json.getString("receiverName");
-			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
+			Double lat = json.getDouble("lat");
+			Double lng = json.getDouble("lng");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress,lat,lng);
 		}
 		Category category = JSON.toJavaObject(calculatePrice, Category.class);
 		expressService.updateCategoryNoStatus(expressNo, category);
@@ -171,9 +175,12 @@ public class ExpressController {
 		}
 
 		String receiverAddress = json.remove("receiverAddress").toString();
+		
 		if (StringUtils.isNotBlank(receiverAddress)) {
 			String receiverName = json.getString("receiverName");
-			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress);
+			Double lat = json.getDouble("lat");
+			Double lng = json.getDouble("lng");
+			expressService.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress,lat,lng);
 		}
 		return JSONFactory.getSuccessJSON();
 	}

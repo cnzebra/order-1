@@ -13,9 +13,6 @@ public class ConfigConstant implements PriorityOrdered{
 	public static Integer IS_FILTER=0;
 	
 	public static String FILTER_IP="";
-//	public static String API_DFENG_XIN_HOST = "http://182.92.240.69:5000/";
-	
-//	public static String OUR_HOST = "http://dev.japi-data.gomrwind.com:5000/";
 	
 	public static String OUR_HOST = "1";
 	
