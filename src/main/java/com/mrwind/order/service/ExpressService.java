@@ -430,12 +430,12 @@ public class ExpressService {
 		if (firstExpress == null) {
 			return JSONFactory.getErrorJSON("查无该订单");
 		}
-		if (!firstExpress.getStatus().equals(App.ORDER_BEGIN)) {
+		if (firstExpress.getStatus().equals(App.ORDER_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单不允许改价！");
 		}
 		firstExpress.setCategory(category);
-		firstExpress.setStatus(App.ORDER_BEGIN);
-		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
+//		firstExpress.setStatus(App.ORDER_SENDING);
+//		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
 		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
@@ -916,9 +916,9 @@ public class ExpressService {
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}
 
-	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress) {
+	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress, Double lat, Double lng) {
 		// TODO Auto-generated method stub
-		expressDao.updateExpressReceiverAddress(expressNo,receiverName,receiverAddress);
+		expressDao.updateExpressReceiverAddress(expressNo,receiverName,receiverAddress,lat,lng);
 	}
 	public boolean updateExpressReminded(String expressNo) {
 		int count = expressDao.updateExpressReminded(expressNo);

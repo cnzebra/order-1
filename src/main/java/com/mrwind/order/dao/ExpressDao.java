@@ -252,7 +252,7 @@ public class ExpressDao extends BaseDao {
 				}
 
 				if (express.getRealEndTime() != null) {
-					update.set("realEntTime", express.getRealEndTime());
+					update.set("realEndTime", express.getRealEndTime());
 				}
 				if (express.getEndAddress() != null) {
 					update.set("endAddress", express.getEndAddress());
@@ -402,10 +402,14 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.find(query, Express.class);
 	}
 
-	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress) {
+	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress,Double lat,Double lng) {
 		// TODO Auto-generated method stub
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("receiver.address", receiverAddress).set("receiver.name", recevierName);
+		if(lat!=null){
+			update.set("receiver.lat", lat);
+			update.set("receiver.lng", lng);
+		}
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
