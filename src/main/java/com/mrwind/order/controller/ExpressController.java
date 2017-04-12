@@ -1,29 +1,34 @@
 package com.mrwind.order.controller;
 
-import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.mrwind.common.cache.RedisCache;
-import com.mrwind.common.util.Md5Util;
-import com.mrwind.order.App;
-import com.mrwind.order.entity.Line;
-import com.mrwind.order.entity.vo.MapExpressVO;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.factory.JSONFactory;
 import com.mrwind.common.util.HttpUtil;
+import com.mrwind.common.util.Md5Util;
+import com.mrwind.order.App;
 import com.mrwind.order.entity.Address;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
+import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.service.ExpressService;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequestMapping("express")
@@ -83,7 +88,7 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON(e.getMessage());
 		}
 		// 逆序lines
-		descLines(res);
+//		descLines(res);
 		redisCache.set(expressNo, 60 * 60 * 24 * 15, countString);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", res);
