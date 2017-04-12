@@ -632,18 +632,7 @@ public class ExpressService {
 		}
 
 		// 更新时间
-		newList.get(newList.size() - 2).setRealTime(new Date());
-		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
-		// Iterator<Object> iterator = expressMission.iterator();
-		// Integer currentLine = (int) Short.MAX_VALUE;
-		// while (iterator.hasNext()) {
-		// JSONObject next = (JSONObject) iterator.next();
-		// Integer index = next.getInteger("missionNodeIndex");
-		// if (index < currentLine) {
-		// currentLine = index;
-		// }
-		// }
-
+		newList.get(newList.size() - 1).setRealTime(new Date());
 		expressDao.updateLines(expressNo, newList, express.getCurrentLine() + 1);
 	}
 
