@@ -632,7 +632,7 @@ public class ExpressService {
 		}
 
 		// 更新时间
-		newList.get(newList.size() - 1).setRealTime(new Date());
+//		newList.get(newList.size() - 1).setRealTime(new Date());
 		expressDao.updateLines(expressNo, newList, express.getCurrentLine() + 1);
 	}
 
