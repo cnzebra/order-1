@@ -1,6 +1,5 @@
 package com.mrwind.order.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
@@ -26,7 +25,6 @@ import com.mrwind.order.App;
 import com.mrwind.order.entity.Address;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
-import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.service.ExpressService;
 
@@ -401,6 +399,7 @@ public class ExpressController {
 		return expressService.findRelationship(userId);
 	}
 
+	/***
 	private void descLines(Express express) {
 		List<Line> originLines = express.getLines();
 		List<Line> newLines = new ArrayList<>();
@@ -408,5 +407,5 @@ public class ExpressController {
 			newLines.add(originLines.get(i));
 		}
 		express.setLines(newLines);
-	}
+	}*/
 }
