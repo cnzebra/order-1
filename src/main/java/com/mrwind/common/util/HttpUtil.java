@@ -539,4 +539,19 @@ public class HttpUtil {
 		}
 		return post(ConfigConstant.API_JAVA_HOST + url, param.toJSONString());
 	}
+
+	public static Boolean findExpressComplain(String expressNo) {
+		Client client = Client.create();
+		WebResource webResource = client
+				.resource(ConfigConstant.API_JAVA_HOST + "WindComplain/complain/find?expressNo="+expressNo);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject res = JSONObject.parseObject(textEntity);
+			if (res.getString("code").equals("1")&&StringUtils.isNotBlank(res.getString("content"))) {   // 有投诉
+				return true;
+			}
+		}
+		return false;
+	}
 }
