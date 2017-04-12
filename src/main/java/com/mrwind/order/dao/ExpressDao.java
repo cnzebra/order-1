@@ -164,6 +164,13 @@ public class ExpressDao extends BaseDao {
 		query.addCriteria(Criteria.where("dueTime").gte(date));
 		return mongoTemplate.find(query, Express.class);
 	}
+	
+	public List<Express> findWaitComplete(Date date) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("status").is(App.ORDER_WAIT_COMPLETE));
+		query.addCriteria(Criteria.where("realEndTime").lte(date));
+		return mongoTemplate.find(query, Express.class);
+	}
 
 	public int updateExpressBindNo(String expressNo, String bindExpressNo) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));

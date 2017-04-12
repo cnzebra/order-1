@@ -56,7 +56,9 @@ public class ExpressController {
 	@RequestMapping(value = "/encode", method = RequestMethod.GET)
 	public JSONObject expressEncode(String expressNo) {
 		JSONObject jsonObject = JSONFactory.getSuccessJSON();
-		jsonObject.put("data", Md5Util.string2MD5(expressNo + App.SESSION_KEY));
+		String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
+//		redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
+		jsonObject.put("data",encode );
 		return jsonObject;
 	}
 

@@ -76,6 +76,23 @@ public class TaskService {
 		for (Map.Entry<String, List<Express>> entry : map.entrySet()) {
 			expressService.sendExpressLog21010(entry.getValue());
 		}
+		
+		completeWaitExpress();
+	}
+
+	private void completeWaitExpress() {
+		Calendar instance = Calendar.getInstance();
+		instance.add(Calendar.DAY_OF_YEAR, -2);
+		List<Express> list = expressDao.findWaitComplete(instance.getTime());
+		if (list == null || list.size() == 0)
+			return;
+		for (Express express : list) {
+			
+			Boolean complain = HttpUtil.findExpressComplain(express.getExpressNo());
+			if(!complain){
+				expressDao.updateStatus(express.getExpressNo(), App.ORDER_COMPLETE);
+			}
+		}
 	}
 
 	/**
