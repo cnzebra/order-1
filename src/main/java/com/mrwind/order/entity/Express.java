@@ -60,7 +60,6 @@ public class Express extends OrderBase {
 		this.sender = order.sender;
 		this.receiver = order.receiver;
 		this.category = order.category;
-		this.remark = order.remark;
 		this.bindExpressNo=order.bindExpressNo;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
