@@ -756,7 +756,7 @@ public class ExpressService {
 		}
 		if (express.getReceiver() != null) {
 			String toStr = "您的快递" + expressNo + "由风先生【" + user.getName() + user.getTel() + "】已经在【" + nowDate
-					+ "】完成了妥投。签收方式为【" + endType + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
+					+ "】送达。签收方式为【" + endType + "】。【" + API_WECHAT_HOST
 					+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
 			// + "#/phone/orderTrace/"+expressNo;
 			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
