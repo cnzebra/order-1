@@ -137,10 +137,10 @@ public class ExpressService {
 
 	private Express initVIPExpress(Order order, User user, Date dueTime) {
 		Express express = new Express(order);
-		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
-			return null;
-		}
-		express.setMode(express.getCategory().getServiceType().getType());
+//		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
+//			return null;
+//		}
+		express.setMode("toDay");
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
@@ -820,7 +820,8 @@ public class ExpressService {
 		Double lat = order.getSender().getLat();
 		Double lng = order.getSender().getLng();
 		String shopId = order.getShop().getId();
-		String mode = order.getCategory().getServiceType().getType();
+//		String mode = order.getCategory().getServiceType().getType();
+		String mode="toDay";
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("lat", lat);
 		jsonObject.put("lng", lng);
