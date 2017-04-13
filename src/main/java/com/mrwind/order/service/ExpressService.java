@@ -43,7 +43,6 @@ import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.User;
-import com.mrwind.order.entity.Line.LineUtil;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
