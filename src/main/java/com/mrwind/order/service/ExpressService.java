@@ -129,7 +129,7 @@ public class ExpressService {
 		expressRepository.save(list);
 
 		// 通知任务系统创建任务
-//		 HttpUtil.createReceiveMission(list);
+		// HttpUtil.createReceiveMission(list);
 		// sendExpressLog21010(list);
 
 		return list;
@@ -434,8 +434,8 @@ public class ExpressService {
 			return JSONFactory.getErrorJSON("运单不允许改价！");
 		}
 		firstExpress.setCategory(category);
-//		firstExpress.setStatus(App.ORDER_SENDING);
-//		firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
+		// firstExpress.setStatus(App.ORDER_SENDING);
+		// firstExpress.setSubStatus(App.ORDER_PRE_PRICED);
 		expressDao.updateCategoryAndStatus(firstExpress);
 		// sendExpressLog21003(firstExpress);
 		return JSONFactory.getSuccessJSON();
@@ -632,19 +632,15 @@ public class ExpressService {
 		}
 
 		// 更新时间
-		newList.get(newList.size() - 2).setRealTime(new Date());
-		// JSONArray expressMission = HttpUtil.findExpressMission(expressNo);
-		// Iterator<Object> iterator = expressMission.iterator();
-		// Integer currentLine = (int) Short.MAX_VALUE;
-		// while (iterator.hasNext()) {
-		// JSONObject next = (JSONObject) iterator.next();
-		// Integer index = next.getInteger("missionNodeIndex");
-		// if (index < currentLine) {
-		// currentLine = index;
-		// }
-		// }
-
+		int index = express.getCurrentLine() - 1;
+		if (index < 0) {
+			index = 0;
+		}else if(index>=newList.size()){
+			index=newList.size()-1;
+		}
+		newList.get(index).setRealTime(new Date());
 		expressDao.updateLines(expressNo, newList, express.getCurrentLine() + 1);
+
 	}
 
 	public void updateExpressPlanTime(String expressNo, Date planTime) {
@@ -705,7 +701,6 @@ public class ExpressService {
 	public JSONObject completeExpress(String expressNo, Address endAddress, JSONObject userInfo, String endType) {
 		User user = JSONObject.toJavaObject(userInfo, User.class);
 
-
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
 		if (express == null)
 			return JSONFactory.getErrorJSON("运单不存在");
@@ -713,18 +708,18 @@ public class ExpressService {
 		if (express.getStatus().equals(App.ORDER_COMPLETE) || express.getStatus().equals(App.ORDER_WAIT_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
-//
-//		JSONObject tmp = new JSONObject();
-//		tmp.put("order", expressNo);
-//		tmp.put("status", "COMPLETE");
-//		tmp.put("sendLog", false);
-//		tmp.put("des", "妥投");
-//		json.add(tmp);
-//		// 妥投验证
-//		boolean isComplete = HttpUtil.compileExpressMission(json);
-//		if (!isComplete) {
-//			return JSONFactory.getfailJSON("妥投失败，请重新妥投");
-//		}
+		//
+		// JSONObject tmp = new JSONObject();
+		// tmp.put("order", expressNo);
+		// tmp.put("status", "COMPLETE");
+		// tmp.put("sendLog", false);
+		// tmp.put("des", "妥投");
+		// json.add(tmp);
+		// // 妥投验证
+		// boolean isComplete = HttpUtil.compileExpressMission(json);
+		// if (!isComplete) {
+		// return JSONFactory.getfailJSON("妥投失败，请重新妥投");
+		// }
 
 		List<Line> lines = express.getLines();
 		if (lines == null)
@@ -755,14 +750,15 @@ public class ExpressService {
 
 		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH时mm分");
 		if (express.getSender() != null) {
-			String fromStr="您发送的快递【"+expressNo+"】已经被【"+user.getName() + user.getTel() +"】签收，签收方式为：【"+endType+"】，感谢使用风先生！";
+			String fromStr = "您发送的快递【" + expressNo + "】已经被【" + user.getName() + user.getTel() + "】签收，签收方式为：【" + endType
+					+ "】，感谢使用风先生！";
 			HttpUtil.sendSMSToUserTel(fromStr, express.getSender().getTel());
 		}
 		if (express.getReceiver() != null) {
 			String toStr = "您的快递" + expressNo + "由风先生【" + user.getName() + user.getTel() + "】已经在【" + nowDate
 					+ "】完成了妥投。签收方式为【" + endType + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
 					+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
-//					+ "#/phone/orderTrace/"+expressNo; 
+			// + "#/phone/orderTrace/"+expressNo;
 			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 		}
 		return JSONFactory.getSuccessJSON();
@@ -889,7 +885,6 @@ public class ExpressService {
 	}
 
 	public JSONObject confirmComplete(String expressNo) {
-		
 
 		JSONArray json = new JSONArray();
 		JSONObject tmp = new JSONObject();
@@ -909,18 +904,22 @@ public class ExpressService {
 
 	public void sendConfirmSms(String expressNo) {
 		Express express = expressRepository.findFirstByExpressNo(expressNo);
-		if(express==null ||express.getLines()==null ||express.getLines().size()<1)return ;
-		Line line = express.getLines().get(express.getLines().size()-1);
-		String toStr = "您的快递" + expressNo + "由风先生【" + line.getExecutorUser().getName() + line.getExecutorUser().getTel() + "】已经在【" + DateUtils.formatDate(express.getRealEndTime(),"yyyy年MM月dd日 HH时mm分")
-				+ "】完成了妥投。签收方式为【" + express.getEndType() + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
+		if (express == null || express.getLines() == null || express.getLines().size() < 1)
+			return;
+		Line line = express.getLines().get(express.getLines().size() - 1);
+		String toStr = "您的快递" + expressNo + "由风先生【" + line.getExecutorUser().getName() + line.getExecutorUser().getTel()
+				+ "】已经在【" + DateUtils.formatDate(express.getRealEndTime(), "yyyy年MM月dd日 HH时mm分") + "】完成了妥投。签收方式为【"
+				+ express.getEndType() + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
 				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}
 
-	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress, Double lat, Double lng) {
+	public void updateExpressReceiverAddress(String expressNo, String receiverName, String receiverAddress, Double lat,
+			Double lng) {
 		// TODO Auto-generated method stub
-		expressDao.updateExpressReceiverAddress(expressNo,receiverName,receiverAddress,lat,lng);
+		expressDao.updateExpressReceiverAddress(expressNo, receiverName, receiverAddress, lat, lng);
 	}
+
 	public boolean updateExpressReminded(String expressNo) {
 		int count = expressDao.updateExpressReminded(expressNo);
 		if (count > 0) {
