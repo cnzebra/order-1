@@ -22,12 +22,12 @@ public class Express extends OrderBase {
 	private Date dueTime;
 	private String mode;
 	private List<Line> lines;
-	private Integer currentLine=1;
+	private Integer currentLine = 1;
 	private String type;
 	private BigDecimal downMoney;
 	private Date planEndTime;
 	private Date realEndTime;
-	@JSONField(serialize=false)
+	@JSONField(serialize = false)
 	private Address endAddress;
 	private String endType;
 
@@ -44,13 +44,13 @@ public class Express extends OrderBase {
 	/**
 	 * 批次号 格式以分为最小计数值
 	 */
-	private Long  batchNo;
+	private Long batchNo;
 
 	public List<Line> getLines() {
 		return lines;
 	}
-	
-	public Express(){
+
+	public Express() {
 		super();
 	}
 
@@ -60,9 +60,10 @@ public class Express extends OrderBase {
 		this.sender = order.sender;
 		this.receiver = order.receiver;
 		this.category = order.category;
-		this.bindExpressNo=order.bindExpressNo;
+		this.bindExpressNo = order.bindExpressNo;
 		this.createTime = order.createTime;
 		this.updateTime = order.updateTime;
+		this.remark = order.remark;
 	}
 
 	public Long getBatchNo() {
