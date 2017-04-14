@@ -24,6 +24,7 @@ import com.mrwind.common.util.DateUtils;
 import com.mrwind.order.App;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Line;
+import com.mrwind.order.entity.ShopUser;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 
@@ -425,5 +426,14 @@ public class ExpressDao extends BaseDao {
 		Update update = Update.update("reminded", true);
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
+	public List<ShopUser> selectShopByReceiverTel(String tel) {
+		Query query = new Query();
+		query.fields().include("shop");
+		query.addCriteria(Criteria.where("receiver.tel").is(tel));
+		Date startTime = DateUtils.getStartTime();
+		query.addCriteria(Criteria.where("dueTime").gte(startTime));
+		return mongoTemplate.find(query, ShopUser.class, "express");
 	}
 }
