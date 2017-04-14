@@ -856,6 +856,15 @@ public class ExpressService {
 		return expressDao.selectByShopIdAndMode(shopId, status, tel, expressNo, date, page);
 	}
 
+	/**
+	 *
+	 * @param expressNo
+	 * @param isLook
+     */
+	public int updateExpress(String expressNo, boolean isLook){
+		return expressDao.updateExpressLook(expressNo, isLook);
+	}
+
 	public List<Express> selectByShopIdAndModeForWeChat(String shopId, String status, Date date, String dayType,
 			String param, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");

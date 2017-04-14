@@ -12,6 +12,8 @@ public class Order extends OrderBase {
 	 * 
 	 */
 	private static final long serialVersionUID = 8853475781658025423L;
+
+	private String origin = "批量导入";
 	/**
 	 * 
 	 */
@@ -23,5 +25,13 @@ public class Order extends OrderBase {
 
 	public void setDueTimes(List<Date> dueTimes) {
 		this.dueTimes = dueTimes;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
 	}
 }

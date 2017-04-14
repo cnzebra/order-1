@@ -152,6 +152,14 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
+	public int updateStatus(String expressNo, String status, boolean isPush) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("status", status);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		update.set("isPush", isPush);
+		return mongoTemplate.updateFirst(query, update, Express.class).getN();
+	}
+
 	public int updateSubStatus(String expressNo, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("subStatus", subStatus);
@@ -289,6 +297,13 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
+	public int updateExpressLook(String expressNo, boolean isLook) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("isPush", isLook);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateMulti(query, update, Express.class).getN();
+	}
+
 	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date,
 			PageRequest page) {
 		Criteria operator = new Criteria();
@@ -308,7 +323,14 @@ public class ExpressDao extends BaseDao {
 			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
 		}
 		if (StringUtils.isNotBlank(status)) {
-			query.addCriteria(Criteria.where("status").is(status));
+			if("notPrint".equals(status)){
+				query.addCriteria(Criteria.where("printed").is(false));
+			} else if("print".equals(status)){
+				query.addCriteria(Criteria.where("printed").is(true));
+			} else {
+				query.addCriteria(Criteria.where("status").is(status));
+			}
+
 		}
 		query.addCriteria(operator);
 		query.with(page);
