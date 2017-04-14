@@ -25,6 +25,7 @@ import com.mrwind.order.App;
 import com.mrwind.order.entity.Address;
 import com.mrwind.order.entity.Category;
 import com.mrwind.order.entity.Express;
+import com.mrwind.order.entity.ShopUser;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.service.ExpressService;
 
@@ -50,6 +51,15 @@ public class ExpressController {
 	@RequestMapping(value = "/select/map", method = RequestMethod.GET)
 	public JSONObject selectMap(Integer pageIndex, Integer pageSize) {
 		List<MapExpressVO> all = expressService.selectAll(pageIndex, pageSize);
+		JSONObject successJSON = JSONFactory.getSuccessJSON();
+		successJSON.put("data", all);
+		return successJSON;
+	}
+	
+	@ResponseBody
+	@RequestMapping(value = "/select/shop/receiver", method = RequestMethod.GET)
+	public JSONObject selectShopReceiver(String tel) {
+		List<ShopUser> all =expressService.selectShopByReceiverTel(tel);
 		JSONObject successJSON = JSONFactory.getSuccessJSON();
 		successJSON.put("data", all);
 		return successJSON;

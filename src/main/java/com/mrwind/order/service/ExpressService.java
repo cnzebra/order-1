@@ -42,6 +42,7 @@ import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.ExpressCodeLog;
 import com.mrwind.order.entity.Line;
 import com.mrwind.order.entity.Order;
+import com.mrwind.order.entity.ShopUser;
 import com.mrwind.order.entity.User;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
@@ -927,5 +928,9 @@ public class ExpressService {
 			return true;
 		}
 		return false;
+	}
+
+	public List<ShopUser> selectShopByReceiverTel(String tel) {
+		return expressDao.selectShopByReceiverTel(tel);
 	}
 }
