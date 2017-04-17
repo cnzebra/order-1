@@ -152,7 +152,7 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
-	public int updateStatus(String expressNo, String status, boolean isPush) {
+	public int updatePush(String expressNo, String status, String isPush) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status);
 		update.set("updateTime", Calendar.getInstance().getTime());
@@ -297,9 +297,16 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
 
-	public int updateExpressLook(String expressNo, boolean isLook) {
+	public int updateExpressLook(String expressNo, String isLook) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("isPush", isLook);
+		update.set("updateTime", Calendar.getInstance().getTime());
+		return mongoTemplate.updateMulti(query, update, Express.class).getN();
+	}
+
+	public int updateExpressDel(String expressNo, boolean isDelete) {
+		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
+		Update update = Update.update("isDelete", isDelete);
 		update.set("updateTime", Calendar.getInstance().getTime());
 		return mongoTemplate.updateMulti(query, update, Express.class).getN();
 	}
