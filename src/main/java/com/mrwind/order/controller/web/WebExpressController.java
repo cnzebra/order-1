@@ -138,9 +138,24 @@ public class WebExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/updateExpressPush", method = RequestMethod.GET)
-	public JSONObject updateExpressPush(String expressNo, boolean isLook) {
+	public JSONObject updateExpressPush(String expressNo, String isPush) {
 
-		int count = expressService.updateExpress(expressNo, isLook);
+		int count = expressService.updateExpress(expressNo, isPush);
+		if(count > 0){
+			JSONObject json = JSONFactory.getSuccessJSON();
+			json.put("content", "更新成功");
+			return json;
+		}else{
+			return JSONFactory.getfailJSON("查询不到数据");
+		}
+
+	}
+
+	@ResponseBody
+	@RequestMapping(value = "/updateDelete", method = RequestMethod.GET)
+	public JSONObject updateDelete(String expressNo, String isPush) {
+
+		int count = expressService.updateExpress(expressNo, isPush);
 		if(count > 0){
 			JSONObject json = JSONFactory.getSuccessJSON();
 			json.put("content", "更新成功");

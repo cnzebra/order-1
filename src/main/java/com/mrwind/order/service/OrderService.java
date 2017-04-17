@@ -352,7 +352,7 @@ public class OrderService {
             String content = sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
                     + encode;
             redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
-            expressDao.updateStatus(expressNo, App.ORDER_SENDING, true);
+            expressDao.updatePush(expressNo, App.ORDER_SENDING, "PUSH");
             HttpUtil.sendSMSToUserTel(content, receiveTel);
         }
 	}

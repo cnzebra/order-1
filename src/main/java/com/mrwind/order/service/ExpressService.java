@@ -861,8 +861,12 @@ public class ExpressService {
 	 * @param expressNo
 	 * @param isLook
      */
-	public int updateExpress(String expressNo, boolean isLook){
+	public int updateExpress(String expressNo, String isLook){
 		return expressDao.updateExpressLook(expressNo, isLook);
+	}
+
+	public int updateDelete(String expressNo, boolean isDelete){
+		return expressDao.updateExpressDel(expressNo, isDelete);
 	}
 
 	public List<Express> selectByShopIdAndModeForWeChat(String shopId, String status, Date date, String dayType,
