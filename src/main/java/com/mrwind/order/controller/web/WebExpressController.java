@@ -153,9 +153,9 @@ public class WebExpressController {
 
 	@ResponseBody
 	@RequestMapping(value = "/updateDelete", method = RequestMethod.GET)
-	public JSONObject updateDelete(String expressNo, String isPush) {
+	public JSONObject updateDelete(String expressNo, boolean isDelete) {
 
-		int count = expressService.updateExpress(expressNo, isPush);
+		int count = expressService.updateDelete(expressNo, isDelete);
 		if(count > 0){
 			JSONObject json = JSONFactory.getSuccessJSON();
 			json.put("content", "更新成功");
