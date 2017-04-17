@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -28,6 +30,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
 import com.mrwind.common.factory.JSONFactory;
+import com.mrwind.common.util.HttpUtil;
 import com.mrwind.order.entity.Express;
 import com.mrwind.order.entity.Order;
 import com.mrwind.order.entity.ShopUser;
@@ -62,13 +65,22 @@ public class WebOrderController {
 
 	@ResponseBody
 	@RequestMapping(value = "/create/list", method = RequestMethod.POST)
-	public JSONObject createList(@RequestBody JSONObject json) {
+	public JSONObject createList(@RequestBody JSONObject json,HttpServletResponse response) {
 
 		System.out.println(System.currentTimeMillis());
 		JSONObject shopJson = json.getJSONObject("shop");
 		if (shopJson == null) {
 			return JSONFactory.getErrorJSON("商户信息不明，无法下单");
 		}
+		
+		String shopId = shopJson.getString("id");
+		JSONObject res = HttpUtil.findShopById(shopId);
+		if(res==null){
+			response.setStatus(401);
+			return JSONFactory.getErrorJSON("请重新登录！");
+		}
+
+		
 
 		ShopUser shopUser = JSONObject.toJavaObject(shopJson, ShopUser.class);
 		JSONObject senderJson = json.getJSONObject("sender");
