@@ -45,6 +45,8 @@ public class Express extends OrderBase {
 	 * 批次号 格式以分为最小计数值
 	 */
 	private Long batchNo;
+	private boolean isPush = false;
+	private String origin = "批量导入";
 
 	public List<Line> getLines() {
 		return lines;
@@ -176,5 +178,21 @@ public class Express extends OrderBase {
 
 	public void setReminded(boolean reminded) {
 		this.reminded = reminded;
+	}
+
+	public String getOrigin() {
+		return origin;
+	}
+
+	public void setOrigin(String origin) {
+		this.origin = origin;
+	}
+
+	public boolean isPush() {
+		return isPush;
+	}
+
+	public void setPush(boolean push) {
+		isPush = push;
 	}
 }

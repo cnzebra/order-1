@@ -136,6 +136,22 @@ public class WebExpressController {
 		return JSONFactory.getfailJSON("查询不到数据");
 	}
 
+	@ResponseBody
+	@RequestMapping(value = "/updateExpressPush", method = RequestMethod.GET)
+	public JSONObject updateExpressPush(String expressNo, boolean isLook) {
+
+		int count = expressService.updateExpress(expressNo, isLook);
+		if(count > 0){
+			JSONObject json = JSONFactory.getSuccessJSON();
+			json.put("content", "更新成功");
+			return json;
+		}else{
+			return JSONFactory.getfailJSON("查询不到数据");
+		}
+
+	}
+
+
 
 	/**
 	 * 微信订单多维度查询接口
