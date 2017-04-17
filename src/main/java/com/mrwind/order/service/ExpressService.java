@@ -141,7 +141,8 @@ public class ExpressService {
 //		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
 //			return null;
 //		}
-		express.setMode("toDay");
+		express.setMode("TODAY");
+		express.setType("after");
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
