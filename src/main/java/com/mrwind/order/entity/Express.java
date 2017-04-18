@@ -45,7 +45,8 @@ public class Express extends OrderBase {
 	 * 批次号 格式以分为最小计数值
 	 */
 	private Long batchNo;
-	private boolean isPush = false;
+	private String isPush = "NO_PUSH";//NO_PUSH | PUSH | LOOK
+	private boolean isDelete = false;
 	private String origin = "批量导入";
 
 	public List<Line> getLines() {
@@ -188,11 +189,19 @@ public class Express extends OrderBase {
 		this.origin = origin;
 	}
 
-	public boolean isPush() {
+	public String getIsPush() {
 		return isPush;
 	}
 
-	public void setPush(boolean push) {
-		isPush = push;
+	public void setIsPush(String isPush) {
+		this.isPush = isPush;
+	}
+
+	public boolean isDelete() {
+		return isDelete;
+	}
+
+	public void setDelete(boolean delete) {
+		isDelete = delete;
 	}
 }

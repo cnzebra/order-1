@@ -141,7 +141,8 @@ public class ExpressService {
 //		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
 //			return null;
 //		}
-		express.setMode("toDay");
+		express.setMode(App.ORDER_MODE_TODAY);
+		express.setType(App.ORDER_TYPE_AFTER);
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
@@ -769,10 +770,13 @@ public class ExpressService {
 		User sender = express.getSender();
 		Integer distance = HttpUtil.getDistance(endAddress.getLat(), endAddress.getLng(), sender.getLat(),
 				sender.getLng());
-		JSONObject calculatePrice = HttpUtil.calculatePrice(express.getShop().getId(),
-				express.getCategory().getWeight().intValue(), distance);
-		Category category = JSONObject.toJavaObject(calculatePrice, Category.class);
-		express.setCategory(category);
+		if(express.getCategory() != null){
+			JSONObject calculatePrice = HttpUtil.calculatePrice(express.getShop().getId(),
+					express.getCategory().getWeight().intValue(), distance);
+			Category category = JSONObject.toJavaObject(calculatePrice, Category.class);
+			express.setCategory(category);
+		}
+
 	}
 
 	public JSONObject errorComplete(String expressNo, Address endAddress, JSONObject userInfo) {
@@ -822,12 +826,11 @@ public class ExpressService {
 		Double lng = order.getSender().getLng();
 		String shopId = order.getShop().getId();
 //		String mode = order.getCategory().getServiceType().getType();
-		String mode="toDay";
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("lat", lat);
 		jsonObject.put("lng", lng);
 		jsonObject.put("shopId", shopId);
-		jsonObject.put("mode", mode);
+		jsonObject.put("mode", App.ORDER_MODE_TODAY);
 		return HttpUtil.findPersion(jsonObject);
 	}
 
@@ -861,8 +864,12 @@ public class ExpressService {
 	 * @param expressNo
 	 * @param isLook
      */
-	public int updateExpress(String expressNo, boolean isLook){
+	public int updateExpress(String expressNo, String isLook){
 		return expressDao.updateExpressLook(expressNo, isLook);
+	}
+
+	public int updateDelete(String expressNo, boolean isDelete){
+		return expressDao.updateExpressDel(expressNo, isDelete);
 	}
 
 	public List<Express> selectByShopIdAndModeForWeChat(String shopId, String status, Date date, String dayType,
