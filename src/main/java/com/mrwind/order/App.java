@@ -38,6 +38,8 @@ public class App
     public static String ORDER_CANCEL="cancel";  //取消
     
     public static String ORDER_TYPE_AFTER="after";
+
+    public static String ORDER_MODE_TODAY = "TODAY";
     
     //支付的订单
     public static String RDKEY_PAY_ORDER="rdkey_pay_order";
