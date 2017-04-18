@@ -200,4 +200,15 @@ public class WebOrderController {
 		Page<Order> selectAllByOrder = orderService.selectAllByOrder(order, pageIndex - 1, pageSize);
 		return Result.success(selectAllByOrder);
 	}
+
+	@ResponseBody
+	@RequestMapping(value = "/sendMessage", method = RequestMethod.GET)
+	public JSONObject sendMessage(@RequestParam(value = "content") String content,
+											  @RequestParam(value = "tel") String tel, @RequestParam(value = "expressNo") String expressNo) {
+
+		orderService.sendReceiveMsg(content, tel, expressNo);
+		JSONObject json = JSONFactory.getSuccessJSON();
+		return json;
+	}
+
 }

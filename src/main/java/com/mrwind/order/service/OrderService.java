@@ -357,6 +357,15 @@ public class OrderService {
         }
 	}
 
+	public void sendReceiveMsg(String content, String receiveTel, String expressNo) {
+			// 发送短信
+            String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
+             content = content + " " + API_WECHAT_HOST + "#/phone/orderTrace/" + encode + " .";
+            redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
+            expressDao.updateExpressLook(expressNo, "PUSH");
+            HttpUtil.sendSMSToUserTel(content, receiveTel);
+	}
+
 	/***
 	 * 支付完成 发送日志
 	 * 
