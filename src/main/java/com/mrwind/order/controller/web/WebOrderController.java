@@ -8,6 +8,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletResponse;
 
+import com.mrwind.common.cache.RedisCache;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -45,6 +46,9 @@ public class WebOrderController {
 
 	@Autowired
 	private OrderService orderService;
+
+	@Autowired
+	RedisCache redisCache;
 
 	@ResponseBody
 	@RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -143,36 +147,40 @@ public class WebOrderController {
 		for (int i = 2; i <= sheet.getLastRowNum(); i++) {
 			JSONObject jsonObject = new JSONObject();
 			Row row = sheet.getRow(i);
-			double bindExpressNo = 0;
+//			if (row.getCell(1) != null) {
+//				try {
+//					bindExpressNo = Double.valueOf(row.getCell(1).getStringCellValue());
+//				} catch (Exception e) {
+//					bindExpressNo = row.getCell(1).getNumericCellValue();
+//				}
+//			}
+			Long pk = redisCache.getPK("express", 1);
+			jsonObject.put("expressNo", pk.toString());
 			if (row.getCell(1) != null) {
-				try {
-					bindExpressNo = Double.valueOf(row.getCell(1).getStringCellValue());
-				} catch (Exception e) {
-					bindExpressNo = row.getCell(1).getNumericCellValue();
-				}
-			}
-			jsonObject.put("bindExpressNo", bindExpressNo);
-			if (row.getCell(2) != null) {
-				String receiverUserName = row.getCell(2).getStringCellValue();
+				String receiverUserName = row.getCell(1).getStringCellValue();
 				jsonObject.put("receiverUserName", receiverUserName);
 			}
 			String receiverTel;
-			if (row.getCell(3) != null) {
+			if (row.getCell(2) != null) {
 				try {
-					receiverTel = row.getCell(3).getStringCellValue();
+					receiverTel = row.getCell(2).getStringCellValue();
 				} catch (Exception e) {
 					DecimalFormat df=new DecimalFormat("0");
-					receiverTel = df.format(row.getCell(3).getNumericCellValue());
+					receiverTel = df.format(row.getCell(2).getNumericCellValue());
 				}
 				jsonObject.put("receiverTel", receiverTel);
 			} else {
 				continue;
 			}
-			if (row.getCell(4) != null) {
-				String receiverAddress = row.getCell(4).getStringCellValue();
+			if (row.getCell(3) != null) {
+				String receiverAddress = row.getCell(3).getStringCellValue();
 				jsonObject.put("receiverAddress", receiverAddress);
 			} else {
 				continue;
+			}
+			if (row.getCell(4) != null) {
+				String remark = row.getCell(4).getStringCellValue();
+				jsonObject.put("weight", remark);
 			}
 			if (row.getCell(5) != null) {
 				String remark = row.getCell(5).getStringCellValue();
