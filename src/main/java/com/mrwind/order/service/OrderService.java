@@ -349,7 +349,9 @@ public class OrderService {
 		// 发送短信
 		if (StringUtils.isNotEmpty(sendName)) {
             String encode = Md5Util.string2MD5(expressNo + App.SESSION_KEY);
-            String content = sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
+//            String content = sendName +"通过风先生为你发送了快件，物流详细信息请点击链接："+ API_WECHAT_HOST + "#/phone/orderTrace/"
+//                    + encode;
+            String content = sendName +"已经将您的快件发出，由【风先生极速物流】进行运输，请查看链接，实时跟踪物流状态。 "+ API_WECHAT_HOST + "#/phone/orderTrace/"
                     + encode;
             redisCache.set(encode, 60 * 60 * 24 * 15, expressNo);
             expressDao.updatePush(expressNo, App.ORDER_SENDING, "PUSH");

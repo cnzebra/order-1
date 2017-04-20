@@ -925,10 +925,18 @@ public class ExpressService {
 		if (express == null || express.getLines() == null || express.getLines().size() < 1)
 			return;
 		Line line = express.getLines().get(express.getLines().size() - 1);
-		String toStr = "您的快递" + expressNo + "由风先生【" + line.getExecutorUser().getName() + line.getExecutorUser().getTel()
-				+ "】已经在【" + DateUtils.formatDate(express.getRealEndTime(), "yyyy年MM月dd日 HH时mm分") + "】完成了妥投。签收方式为【"
-				+ express.getEndType() + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
-				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+//		String toStr = "您的快递" + expressNo + "由风先生【" + line.getExecutorUser().getName() + line.getExecutorUser().getTel()
+//				+ "】已经在【" + DateUtils.formatDate(express.getRealEndTime(), "yyyy年MM月dd日 HH时mm分") + "】完成了妥投。签收方式为【"
+//				+ express.getEndType() + "】，为了确保货物安全以及投递准确，请点击链接确认收货，并对我们配送员的表现进行评价。【" + API_WECHAT_HOST
+//				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+		ShopUser shopUser = express.getShop();
+		String shopName = "您";
+		if(shopUser != null && StringUtils.isNotBlank(shopUser.getName())){
+			shopName = "您来自" + shopUser.getName();
+		}
+		String toStr = "风先生极速物流已将" + shopName +"的快件送达，点击链接请对我们的服务进行评价【 " + API_WECHAT_HOST
+				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + " 】";
+
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}
 
