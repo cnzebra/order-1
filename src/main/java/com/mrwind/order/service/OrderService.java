@@ -5,9 +5,11 @@ import static com.mrwind.common.constant.ConfigConstant.API_WECHAT_HOST;
 import java.math.BigDecimal;
 import java.util.*;
 
+import com.mrwind.common.request.CallNewEX;
+import com.mrwind.common.request.PersonAddressOrder;
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.dao.ExpressDao;
-import com.mrwind.order.entity.User;
+import com.mrwind.order.entity.*;
 
 import com.mrwind.order.repositories.ExpressRepository;
 import org.apache.commons.lang3.StringUtils;
@@ -29,9 +31,6 @@ import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.SetUtil;
 import com.mrwind.common.util.UUIDUtils;
 import com.mrwind.order.App;
-import com.mrwind.order.entity.Express;
-import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.OrderReceipt;
 import com.mrwind.order.repositories.OrderReceiptRepository;
 import com.mrwind.order.repositories.OrderRepository;
 
@@ -78,6 +77,54 @@ public class OrderService {
 		return expressService.createExpress(resOrder);
 	}
 
+	public List<Express> initAndInsert(CallNewEX callNewEX) {
+		List<Order> orders = generateOrder(callNewEX);
+		return initAndInsertSec(orders);
+	}
+
+	private List<Order> generateOrder(CallNewEX callNewEX){
+		List<Order> orders = new ArrayList<>();
+
+		List<Date> dueTimes = new ArrayList<>();
+		dueTimes.add(callNewEX.getDueTime());
+		Category category = new Category(Double.valueOf(callNewEX.getWeight()));
+
+		List<PersonAddressOrder> receivers = callNewEX.getReceivers();
+		if(receivers != null){
+			for(PersonAddressOrder infoOrder : receivers){
+				Order order = new Order();
+				order.setRemark(callNewEX.getRemark());
+				order.setCategory(category);
+				order.setSender(callNewEX.getSender());
+				order.setShop(callNewEX.getShop());
+				order.setDueTimes(dueTimes);
+				if(StringUtils.isNotBlank(callNewEX.getType())){
+					order.setOrigin(callNewEX.getType());
+				}
+				order.setExpressNo(infoOrder.getExpressNo());
+				order.setSender(generateUser(infoOrder));
+				orders.add(order);
+			}
+		}else{
+			Order order = new Order();
+			order.setRemark(callNewEX.getRemark());
+			order.setCategory(category);
+			order.setSender(callNewEX.getSender());
+			order.setShop(callNewEX.getShop());
+			order.setDueTimes(dueTimes);
+			if(StringUtils.isNotBlank(callNewEX.getType())){
+				order.setOrigin(callNewEX.getType());
+			}
+			orders.add(order);
+		}
+
+		return orders;
+	}
+
+	private User generateUser(PersonAddressOrder receiver){
+		return new User(receiver.getId(), receiver.getName(), receiver.getTel(), receiver.getAddress(), receiver.getLng(), receiver.getLat());
+	}
+
 	public List<Express> initAndInsert(List<Order> list) {
 		List<Order> newList = new ArrayList<>();
 		for (Order order : list) {
@@ -85,6 +132,15 @@ public class OrderService {
 			newList.add(save);
 		}
 		System.out.println(System.currentTimeMillis());
+		return expressService.createExpress(newList);
+	}
+
+	public List<Express> initAndInsertSec(List<Order> list) {
+		List<Order> newList = new ArrayList<>();
+		for (Order order : list) {
+			Order save = save(order);
+			newList.add(save);
+		}
 		return expressService.createExpress(newList);
 	}
 

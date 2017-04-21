@@ -6,6 +6,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.mrwind.common.request.ClaimOrder;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -33,102 +34,112 @@ import com.mrwind.order.service.ExpressService;
 @RequestMapping("app/express")
 public class AppExpressController {
 
-	@Autowired
-	ExpressService expressService;
+    @Autowired
+    ExpressService expressService;
 
-	@Autowired
-	ExpressBindService expressBindService;
+    @Autowired
+    ExpressBindService expressBindService;
 
-	/***
-	 * 配送员加单
-	 * 
-	 * @param expressJson
-	 * @return
-	 */
-	@ResponseBody
-	@RequestMapping(value = "/create", method = RequestMethod.POST)
-	public JSONObject create(@RequestBody JSONObject expressJson) {
-		Express express = JSONObject.toJavaObject(expressJson, Express.class);
-		express.setCreateTime(Calendar.getInstance().getTime());
-		List<Line> lines = new ArrayList<>();
-		User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
-		if (executorUser == null) {
-			return JSONFactory.getErrorJSON("找不到配送员信息，无法加单！");
-		}
+    /***
+     * 配送员加单
+     *
+     * @param expressJson
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/create", method = RequestMethod.POST)
+    public JSONObject create(@RequestBody JSONObject expressJson) {
+        Express express = JSONObject.toJavaObject(expressJson, Express.class);
+        express.setCreateTime(Calendar.getInstance().getTime());
+        List<Line> lines = new ArrayList<>();
+        User executorUser = JSONObject.toJavaObject(expressJson.getJSONObject("executor"), User.class);
+        if (executorUser == null) {
+            return JSONFactory.getErrorJSON("找不到配送员信息，无法加单！");
+        }
 
-		if (!expressBindService.checkBind(express.getBindExpressNo())) {
-			return JSONFactory.getErrorJSON("该单号已经绑定过其它单号");
-		}
+        if (!expressBindService.checkBind(express.getBindExpressNo())) {
+            return JSONFactory.getErrorJSON("该单号已经绑定过其它单号");
+        }
 
-		Line line = new Line();
-		line.setPlanTime(express.getCreateTime());
-		line.setExecutorUser(executorUser);
-		line.setNode(express.getSender().getAddress());
-		line.setIndex(1);
-		lines.add(line);
+        Line line = new Line();
+        line.setPlanTime(express.getCreateTime());
+        line.setExecutorUser(executorUser);
+        line.setNode(express.getSender().getAddress());
+        line.setIndex(1);
+        lines.add(line);
 
-		express.setLines(lines);
+        express.setLines(lines);
 
-		Express initExpress;
-		if (App.ORDER_TYPE_AFTER.equals(express.getType())){
-			initExpress = expressService.initAfterExpress(express);
-		}else {
-			initExpress = expressService.initExpress(express);
-		}
+        Express initExpress;
+        if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
+            initExpress = expressService.initAfterExpress(express);
+        } else {
+            initExpress = expressService.initExpress(express);
+        }
 
-		JSONObject successJSON = JSONFactory.getSuccessJSON();
-		successJSON.put("data", initExpress);
-		return successJSON;
-	}
+        JSONObject successJSON = JSONFactory.getSuccessJSON();
+        successJSON.put("data", initExpress);
+        return successJSON;
+    }
 
-	@ResponseBody
-	@RequestMapping(value = "/select", method = RequestMethod.POST)
-	public Result select(@RequestBody Express express) {
-		Express res = expressService.selectByExpress(express);
-		return Result.success(res);
-	}
+    @ResponseBody
+    @RequestMapping(value = "/claimBatchOrder", method = RequestMethod.POST)
+    public JSONObject claimBatchOrder(@RequestBody JSONObject json) {
 
-	@ResponseBody
-	@RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
-	public Result selectAll(@RequestBody Express express, @PathVariable("pageIndex") Integer pageIndex,
-			@PathVariable("pageSize") Integer pageSize) {
-		Page<Express> selectAllByExpress = expressService.selectAllByExpress(express, pageIndex - 1, pageSize);
-		return Result.success(selectAllByExpress.getContent());
-	}
-	
-	@ResponseBody
-	@RequestMapping(value = "/select/shop/{pageIndex}_{pageSize}", method = RequestMethod.GET)
-	public Result selectShop(@RequestParam("shopId") String shopId, @PathVariable("pageIndex") Integer pageIndex,
-			@PathVariable("pageSize") Integer pageSize) {
-		List<ShopExpressVO> shopExpress = expressService.selectShopExpress(shopId, pageIndex - 1, pageSize);
-		return Result.success(shopExpress);
-	}
-	
-	
+        expressService.updateExpress(json);
 
-	@ResponseBody
-	@RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
-	public Result selectParamAll(String param, String fenceName,String shopId, String mode, String status, String day,String dueTime,
-			@PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) throws ParseException {
-		Date dueTime2=null;
-		if(StringUtils.isNotBlank(dueTime)){
-			dueTime2=DateUtils.parseDate(dueTime, "yyyy-MM-dd HH:mm:ss","yyyy-MM-dd'T'HH:mm:ssZ");
-		}
-		List<Express> selectAll = expressService.selectAll(param, shopId,fenceName, mode, status, day, dueTime2, pageIndex - 1,
-				pageSize);
-		return Result.success(selectAll);
-	}
+        JSONObject successJSON = JSONFactory.getSuccessJSON();
+//		successJSON.put("data", initExpress);
+        return successJSON;
+    }
 
-	/**
-	 * 发送验证码
-	 *
-	 * @param expressNo
-	 * @return
-	 */
-	@ResponseBody
-	@RequestMapping(value = "/send/code", method = RequestMethod.GET)
-	public JSONObject sendCode(String expressNo) {
-		return expressService.sendCode(expressNo);
-	}
+    @ResponseBody
+    @RequestMapping(value = "/select", method = RequestMethod.POST)
+    public Result select(@RequestBody Express express) {
+        Express res = expressService.selectByExpress(express);
+        return Result.success(res);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/select/all/{pageIndex}_{pageSize}", method = RequestMethod.POST)
+    public Result selectAll(@RequestBody Express express, @PathVariable("pageIndex") Integer pageIndex,
+                            @PathVariable("pageSize") Integer pageSize) {
+        Page<Express> selectAllByExpress = expressService.selectAllByExpress(express, pageIndex - 1, pageSize);
+        return Result.success(selectAllByExpress.getContent());
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/select/shop/{pageIndex}_{pageSize}", method = RequestMethod.GET)
+    public Result selectShop(@RequestParam("shopId") String shopId, @PathVariable("pageIndex") Integer pageIndex,
+                             @PathVariable("pageSize") Integer pageSize) {
+        List<ShopExpressVO> shopExpress = expressService.selectShopExpress(shopId, pageIndex - 1, pageSize);
+        return Result.success(shopExpress);
+    }
+
+
+    @ResponseBody
+    @RequestMapping(value = "/select/param/{pageIndex}_{pageSize}", method = RequestMethod.GET)
+    public Result selectParamAll(String param, String fenceName, String shopId, String mode, String status, String day, String dueTime,
+                                 @PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) throws ParseException {
+        Date dueTime2 = null;
+        if (StringUtils.isNotBlank(dueTime)) {
+            dueTime2 = DateUtils.parseDate(dueTime, "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ssZ");
+        }
+        List<Express> selectAll = expressService.selectAll(param, shopId, fenceName, mode, status, day, dueTime2, pageIndex - 1,
+                pageSize);
+        return Result.success(selectAll);
+    }
+
+    /**
+     * 发送验证码
+     *
+     * @param expressNo
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/send/code", method = RequestMethod.GET)
+    public JSONObject sendCode(String expressNo) {
+        return expressService.sendCode(expressNo);
+    }
 
 }

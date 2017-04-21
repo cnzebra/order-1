@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.mongodb.BasicDBObject;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
@@ -438,6 +439,24 @@ public class ExpressDao extends BaseDao {
 		query.with(sort);
 		return mongoTemplate.find(query, Express.class);
 	}
+
+	/**
+	 * 分页查询
+	 * lines最后一条的executorUser的id固定
+	 * receiver的name和tel匹配查询
+	 *
+     */
+	public List<Express> findExpress(String userId, String str){
+//		Query query = new Query();
+		BasicDBObject query = new BasicDBObject();
+		query.put("lines",new BasicDBObject().append("$slice", -1));
+		query.put("lines.0.executorUser._id", userId);
+
+//		mongoTemplate.executeCommand();
+//		mongoTemplate.
+		return new ArrayList<Express>();
+	}
+
 
 	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress,Double lat,Double lng) {
 		// TODO Auto-generated method stub

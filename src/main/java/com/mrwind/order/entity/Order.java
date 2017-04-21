@@ -19,6 +19,8 @@ public class Order extends OrderBase {
 	 */
 	private List<Date> dueTimes;
 
+	private String expressNo;
+
 	public List<Date> getDueTimes() {
 		return dueTimes;
 	}
@@ -33,5 +35,13 @@ public class Order extends OrderBase {
 
 	public void setOrigin(String origin) {
 		this.origin = origin;
+	}
+
+	public String getExpressNo() {
+		return expressNo;
+	}
+
+	public void setExpressNo(String expressNo) {
+		this.expressNo = expressNo;
 	}
 }

@@ -124,7 +124,8 @@ public class ExpressController {
 			return JSONFactory.getErrorJSON("运单号不能为空");
 		}
 
-		JSONObject calculatePrice = HttpUtil.calculatePrice(json);
+		JSONObject calculatePrice = HttpUtil.calculatePrice(json.getString("shopId"),
+				json.getInteger("weight"), json.getInteger("distance"));
 		String receiverAddress = (String) json.remove("receiverAddress");
 		if (StringUtils.isNotBlank(receiverAddress)) {
 			String receiverName = json.getString("receiverName");

@@ -22,6 +22,18 @@ public class User implements Serializable{
 	private String avatar;
 	private Fence fence;
 
+	public User() {
+	}
+
+	public User(String id, String name, String tel, String address, Double lng, Double lat) {
+		this.id = id;
+		this.name = name;
+		this.tel = tel;
+		this.address = address;
+		this.lng = lng;
+		this.lat = lat;
+	}
+
 	public String getName() {
 		return name;
 	}

@@ -20,6 +20,13 @@ public class Category {
 	private User serviceUser;
 	private BigDecimal artificialPrice;
 
+	public Category() {
+	}
+
+	public Category(Double weight) {
+		this.weight = weight;
+	}
+
 	public String getId() {
 		return id;
 	}

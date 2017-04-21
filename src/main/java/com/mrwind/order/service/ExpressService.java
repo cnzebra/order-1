@@ -15,6 +15,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.mrwind.common.request.ClaimOrder;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,9 +130,38 @@ public class ExpressService {
 		}
 		expressRepository.save(list);
 
-		// 通知任务系统创建任务
-		// HttpUtil.createReceiveMission(list);
-		// sendExpressLog21010(list);
+		return list;
+	}
+
+	public List<Express> createExpressSec(List<Order> orders) {
+
+		if (orders == null || orders.size() == 0) {
+			return null;
+		}
+
+		Date nowDate = Calendar.getInstance().getTime();
+		List<Express> list = new ArrayList<>();
+		JSONObject person = findPerson(orders.get(0));
+
+		User user = null;
+		if (person != null) {
+			user = JSONObject.toJavaObject(person, User.class);
+		}
+
+		for (Order order : orders) {
+			List<Date> dueTimes = order.getDueTimes();
+			if (dueTimes == null || dueTimes.size() == 0) {
+				list.add(initVIPExpress(order, user, nowDate));
+			} else {
+				for (Date dueTime : dueTimes) {
+					list.add(initVIPExpress(order, user, dueTime));
+				}
+				Set<String> tels = new HashSet<>();
+				tels.add(order.getShop().getTel());
+				HttpUtil.sendMessage(tels, null, "尊敬的客户，您已成功委托风先生为您服务，风先生将按时上门,详情查看运单跟踪；感谢您使用风先生同城急速物流!");
+			}
+		}
+		expressRepository.save(list);
 
 		return list;
 	}
@@ -144,8 +174,13 @@ public class ExpressService {
 		express.setMode(App.ORDER_MODE_TODAY);
 		express.setType(App.ORDER_TYPE_AFTER);
 
-		Long pk = redisCache.getPK("express", 1);
-		express.setExpressNo(pk.toString());
+		if(StringUtils.isNotBlank(order.getExpressNo())){
+			express.setExpressNo(order.getExpressNo());
+		}else {
+			Long pk = redisCache.getPK("express", 1);
+			express.setExpressNo(pk.toString());
+		}
+
 
 		if (!expressBindService.checkBind(express.getBindExpressNo())) {
 			express.setBindExpressNo(null);
@@ -153,8 +188,10 @@ public class ExpressService {
 
 		express.setDueTime(dueTime);
 		if (DateUtils.diffMinute(dueTime) >= -60 * 2) {
+
 			express.setStatus(App.ORDER_BEGIN);
 			express.setSubStatus(App.ORDER_PRE_CREATED);
+
 		} else {
 			if (user != null) {
 				List<Line> lineList = new ArrayList<>();
@@ -653,6 +690,33 @@ public class ExpressService {
 		expressDao.updateExpress(express);
 	}
 
+	public void updateExpress(JSONObject jsonObject){
+		ClaimOrder claimOrder = JSONObject.toJavaObject(jsonObject, ClaimOrder.class);
+		List<String> expressNos = claimOrder.getExpressNo();
+		if(expressNos != null){
+			String name = claimOrder.getName();
+			User user = new User(claimOrder.getExecutorUserId(),  name, claimOrder.getTel(), claimOrder.getAddress(), claimOrder.getLng(), claimOrder.getLat());
+			for(String expressNo : expressNos){
+				Express express = expressRepository.findFirstByExpressNo(expressNo);
+				String status = express.getStatus();
+				if(App.ORDER_BEGIN.equals(status)){
+					express.setStatus(App.ORDER_SENDING);
+				}
+				List<Line> lines = express.getLines();
+				Line line = new Line();
+				line.setExecutorUser(user);
+				line.setRealTime(Calendar.getInstance().getTime());
+				line.setTitle(name + "取了订单");
+				line.setIndex(lines.size());
+				lines.add(line);
+				express.setCurrentLine(lines.size());
+				express.setLines(lines);
+				expressDao.updateExpress(express);
+			}
+
+		}
+	}
+
 	public void cancelExpress(String expressNo) {
 		JSONArray json = new JSONArray();
 		JSONObject tmp = new JSONObject();
@@ -710,18 +774,6 @@ public class ExpressService {
 		if (express.getStatus().equals(App.ORDER_COMPLETE) || express.getStatus().equals(App.ORDER_WAIT_COMPLETE)) {
 			return JSONFactory.getErrorJSON("运单已经妥投");
 		}
-		//
-		// JSONObject tmp = new JSONObject();
-		// tmp.put("order", expressNo);
-		// tmp.put("status", "COMPLETE");
-		// tmp.put("sendLog", false);
-		// tmp.put("des", "妥投");
-		// json.add(tmp);
-		// // 妥投验证
-		// boolean isComplete = HttpUtil.compileExpressMission(json);
-		// if (!isComplete) {
-		// return JSONFactory.getfailJSON("妥投失败，请重新妥投");
-		// }
 
 		List<Line> lines = express.getLines();
 		if (lines == null)
@@ -825,7 +877,6 @@ public class ExpressService {
 		Double lat = order.getSender().getLat();
 		Double lng = order.getSender().getLng();
 		String shopId = order.getShop().getId();
-//		String mode = order.getCategory().getServiceType().getType();
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put("lat", lat);
 		jsonObject.put("lng", lng);
