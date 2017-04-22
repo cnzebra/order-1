@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.mongodb.BasicDBList;
 import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.data.domain.Page;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -446,15 +449,24 @@ public class ExpressDao extends BaseDao {
 	 * receiver的name和tel匹配查询
 	 *
      */
-	public List<Express> findExpress(String userId, String str){
-//		Query query = new Query();
-		BasicDBObject query = new BasicDBObject();
-		query.put("lines",new BasicDBObject().append("$slice", -1));
-		query.put("lines.0.executorUser._id", userId);
+	public Page<Express> findExpress(String userId, String str, Integer pageNo, Integer pageSize){
 
-//		mongoTemplate.executeCommand();
-//		mongoTemplate.
-		return new ArrayList<Express>();
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageNo, pageSize, sort);
+		Criteria operator = new Criteria();
+		Query query = new Query();
+		query.fields().slice("lines", -1);
+		query.addCriteria(Criteria.where("lines.0.executorUser._id").is(userId));
+		if(StringUtils.isNotBlank(str)){
+			operator.orOperator(
+					Criteria.where("receiver.tel").regex(str),
+					Criteria.where("receiver.name").regex(str)) ;
+		}
+
+		query.addCriteria(operator);
+		query.with(page);
+		long count = mongoTemplate.count(query, Express.class);
+		return new PageImpl<>(mongoTemplate.find(query, Express.class), page, count);
 	}
 
 

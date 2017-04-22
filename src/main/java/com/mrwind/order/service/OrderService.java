@@ -6,6 +6,7 @@ import java.math.BigDecimal;
 import java.util.*;
 
 import com.mrwind.common.request.CallNewEX;
+import com.mrwind.common.request.Goods;
 import com.mrwind.common.request.PersonAddressOrder;
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.dao.ExpressDao;
@@ -15,10 +16,7 @@ import com.mrwind.order.repositories.ExpressRepository;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
@@ -481,5 +479,43 @@ public class OrderService {
 
 	public boolean judgeBind(String tel, String shopId) {
 		return expressDao.judgeBind(tel, shopId) != null;
+	}
+
+	public JSONObject findExpress(String userId, String str, Integer pageNo, Integer pageSize){
+		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize);
+		List<Express> expressList =  expresses.getContent();
+		List<Goods> goodsList = new ArrayList<>();
+
+		if(expressList != null){
+			String preFix = "送达：";
+			String sufFix = "地址见面单";
+			for(Express express : expressList){
+				Goods goods = new Goods();
+				User receiver = express.getReceiver();
+				if(receiver != null){
+					goods.setTel(receiver.getTel());
+					goods.setExpressNo(express.getExpressNo());
+					goods.setName(receiver.getName());
+					goods.setStatus(express.getStatus());
+					String address = receiver.getAddress();
+					if(StringUtils.isNotBlank(address)){
+						address = preFix + address;
+					}else{
+						address = preFix + sufFix;
+					}
+					goods.setAddress(address);
+					goodsList.add(goods);
+				}
+
+			}
+
+		}
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("goodsList", goodsList);
+		jsonObject.put("pageSize", expresses.getSize());
+		jsonObject.put("pageNo", expresses.getNumber());
+		jsonObject.put("totalElements", expresses.getTotalElements());
+
+		return  jsonObject;
 	}
 }

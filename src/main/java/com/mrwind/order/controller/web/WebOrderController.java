@@ -226,4 +226,23 @@ public class WebOrderController {
         return json;
     }
 
+    /**
+     * 我的货物
+     * @param userId
+     * @param content
+     * @param pageNo
+     * @param pageSize
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/getMyGoods", method = RequestMethod.GET)
+    public Result testFind(@RequestParam(value = "userId") String userId,
+                               @RequestParam(value = "content", defaultValue = "") String content,
+                               @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                               @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+
+        JSONObject jsonObject = orderService.findExpress( userId, content, pageNo, pageSize);
+        return Result.success(jsonObject);
+    }
+
 }
