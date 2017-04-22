@@ -166,6 +166,16 @@ public class ExpressService {
 		return list;
 	}
 
+	private Express updateExpressLocation(Express express){
+		User user = express.getReceiver();
+		if(user != null){
+			if(user.getLat() != null && user.getLng() != null ){
+				user.setLocation(new Double[]{user.getLng(), user.getLat()});
+			}
+		}
+		return express;
+	}
+
 	private Express initVIPExpress(Order order, User user, Date dueTime) {
 		Express express = new Express(order);
 //		if (express.getCategory() == null || express.getCategory().getServiceType() == null) {
@@ -180,7 +190,7 @@ public class ExpressService {
 			Long pk = redisCache.getPK("express", 1);
 			express.setExpressNo(pk.toString());
 		}
-
+		express = updateExpressLocation(express);
 
 		if (!expressBindService.checkBind(express.getBindExpressNo())) {
 			express.setBindExpressNo(null);

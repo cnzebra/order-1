@@ -17,6 +17,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.data.mongodb.core.query.BasicUpdate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -449,7 +450,7 @@ public class ExpressDao extends BaseDao {
 	 * receiver的name和tel匹配查询
 	 *
      */
-	public Page<Express> findExpress(String userId, String str, Integer pageNo, Integer pageSize){
+	public Page<Express> findExpress(String userId, String str, Integer pageNo, Integer pageSize, Point point, Double radius){
 
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageNo, pageSize, sort);
@@ -461,6 +462,9 @@ public class ExpressDao extends BaseDao {
 			operator.orOperator(
 					Criteria.where("receiver.tel").regex(str),
 					Criteria.where("receiver.name").regex(str)) ;
+		}
+		if(point != null){
+			query.addCriteria(Criteria.where("receiver.location").near(point).maxDistance(radius));
 		}
 
 		query.addCriteria(operator);

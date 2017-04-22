@@ -239,9 +239,12 @@ public class WebOrderController {
     public Result testFind(@RequestParam(value = "userId") String userId,
                                @RequestParam(value = "content", defaultValue = "") String content,
                                @RequestParam(value = "pageNo", defaultValue = "0") Integer pageNo,
+                               @RequestParam(value = "lat", defaultValue = "0") Double lat,
+                               @RequestParam(value = "lng", defaultValue = "0") Double lng,
+                               @RequestParam(value = "radius", defaultValue = "500") Double radius,
                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
-        JSONObject jsonObject = orderService.findExpress( userId, content, pageNo, pageSize);
+        JSONObject jsonObject = orderService.findExpress( userId, content, pageNo, pageSize, lat, lng, radius);
         return Result.success(jsonObject);
     }
 

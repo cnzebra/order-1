@@ -1,16 +1,16 @@
 package com.mrwind.order.entity;
 
-import java.io.Serializable;
-
 import com.alibaba.fastjson.annotation.JSONField;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
 
-public class User implements Serializable{
+import java.io.Serializable;
+
+public class UserLocation implements Serializable{
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -413821825072396537L;
 	@Id
@@ -23,24 +23,21 @@ public class User implements Serializable{
 	private Double lat;
 	private String avatar;
 	private Fence fence;
+
 	@GeoSpatialIndexed
 	@JSONField(serialize = false)
 	protected Double[] location;
 
-
-	public User() {
+	public UserLocation() {
 	}
 
-	public User(String id, String name, String tel, String address, Double lng, Double lat) {
+	public UserLocation(String id, String name, String tel, String address, Double lng, Double lat) {
 		this.id = id;
 		this.name = name;
 		this.tel = tel;
 		this.address = address;
 		this.lng = lng;
 		this.lat = lat;
-		if(this.lat != null && this.lng != null){
-			this.location = new Double[]{this.lng, this.lat};
-		}
 	}
 
 	public String getName() {

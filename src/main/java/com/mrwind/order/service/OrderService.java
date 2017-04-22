@@ -18,6 +18,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.geo.Point;
 import org.springframework.stereotype.Service;
 
 import com.alibaba.fastjson.JSONArray;
@@ -481,8 +482,15 @@ public class OrderService {
 		return expressDao.judgeBind(tel, shopId) != null;
 	}
 
-	public JSONObject findExpress(String userId, String str, Integer pageNo, Integer pageSize){
-		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize);
+	public JSONObject findExpress(String userId, String str, Integer pageNo, Integer pageSize, Double lat, Double lng, Double radius){
+
+		Point point = null;
+		if(!lat.equals(0.0) && !lng.equals(0.0)){
+			point = new Point(lat, lng);
+			radius = radius / (1000 * 111.0);
+		}
+
+		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize, point, radius);
 		List<Express> expressList =  expresses.getContent();
 		List<Goods> goodsList = new ArrayList<>();
 
