@@ -733,6 +733,9 @@ public class ExpressService {
 			User user = new User(claimOrder.getExecutorUserId(),  name, claimOrder.getTel(), claimOrder.getAddress(), claimOrder.getLng(), claimOrder.getLat());
 			for(String expressNo : expressNos){
 				Express express = expressRepository.findFirstByExpressNo(expressNo);
+				if(express == null){
+					continue;
+				}
 				String status = express.getStatus();
 				if(App.ORDER_BEGIN.equals(status)){
 					express.setStatus(App.ORDER_SENDING);
