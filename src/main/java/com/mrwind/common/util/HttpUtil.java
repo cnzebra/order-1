@@ -10,6 +10,8 @@ import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 
+import com.mrwind.common.request.FenceBo;
+import com.mrwind.order.entity.Fence;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 
@@ -75,6 +77,32 @@ public class HttpUtil {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * 根据经纬度获取围栏
+	 * @param lat
+	 * @param lng
+     * @return
+     */
+	public static FenceBo getFence(Double lat, Double lng) {
+		FenceBo fenceBo = null;
+		Client client = Client.create();
+		WebResource webResource = client.resource(
+				ConfigConstant.API_JAVA_HOST + "WindGis/fence/point_within?lng=" + lng + "&lat=" + lat );
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					if(StringUtils.isNotBlank(parseObject.getString("content"))){
+						fenceBo = JSONObject.parseObject(parseObject.getString("content"), FenceBo.class);
+					}
+				}
+			}
+		}
+		return fenceBo;
 	}
 
 	/**

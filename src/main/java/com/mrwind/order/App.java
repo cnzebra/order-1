@@ -18,7 +18,9 @@ public class App
     public static String ORDER_BEGIN="begin";   //已发单
     
     public static String ORDER_SENDING="sending";  //配送中
-    
+
+    public static String ORDER_TRANSFER="TRANSFERING";  //转派中
+
     public static String ORDER_END="end";  //已经结束
     
     public static String ORDER_WAIT_COMPLETE="wait_complete";

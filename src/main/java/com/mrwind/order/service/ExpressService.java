@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.mrwind.common.request.ClaimOrder;
+import com.mrwind.common.request.FenceBo;
+import com.mrwind.common.request.Man;
 import com.mrwind.order.entity.*;
 import com.mrwind.order.entity.vo.ResponseExpress;
 import org.apache.commons.lang3.StringUtils;
@@ -729,15 +731,25 @@ public class ExpressService {
 		ClaimOrder claimOrder = JSONObject.toJavaObject(jsonObject, ClaimOrder.class);
 		List<String> expressNos = claimOrder.getExpressNo();
 		if(expressNos != null){
+			String executorUserId = claimOrder.getExecutorUserId();
 			String name = claimOrder.getName();
-			User user = new User(claimOrder.getExecutorUserId(),  name, claimOrder.getTel(), claimOrder.getAddress(), claimOrder.getLng(), claimOrder.getLat());
+			User user = new User(executorUserId,  name, claimOrder.getTel(), claimOrder.getAddress(), claimOrder.getLng(), claimOrder.getLat());
 			for(String expressNo : expressNos){
 				Express express = expressRepository.findFirstByExpressNo(expressNo);
 				if(express == null){
 					continue;
 				}
 				String status = express.getStatus();
-				if(App.ORDER_BEGIN.equals(status)){
+				User receiver = express.getReceiver();
+				boolean isTransfering = false;
+				if(receiver != null){
+					Double lat = receiver.getLat();
+					Double lng = receiver.getLng();
+					isTransfering = isTransfer(lat, lng, executorUserId);
+				}
+				if(isTransfering){
+					express.setStatus(App.ORDER_TRANSFER);
+				}else if(App.ORDER_BEGIN.equals(status)){
 					express.setStatus(App.ORDER_SENDING);
 				}
 				List<Line> lines = express.getLines();
@@ -753,6 +765,32 @@ public class ExpressService {
 			}
 
 		}
+	}
+
+	/**
+	 * 执行人是否在围栏之内
+	 * @param lat
+	 * @param lng
+	 * @param executorUserId
+     * @return
+     */
+	private boolean isTransfer(Double lat, Double lng, String executorUserId){
+		boolean isTransfering = false;
+		if(lng != null && !lng.equals(0.0) && lat != null && !lat.equals(0.0)){
+			FenceBo fenceBo = HttpUtil.getFence(lat, lng);
+			if(fenceBo != null){
+				List<Man> manList = fenceBo.getMans();
+				if(manList != null){
+					for(Man man : manList){
+						if(man.getUserId().equals(executorUserId)){
+							isTransfering = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return isTransfering;
 	}
 
 	public void cancelExpress(String expressNo) {
