@@ -508,6 +508,21 @@ public class ExpressDao extends BaseDao {
 		return new PageImpl<>(mongoTemplate.find(query, Express.class), page, count);
 	}
 
+	public Page<Express> findExpress(String userId, Integer pageNo, Integer pageSize){
+
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageNo, pageSize, sort);
+		Criteria operator = new Criteria();
+		Query query = new Query();
+		query.fields().slice("lines", -1);
+		query.addCriteria(Criteria.where("lines.0.executorUser._id").is(userId));
+		query.addCriteria(Criteria.where("status").nin(App.ORDER_COMPLETE, App.ORDER_WAIT_COMPLETE));
+		query.addCriteria(operator);
+		query.with(page);
+		long count = mongoTemplate.count(query, Express.class);
+		return new PageImpl<>(mongoTemplate.find(query, Express.class), page, count);
+	}
+
 
 	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress,Double lat,Double lng) {
 		// TODO Auto-generated method stub

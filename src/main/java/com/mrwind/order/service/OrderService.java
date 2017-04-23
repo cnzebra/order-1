@@ -492,8 +492,33 @@ public class OrderService {
 
 		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize, point, radius);
 		List<Express> expressList =  expresses.getContent();
-		List<Goods> goodsList = new ArrayList<>();
+		List<Goods> goodsList = updateGoodsList(expressList);
 
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("goodsList", goodsList);
+		jsonObject.put("pageSize", expresses.getSize());
+		jsonObject.put("pageNo", expresses.getNumber());
+		jsonObject.put("totalElements", expresses.getTotalElements());
+
+		return  jsonObject;
+	}
+
+	public JSONObject getMyExpress(String userId, Integer pageNo, Integer pageSize){
+		Page<Express> expresses = expressDao.findExpress( userId,  pageNo, pageSize);
+		List<Express> expressList =  expresses.getContent();
+		List<Goods> goodsList = updateGoodsList(expressList);
+
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put("goodsList", goodsList);
+		jsonObject.put("pageSize", expresses.getSize());
+		jsonObject.put("pageNo", expresses.getNumber());
+		jsonObject.put("totalElements", expresses.getTotalElements());
+
+		return  jsonObject;
+	}
+
+	private List<Goods> updateGoodsList(List<Express> expressList){
+		List<Goods> goodsList = new ArrayList<>();
 		if(expressList != null){
 			String preFix = "送达：";
 			String sufFix = "地址见面单";
@@ -512,18 +537,11 @@ public class OrderService {
 						address = preFix + sufFix;
 					}
 					goods.setAddress(address);
+					goods.setBindExpressNo(express.getBindExpressNo());
 					goodsList.add(goods);
 				}
-
 			}
-
 		}
-		JSONObject jsonObject = new JSONObject();
-		jsonObject.put("goodsList", goodsList);
-		jsonObject.put("pageSize", expresses.getSize());
-		jsonObject.put("pageNo", expresses.getNumber());
-		jsonObject.put("totalElements", expresses.getTotalElements());
-
-		return  jsonObject;
+		return goodsList;
 	}
 }

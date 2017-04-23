@@ -7,19 +7,17 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import com.alibaba.fastjson.JSON;
 import com.mrwind.common.request.ClaimOrder;
+import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.QueryDateUtils;
 import com.mrwind.order.entity.vo.ResponseExpress;
+import com.mrwind.order.service.OrderService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.alibaba.fastjson.JSONObject;
 import com.mrwind.common.bean.Result;
@@ -39,6 +37,9 @@ public class AppExpressController {
 
     @Autowired
     ExpressService expressService;
+
+    @Autowired
+    OrderService orderService;
 
     @Autowired
     ExpressBindService expressBindService;
@@ -158,4 +159,12 @@ public class AppExpressController {
         return expressService.sendCode(expressNo);
     }
 
+    @ResponseBody
+    @RequestMapping(value = "/scan/v2", method = RequestMethod.GET)
+    public Result scanV2(@RequestParam("userId") String userId,
+                       @RequestParam(value = "lat",required = false,defaultValue = "0") double lat,
+                       @RequestParam(value = "lng",required = false,defaultValue = "0") double lng) {
+
+        return Result.success(orderService.getMyExpress( userId, 0, 50));
+    }
 }

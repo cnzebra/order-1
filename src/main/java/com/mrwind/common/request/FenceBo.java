@@ -13,7 +13,6 @@ public class FenceBo {
 	private String id;
 	private String name;
 	private List<Man> mans;		//围栏下的快递员们
-	private Node node;			//站点的信息
 	@JSONField(name = "update_time")
 	private Date updateTime;
 	@JSONField(name = "create_time")
@@ -23,6 +22,7 @@ public class FenceBo {
 	private String illustration;//描述
 
 	private double distance;//距离
+	private String nodeId;//站点id
 	
 	public String getId() {
 		return id;
@@ -41,12 +41,6 @@ public class FenceBo {
 	}
 	public void setMans(List<Man> mans) {
 		this.mans = mans;
-	}
-	public Node getNode() {
-		return node;
-	}
-	public void setNode(Node node) {
-		this.node = node;
 	}
 	public Date getUpdateTime() {
 		return updateTime;
@@ -106,5 +100,13 @@ public class FenceBo {
 
 	public void setIllustration(String illustration) {
 		this.illustration = illustration;
+	}
+
+	public String getNodeId() {
+		return nodeId;
+	}
+
+	public void setNodeId(String nodeId) {
+		this.nodeId = nodeId;
 	}
 }

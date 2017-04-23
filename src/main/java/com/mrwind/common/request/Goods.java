@@ -10,6 +10,7 @@ public class Goods {
     private String address;
     private String status;
     private String expressNo;
+    private String bindExpressNo;
 
     public Goods() {
     }
@@ -52,5 +53,13 @@ public class Goods {
 
     public void setExpressNo(String expressNo) {
         this.expressNo = expressNo;
+    }
+
+    public String getBindExpressNo() {
+        return bindExpressNo;
+    }
+
+    public void setBindExpressNo(String bindExpressNo) {
+        this.bindExpressNo = bindExpressNo;
     }
 }
