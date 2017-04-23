@@ -25,6 +25,10 @@ public class CommentService {
 		return commentRepository.findAll(pageRequest).getContent();
 	}
 
+	public List<Comment> findAllByExpressNo(String expressNo){
+		return commentRepository.findAllByExpressNo(expressNo);
+	}
+
 
 	public Comment insertCommnet(Comment comment) {
 		String expressNo = comment.getExpressNo();

@@ -16,6 +16,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import com.mrwind.common.request.ClaimOrder;
+import com.mrwind.order.entity.*;
+import com.mrwind.order.entity.vo.ResponseExpress;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,14 +39,6 @@ import com.mrwind.common.util.HttpUtil;
 import com.mrwind.common.util.Md5Util;
 import com.mrwind.order.App;
 import com.mrwind.order.dao.ExpressDao;
-import com.mrwind.order.entity.Address;
-import com.mrwind.order.entity.Category;
-import com.mrwind.order.entity.Express;
-import com.mrwind.order.entity.ExpressCodeLog;
-import com.mrwind.order.entity.Line;
-import com.mrwind.order.entity.Order;
-import com.mrwind.order.entity.ShopUser;
-import com.mrwind.order.entity.User;
 import com.mrwind.order.entity.vo.MapExpressVO;
 import com.mrwind.order.entity.vo.ShopExpressVO;
 import com.mrwind.order.repositories.ExpressCodeLogRepository;
@@ -66,6 +60,9 @@ public class ExpressService {
 
 	@Autowired
 	ExpressBindService expressBindService;
+
+	@Autowired
+	CommentService commentService;
 
 	@Autowired
 	ExpressDao expressDao;
@@ -645,7 +642,35 @@ public class ExpressService {
 			String day, Date dueTime, Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
-		return expressDao.findExpress(param, shopId, fenceName, mode, status, day, dueTime, page);
+		List<Express> expresses = expressDao.findExpress(param, shopId, fenceName, mode, status, day, dueTime, page);
+		return expresses;
+	}
+
+	public List<ResponseExpress> selectApp(String param, String shopId,  Date dueTime, Integer pageIndex, Integer pageSize) {
+		Sort sort = new Sort(Direction.DESC, "createTime");
+		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
+		List<Express> expresses = expressDao.findAppExpress(param, shopId, dueTime, page);
+		List<ResponseExpress> result = new ArrayList<>();
+		if(expresses != null){
+			for(Express express : expresses){
+				String expressNo = express.getExpressNo();
+				ResponseExpress responseExpress = new ResponseExpress(express.getDueTime(), expressNo,express.getBindExpressNo(),
+						express.getStatus(), express.getShop(), express.getSender(), express.getReceiver(), express.getCategory());
+				List<ResponseCommet> commentList = new ArrayList<>();
+				List<Comment> comments = commentService.findAllByExpressNo(expressNo);
+				if(comments != null){
+					for(Comment comment : comments){
+						ResponseCommet responseCommet = new ResponseCommet(comment.getTitle(), comment.getContent(), comment.getStar());
+						commentList.add(responseCommet);
+					}
+				}
+				if(commentList.size() > 0){
+					responseExpress.setCommetList(commentList);
+				}
+				result.add(responseExpress);
+			}
+		}
+		return result;
 	}
 
 	public void modifiLine(String expressNo, List<Line> list) {

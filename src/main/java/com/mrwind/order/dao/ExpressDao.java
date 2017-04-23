@@ -143,6 +143,41 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.find(query, Express.class);
 	}
 
+
+	public List<Express> findAppExpress(String param, String shopId, Date time, PageRequest page) {
+		Criteria operator = new Criteria();
+
+		if (StringUtils.isNotBlank(param)) {
+			operator.orOperator(
+					Criteria.where("bindExpressNo").regex(param),
+					Criteria.where("shop.name").regex(param),
+					Criteria.where("expressNo").regex(param),
+					Criteria.where("shop.tel").regex(param),
+					Criteria.where("shop.address").regex(param)
+					);
+		}
+		List<Criteria> list = new ArrayList<>();
+		if (StringUtils.isNoneBlank(shopId)) {
+			if (ObjectId.isValid(shopId)) {
+				list.add(Criteria.where("shop.id").is(new ObjectId(shopId)));
+			} else {
+				list.add(Criteria.where("shop.id").is(shopId));
+			}
+		}
+		if (time != null) {
+			list.add(Criteria.where("dueTime").gte(time).lte(DateUtils.addDays(time, 1)));
+		}
+
+		if (list.size() > 0) {
+			Criteria[] criteria = new Criteria[list.size()];
+			operator.andOperator(list.toArray(criteria));
+		}
+
+		Query query = Query.query(operator);
+		query.with(page);
+		return mongoTemplate.find(query, Express.class);
+	}
+
 	public int updateStatus(String expressNo, String status, String subStatus) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("status", status).set("subStatus", subStatus);

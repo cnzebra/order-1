@@ -1,12 +1,15 @@
 package com.mrwind.order.controller.app;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import com.mrwind.common.request.ClaimOrder;
+import com.mrwind.common.util.QueryDateUtils;
+import com.mrwind.order.entity.vo.ResponseExpress;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -127,6 +130,19 @@ public class AppExpressController {
         }
         List<Express> selectAll = expressService.selectAll(param, shopId, fenceName, mode, status, day, dueTime2, pageIndex - 1,
                 pageSize);
+        return Result.success(selectAll);
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/select/app/{pageIndex}_{pageSize}", method = RequestMethod.GET)
+    public Result selectParamAll(String param, String shopId, String time,
+                                 @PathVariable("pageIndex") Integer pageIndex, @PathVariable("pageSize") Integer pageSize) throws ParseException {
+        Date timeDate = null;
+        if (StringUtils.isNotBlank(time)) {
+            timeDate = DateUtils.parseDate(time, "yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd'T'HH:mm:ssZ");
+
+        }
+        List<ResponseExpress> selectAll = expressService.selectApp(param, shopId,  timeDate,  pageIndex - 1, pageSize);
         return Result.success(selectAll);
     }
 
