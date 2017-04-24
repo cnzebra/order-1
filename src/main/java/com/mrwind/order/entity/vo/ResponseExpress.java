@@ -22,6 +22,7 @@ public class ResponseExpress {
     private User receiver;
     private Category category;
     private List<ResponseCommet> commetList;
+    private Date updateTime;
 
     public ResponseExpress() {
     }
@@ -107,5 +108,13 @@ public class ResponseExpress {
 
     public void setBindExpressNo(String bindExpressNo) {
         this.bindExpressNo = bindExpressNo;
+    }
+
+    public Date getUpdateTime() {
+        return updateTime;
+    }
+
+    public void setUpdateTime(Date updateTime) {
+        this.updateTime = updateTime;
     }
 }

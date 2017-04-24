@@ -4,6 +4,7 @@ package com.mrwind.order;
  * Created by admin on 16/10/24.
  */
 public class WechatConfig {
+
     public static  String appId = "wxeda2f6550280ac63";
     //微信统一下单地址
      public static String wx_order= "https://api.mch.weixin.qq.com/pay/unifiedorder";

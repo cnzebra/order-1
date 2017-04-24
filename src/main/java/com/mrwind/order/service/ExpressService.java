@@ -669,6 +669,7 @@ public class ExpressService {
 				if(commentList.size() > 0){
 					responseExpress.setCommetList(commentList);
 				}
+				responseExpress.setUpdateTime(express.getUpdateTime());
 				result.add(responseExpress);
 			}
 		}
