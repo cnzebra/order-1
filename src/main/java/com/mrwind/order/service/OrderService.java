@@ -540,6 +540,7 @@ public class OrderService {
 					goods.setLat(receiver.getLat());
 					goods.setLng(receiver.getLng());
 					goods.setBindExpressNo(express.getBindExpressNo());
+					goods.setShopId(express.getShop().getId());
 					goodsList.add(goods);
 				}
 			}

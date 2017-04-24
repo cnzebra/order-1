@@ -13,6 +13,7 @@ public class Goods {
     private String bindExpressNo;
     private Double lat;
     private Double lng;
+    private String shopId;
 
     public Goods() {
     }
@@ -79,5 +80,13 @@ public class Goods {
 
     public void setLng(Double lng) {
         this.lng = lng;
+    }
+
+    public String getShopId() {
+        return shopId;
+    }
+
+    public void setShopId(String shopId) {
+        this.shopId = shopId;
     }
 }
