@@ -537,6 +537,8 @@ public class OrderService {
 						address = preFix + sufFix;
 					}
 					goods.setAddress(address);
+					goods.setLat(receiver.getLat());
+					goods.setLng(receiver.getLng());
 					goods.setBindExpressNo(express.getBindExpressNo());
 					goodsList.add(goods);
 				}

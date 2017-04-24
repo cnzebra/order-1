@@ -11,6 +11,8 @@ public class Goods {
     private String status;
     private String expressNo;
     private String bindExpressNo;
+    private Double lat;
+    private Double lng;
 
     public Goods() {
     }
@@ -61,5 +63,21 @@ public class Goods {
 
     public void setBindExpressNo(String bindExpressNo) {
         this.bindExpressNo = bindExpressNo;
+    }
+
+    public Double getLat() {
+        return lat;
+    }
+
+    public void setLat(Double lat) {
+        this.lat = lat;
+    }
+
+    public Double getLng() {
+        return lng;
+    }
+
+    public void setLng(Double lng) {
+        this.lng = lng;
     }
 }

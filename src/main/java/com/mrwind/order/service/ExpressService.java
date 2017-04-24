@@ -802,9 +802,9 @@ public class ExpressService {
 		tmp.put("sendLog", false);
 		tmp.put("des", "取消订单");
 		json.add(tmp);
-		HttpUtil.compileExpressMission(json);
+//		HttpUtil.compileExpressMission(json);
 		expressDao.updateExpressBindNo(expressNo, "");
-		expressDao.updateStatus(expressNo, App.ORDER_BEGIN, App.ORDER_PRE_CREATED);
+		expressDao.updateStatus(expressNo, App.ORDER_CANCEL, App.ORDER_CANCEL);
 	}
 
 	public JSONObject completeExpress(List<String> list, JSONObject userInfo) {
