@@ -150,10 +150,10 @@ public class ExpressDao extends BaseDao {
 		if (StringUtils.isNotBlank(param)) {
 			operator.orOperator(
 					Criteria.where("bindExpressNo").regex(param),
-					Criteria.where("shop.name").regex(param),
+					Criteria.where("receiver.name").regex(param),
 					Criteria.where("expressNo").regex(param),
-					Criteria.where("shop.tel").regex(param),
-					Criteria.where("shop.address").regex(param)
+					Criteria.where("receiver.tel").regex(param),
+					Criteria.where("receiver.address").regex(param)
 					);
 		}
 		List<Criteria> list = new ArrayList<>();
