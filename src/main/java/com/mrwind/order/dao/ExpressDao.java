@@ -370,7 +370,7 @@ public class ExpressDao extends BaseDao {
 			query.addCriteria(Criteria.where("dueTime").gte(date).lt(DateUtils.addDays(date, 1)));
 		}
 		if (StringUtils.isNotBlank(status)) {
-			if("notPrint".equals(status)){
+			if("noPrint".equals(status)){
 				query.addCriteria(Criteria.where("printed").is(false));
 			} else if("print".equals(status)){
 				query.addCriteria(Criteria.where("printed").is(true));
