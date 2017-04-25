@@ -485,7 +485,7 @@ public class ExpressDao extends BaseDao {
 	 * receiver的name和tel匹配查询
 	 *
      */
-	public Page<Express> findExpress(String userId, String str, Integer pageNo, Integer pageSize, Point point, Double radius){
+	public Page<Express> findExpress(String userId, String str, Integer pageNo, Integer pageSize, Point point, Double radius, String fliterStatus){
 
 		Sort sort = new Sort(Direction.DESC, "createTime");
 		PageRequest page = new PageRequest(pageNo, pageSize, sort);
@@ -493,6 +493,9 @@ public class ExpressDao extends BaseDao {
 		Query query = new Query();
 		query.fields().slice("lines", -1);
 		query.addCriteria(Criteria.where("lines.0.executorUser._id").is(userId));
+		if(StringUtils.isNotBlank(fliterStatus)){
+			query.addCriteria(Criteria.where("status").nin(fliterStatus));
+		}
 		if(StringUtils.isNotBlank(str)){
 			operator.orOperator(
 					Criteria.where("receiver.tel").regex(str),
@@ -501,6 +504,7 @@ public class ExpressDao extends BaseDao {
 		if(point != null){
 			query.addCriteria(Criteria.where("receiver.location").near(point).maxDistance(radius));
 		}
+
 
 		query.addCriteria(operator);
 		query.with(page);

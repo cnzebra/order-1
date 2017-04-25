@@ -238,13 +238,14 @@ public class WebOrderController {
     @RequestMapping(value = "/getMyGoods", method = RequestMethod.GET)
     public Result testFind(@RequestParam(value = "userId") String userId,
                                @RequestParam(value = "condition", defaultValue = "") String condition,
+                               @RequestParam(value = "fliterStatus", defaultValue = "cancel") String fliterStatus,
                                @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
                                @RequestParam(value = "lat", defaultValue = "0") Double lat,
                                @RequestParam(value = "lng", defaultValue = "0") Double lng,
                                @RequestParam(value = "radius", defaultValue = "500") Double radius,
                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
 
-        JSONObject jsonObject = orderService.findExpress( userId, condition, pageNo - 1, pageSize, lat, lng, radius);
+        JSONObject jsonObject = orderService.findExpress( userId, condition, pageNo - 1, pageSize, lat, lng, radius, fliterStatus);
         return Result.success(jsonObject);
     }
 

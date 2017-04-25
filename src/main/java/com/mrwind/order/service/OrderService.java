@@ -482,7 +482,7 @@ public class OrderService {
 		return expressDao.judgeBind(tel, shopId) != null;
 	}
 
-	public JSONObject findExpress(String userId, String str, Integer pageNo, Integer pageSize, Double lat, Double lng, Double radius){
+	public JSONObject findExpress(String userId, String str, Integer pageNo, Integer pageSize, Double lat, Double lng, Double radius, String fliterStatus){
 
 		Point point = null;
 		if(!lat.equals(0.0) && !lng.equals(0.0)){
@@ -490,7 +490,7 @@ public class OrderService {
 			radius = radius / (1000 * 111.0);
 		}
 
-		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize, point, radius);
+		Page<Express> expresses = expressDao.findExpress(userId, str, pageNo, pageSize, point, radius, fliterStatus);
 		List<Express> expressList =  expresses.getContent();
 		List<Goods> goodsList = updateGoodsList(expressList);
 
