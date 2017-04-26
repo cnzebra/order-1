@@ -71,6 +71,7 @@ public class ExpressDao extends BaseDao {
 	public int updateLines(String expressNo, List<Line> list) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("lines", list);
+		update.set("excutorId", list.get(list.size() - 1).getExecutorUser().getId());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -78,6 +79,7 @@ public class ExpressDao extends BaseDao {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = new Update();
 		update.pushAll("lines", list.toArray());
+		update.set("excutorId", list.get(list.size() - 1).getExecutorUser().getId());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -280,7 +282,10 @@ public class ExpressDao extends BaseDao {
 				}
 
 				if (express.getLines() != null) {
-					update.set("lines", express.getLines());
+					List<Line> lines = express.getLines();
+					update.set("lines", lines);
+					update.set("excutorId", lines.get(lines.size() - 1).getExecutorUser().getId());
+
 				}
 
 				if (express.getReceiver() != null) {
@@ -327,6 +332,7 @@ public class ExpressDao extends BaseDao {
 	public int updateLines(String expressNo, List<Line> newList, Integer currentLine) {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("lines", newList).set("currentLine", currentLine);
+		update.set("excutorId", newList.get(newList.size() - 1).getExecutorUser().getId());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -492,7 +498,8 @@ public class ExpressDao extends BaseDao {
 		Criteria operator = new Criteria();
 		Query query = new Query();
 		query.fields().slice("lines", -1);
-		query.addCriteria(Criteria.where("lines.0.executorUser._id").is(userId));
+
+		query.addCriteria(Criteria.where("excutorId").is(userId));
 		if(StringUtils.isNotBlank(fliterStatus)){
 			query.addCriteria(Criteria.where("status").nin(fliterStatus));
 		}
@@ -519,7 +526,7 @@ public class ExpressDao extends BaseDao {
 		Criteria operator = new Criteria();
 		Query query = new Query();
 		query.fields().slice("lines", -1);
-		query.addCriteria(Criteria.where("lines.0.executorUser._id").is(userId));
+		query.addCriteria(Criteria.where("excutorId").is(userId));
 		query.addCriteria(Criteria.where("status").nin(App.ORDER_COMPLETE, App.ORDER_WAIT_COMPLETE));
 		query.addCriteria(operator);
 		query.with(page);

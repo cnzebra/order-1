@@ -48,6 +48,7 @@ public class Express extends OrderBase {
 	private String isPush = "NO_PUSH";//NO_PUSH | PUSH | LOOK
 	private boolean isDelete = false;
 	private String origin = "批量导入";
+	private String excutorId;
 
 	public List<Line> getLines() {
 		return lines;
@@ -203,5 +204,13 @@ public class Express extends OrderBase {
 
 	public void setDelete(boolean delete) {
 		isDelete = delete;
+	}
+
+	public String getExcutorId() {
+		return excutorId;
+	}
+
+	public void setExcutorId(String excutorId) {
+		this.excutorId = excutorId;
 	}
 }
