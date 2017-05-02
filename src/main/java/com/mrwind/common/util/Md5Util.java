@@ -1,5 +1,10 @@
 package com.mrwind.common.util;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+import org.apache.http.client.fluent.Request;
+import java.net.URLEncoder;
 import java.security.MessageDigest;
 
 /**
@@ -31,6 +36,18 @@ public class Md5Util {
         }
         return hexValue.toString();
 
+    }
+
+    public static String getShortUrl(String long_url) {
+
+
+       return HttpUtil.short_url("http://api.t.sina.com.cn/short_url/shorten.json?source=2815391962&url_long="
+                + URLEncoder.encode(long_url));
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getShortUrl("http://dev.wechat.123feng.com:10060/#/summary/1"));
+//        generateShortUrl("http://dev.fh.123feng.com:10020/");
     }
 
 }

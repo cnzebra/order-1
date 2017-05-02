@@ -883,9 +883,9 @@ public class ExpressService {
 			HttpUtil.sendSMSToUserTel(fromStr, express.getSender().getTel());
 		}
 		if (express.getReceiver() != null) {
+			String url = HttpUtil.short_url(API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY));
 			String toStr = "您的快递" + expressNo + "由风先生【" + user.getName() + user.getTel() + "】已经在【" + nowDate
-					+ "】送达。签收方式为【" + endType + "】。【" + API_WECHAT_HOST
-					+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+					+ "】送达。签收方式为【" + endType + "】。【 " + url + "】";
 			// + "#/phone/orderTrace/"+expressNo;
 			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 		}
@@ -1059,8 +1059,8 @@ public class ExpressService {
 		if(shopUser != null && StringUtils.isNotBlank(shopUser.getName())){
 			shopName = "您来自" + shopUser.getName();
 		}
-		String toStr = "风先生极速物流已将" + shopName +"的快件送达，点击链接请对我们的服务进行评价【 " + API_WECHAT_HOST
-				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + " 】";
+		String url = HttpUtil.short_url(API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY));
+		String toStr = "风先生极速物流已将" + shopName +"的快件送达，点击链接请对我们的服务进行评价【 " + url + " 】";
 
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}

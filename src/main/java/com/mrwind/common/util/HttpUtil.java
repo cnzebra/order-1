@@ -1,6 +1,7 @@
 package com.mrwind.common.util;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,24 @@ public class HttpUtil {
 			}
 		}
 		return false;
+	}
+
+	public static String short_url(String long_url) {
+		String result  = long_url;
+		String  content = "http://api.t.sina.com.cn/short_url/shorten.json?source=2815391962&url_long="
+				+ URLEncoder.encode(long_url);
+		Client client = Client.create();
+		WebResource webResource = client.resource(content);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_JSON_TYPE).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONArray jsonArray = JSONArray.parseArray(textEntity);
+				JSONObject jo = jsonArray.getJSONObject(0);
+				result = jo.getString("url_short");
+			}
+		}
+		return result;
 	}
 
 	/**

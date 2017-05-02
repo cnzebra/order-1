@@ -268,6 +268,11 @@
 			<artifactId>wind-push-client</artifactId>
 			<version>1.0.2.${push.name}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>4.5.2</version>
+		</dependency>
 
 	</dependencies>
 
