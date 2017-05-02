@@ -46,6 +46,13 @@ public class ExpressDao extends BaseDao {
 		return mongoTemplate.find(query, Express.class);
 	}
 
+	public List<Express> findByStatusAndCreateTime(String status, Date operaTime) {
+		Query query = new Query();
+		query.addCriteria(Criteria.where("status").is(status));
+		query.addCriteria(Criteria.where("operaTime").lt(operaTime));
+		return mongoTemplate.find(query, Express.class);
+	}
+
 	public List<Express> findRelationship(String userId) {
 		Query query = Query.query(Criteria.where("lines.executorUser._id").is(userId));
 		query.with(new Sort(Sort.Direction.DESC, "createTime"));
@@ -72,6 +79,7 @@ public class ExpressDao extends BaseDao {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("lines", list);
 		update.set("excutorId", list.get(list.size() - 1).getExecutorUser().getId());
+		update.set("operaTime", new Date());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -80,6 +88,7 @@ public class ExpressDao extends BaseDao {
 		Update update = new Update();
 		update.pushAll("lines", list.toArray());
 		update.set("excutorId", list.get(list.size() - 1).getExecutorUser().getId());
+		update.set("operaTime", new Date());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 
@@ -285,6 +294,7 @@ public class ExpressDao extends BaseDao {
 					List<Line> lines = express.getLines();
 					update.set("lines", lines);
 					update.set("excutorId", lines.get(lines.size() - 1).getExecutorUser().getId());
+					update.set("operaTime", new Date());
 
 				}
 
@@ -333,6 +343,7 @@ public class ExpressDao extends BaseDao {
 		Query query = Query.query(Criteria.where("expressNo").is(expressNo));
 		Update update = Update.update("lines", newList).set("currentLine", currentLine);
 		update.set("excutorId", newList.get(newList.size() - 1).getExecutorUser().getId());
+		update.set("operaTime", new Date());
 		return mongoTemplate.updateFirst(query, update, Express.class).getN();
 	}
 

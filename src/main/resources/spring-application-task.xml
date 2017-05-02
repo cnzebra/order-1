@@ -18,6 +18,9 @@
 			cron="0 0/1 *  * * ? " />
 		<task:scheduled ref="taskService" method="generateBill"
 			cron="5 0 0 * * ?" />
+
+		<task:scheduled ref="taskService" method="updateOrderStatus"
+			cron="0 0/5 * * * ?" />
 		<!--<task:scheduled ref="taskService" method="sendBill"-->
 			<!--cron="0 0 9 * * ? " />-->
 		<!--<task:scheduled ref="taskService" method="sendTodayDetail"-->

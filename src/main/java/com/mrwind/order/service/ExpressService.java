@@ -236,7 +236,7 @@ public class ExpressService {
 		express.setExpressNo(pk.toString());
 
 		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
-			express.setStatus(App.ORDER_SENDING);
+			express.setStatus(App.ORDER_PICK);
 		} else {
 			express.setStatus(App.ORDER_BEGIN);
 		}
@@ -268,7 +268,7 @@ public class ExpressService {
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setStatus(App.ORDER_SENDING);
+		express.setStatus(App.ORDER_PICK);
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(DateUtils.getDateInMinute());
@@ -738,17 +738,21 @@ public class ExpressService {
 					continue;
 				}
 				String status = express.getStatus();
-				User receiver = express.getReceiver();
-				boolean isTransfering = false;
-				if(receiver != null){
-					Double lat = receiver.getLat();
-					Double lng = receiver.getLng();
-					isTransfering = isTransfer(lat, lng, executorUserId);
-				}
-				if(isTransfering){
-					express.setStatus(App.ORDER_TRANSFER);
+
+				if(App.ORDER_SENDING.equals(status)){
+					User receiver = express.getReceiver();
+					boolean isTransfering = false;
+					if(receiver != null){
+						Double lat = receiver.getLat();
+						Double lng = receiver.getLng();
+						isTransfering = isTransfer(lat, lng, executorUserId);
+					}
+					if(isTransfering){
+						express.setStatus(App.ORDER_TRANSFER);
+					}
+
 				}else if(App.ORDER_BEGIN.equals(status)){
-					express.setStatus(App.ORDER_SENDING);
+					express.setStatus(App.ORDER_PICK);
 				}
 				List<Line> lines = express.getLines();
 				Line line = new Line();

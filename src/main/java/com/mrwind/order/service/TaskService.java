@@ -13,6 +13,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.mrwind.common.request.FenceBo;
+import com.mrwind.common.request.Man;
+import com.mrwind.common.util.QueryDateUtils;
+import com.mrwind.order.entity.User;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -366,6 +370,53 @@ public class TaskService {
 		String jsonString = JSONObject.toJSONString(map);
 		redisCache.set(App.RDKEY_AFTER_ORDER, 3600 * 4, jsonString);
 		System.out.println("sendWarning");
+	}
+
+	@Deprecated
+	@QuartzSync(key="updateOrderStatus")
+	public void updateOrderStatus() {
+		Date date  = new Date();
+		Date queryDate  = QueryDateUtils.changeMins(date, -5);
+		List<Express> expressList = expressDao.findByStatusAndCreateTime(App.ORDER_PICK, queryDate);
+		if(expressList != null){
+			for(Express express : expressList){
+				String status = App.ORDER_SENDING;
+				String excutorId = express.getExcutorId();
+				User receiver = express.getReceiver();
+				if(receiver != null){
+					boolean isTransfering = false;
+					if(receiver != null){
+						Double lat = receiver.getLat();
+						Double lng = receiver.getLng();
+						isTransfering = isTransfer(lat, lng, excutorId);
+					}
+					if(isTransfering){
+						status = App.ORDER_TRANSFER;
+					}
+				}
+				expressDao.updateStatus(express.getExpressNo(), status);
+			}
+		}
+
+	}
+
+	private boolean isTransfer(Double lat, Double lng, String executorUserId){
+		boolean isTransfering = false;
+		if(lng != null && !lng.equals(0.0) && lat != null && !lat.equals(0.0)){
+			FenceBo fenceBo = HttpUtil.getFence(lat, lng);
+			if(fenceBo != null){
+				List<Man> manList = fenceBo.getMans();
+				if(manList != null){
+					for(Man man : manList){
+						if(man.getUserId().equals(executorUserId)){
+							isTransfering = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return isTransfering;
 	}
 
 	@Deprecated

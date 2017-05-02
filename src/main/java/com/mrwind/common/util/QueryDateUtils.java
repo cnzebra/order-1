@@ -90,7 +90,7 @@ public class QueryDateUtils {
     public static Date changeMins(Date date, int min) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-        calendar.add(Calendar.MINUTE, +min);
+        calendar.add(Calendar.MINUTE, min);
         return calendar.getTime();
 
     }
