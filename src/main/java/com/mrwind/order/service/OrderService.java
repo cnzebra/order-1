@@ -184,10 +184,7 @@ public class OrderService {
 				return JSONFactory.getErrorJSON("订单当前状态无法支付，订单号为:" + next.getExpressNo()
 						+ (next.getBindExpressNo() == null ? "。" : ("，绑定单号为:" + next.getBindExpressNo())));
 			}
-			// if(redisCache.hget(App.RDKEY_PAY_ORDER,
-			// next.getExpressNo().toString())!=null){ 改为更新交易号的方式
-			// return JSONFactory.getErrorJSON("订单正在支付，无法重复发起支付!");
-			// }
+
 			if (next.getShop() != null) {
 				if (shopId.equals("")) {
 					shopId = next.getShop().getId();
@@ -238,6 +235,23 @@ public class OrderService {
 		return successJSON;
 	}
 
+
+	public synchronized void payOne(Express express){
+		String tranNo = UUIDUtils.getUUID();
+		OrderReceipt orderReceipt = new OrderReceipt(express);
+		orderReceipt.setTranNo(tranNo);
+		orderReceiptRepository.save(orderReceipt);
+		JSONObject json = new JSONObject();
+		json.put("userId",express.getShop().getId());
+		json.put("tranNo",tranNo);
+		json.put("amount",express.getCategory().getTotalPrice());
+		boolean result = HttpUtil.balancePay(json);
+		if(result){
+			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_COMPLETE,
+					App.ORDER_PRE_PAY_PRICED);
+		}
+	}
+
 	public JSONObject payCredit(List<String> listExpress, String userId) {
 		List<Express> list = expressService.selectByExpressNo(listExpress);
 		if (list.size() == 0) {
@@ -277,10 +291,6 @@ public class OrderService {
 			expressService.updateExpress(next);
 			// 发送短信
 			sendReceiveMessage(next.getSender().getName(), next.getReceiver().getTel(), next.getExpressNo());
-		}
-		if (list.size() > 0) {
-			// sendExpressLog21004(express);
-//			HttpUtil.findLineAndCreateMission(list);
 		}
 
 		Collection<String> tels = new HashSet<>();
@@ -385,17 +395,9 @@ public class OrderService {
 			expressService.udpateExpressStatus(orderReceipt.getExpressNo(), App.ORDER_SENDING,
 					App.ORDER_PRE_PAY_PRICED);
 
-			// expressService.updateLineIndex(orderReceipt.getExpressNo(), 1);
 			sendReceiveMessage(orderReceipt.getSender().getName(), orderReceipt.getReceiver().getTel(), orderReceipt.getExpressNo());
 
-//			expresses.add(expressRepository.findFirstByExpressNo(orderReceipt.getExpressNo()));
 		}
-//		if (expresses.size() > 0) {
-			// TODO: 2017/3/22 此处应异步
-//			HttpUtil.findLineAndCreateMission(expresses);
-			// sendExpressLog21004(express);
-//		}
-		// HttpUtil.compileExpressMission(json);
 
 		return null;
 	}
