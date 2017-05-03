@@ -7,13 +7,15 @@ public class App {
 
     public static String ORDER_MQ_3001 = "3001";
 
-    public static String ORDER_CREATE = "create";    //未发单
+    public static String ORDER_CREATE = "create";           //未发单
 
-    public static String ORDER_BEGIN = "begin";   //已发单
+    public static String ORDER_BEGIN = "begin";             //已发单
 
-    public static String ORDER_SENDING = "sending";  //配送中
+    public static String ORDER_PICK = "picked";             //已取件
 
-    public static String ORDER_TRANSFER = "transfering";  //转派中
+    public static String ORDER_SENDING = "sending";         //配送中
+
+    public static String ORDER_TRANSFER = "transfering";    //派件中
 
     public static String ORDER_END = "end";  //已经结束
 

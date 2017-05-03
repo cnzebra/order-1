@@ -236,7 +236,7 @@ public class ExpressService {
 		express.setExpressNo(pk.toString());
 
 		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
-			express.setStatus(App.ORDER_SENDING);
+			express.setStatus(App.ORDER_PICK);
 		} else {
 			express.setStatus(App.ORDER_BEGIN);
 		}
@@ -268,7 +268,7 @@ public class ExpressService {
 
 		Long pk = redisCache.getPK("express", 1);
 		express.setExpressNo(pk.toString());
-		express.setStatus(App.ORDER_SENDING);
+		express.setStatus(App.ORDER_PICK);
 		express.setSubStatus(App.ORDER_PRE_PRICED);
 		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(DateUtils.getDateInMinute());
@@ -738,17 +738,21 @@ public class ExpressService {
 					continue;
 				}
 				String status = express.getStatus();
-				User receiver = express.getReceiver();
-				boolean isTransfering = false;
-				if(receiver != null){
-					Double lat = receiver.getLat();
-					Double lng = receiver.getLng();
-					isTransfering = isTransfer(lat, lng, executorUserId);
-				}
-				if(isTransfering){
-					express.setStatus(App.ORDER_TRANSFER);
+
+				if(App.ORDER_SENDING.equals(status)){
+					User receiver = express.getReceiver();
+					boolean isTransfering = false;
+					if(receiver != null){
+						Double lat = receiver.getLat();
+						Double lng = receiver.getLng();
+						isTransfering = isTransfer(lat, lng, executorUserId);
+					}
+					if(isTransfering){
+						express.setStatus(App.ORDER_TRANSFER);
+					}
+
 				}else if(App.ORDER_BEGIN.equals(status)){
-					express.setStatus(App.ORDER_SENDING);
+					express.setStatus(App.ORDER_PICK);
 				}
 				List<Line> lines = express.getLines();
 				Line line = new Line();
@@ -883,9 +887,9 @@ public class ExpressService {
 			HttpUtil.sendSMSToUserTel(fromStr, express.getSender().getTel());
 		}
 		if (express.getReceiver() != null) {
+			String url = HttpUtil.short_url(API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY));
 			String toStr = "您的快递" + expressNo + "由风先生【" + user.getName() + user.getTel() + "】已经在【" + nowDate
-					+ "】送达。签收方式为【" + endType + "】。【" + API_WECHAT_HOST
-					+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + "】";
+					+ "】送达。签收方式为【" + endType + "】。【 " + url + "】";
 			// + "#/phone/orderTrace/"+expressNo;
 			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 		}
@@ -1059,8 +1063,8 @@ public class ExpressService {
 		if(shopUser != null && StringUtils.isNotBlank(shopUser.getName())){
 			shopName = "您来自" + shopUser.getName();
 		}
-		String toStr = "风先生极速物流已将" + shopName +"的快件送达，点击链接请对我们的服务进行评价【 " + API_WECHAT_HOST
-				+ "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY) + " 】";
+		String url = HttpUtil.short_url(API_WECHAT_HOST + "#/phone/orderTrace/" + Md5Util.string2MD5(expressNo + App.SESSION_KEY));
+		String toStr = "风先生极速物流已将" + shopName +"的快件送达，点击链接请对我们的服务进行评价【 " + url + " 】";
 
 		HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 	}

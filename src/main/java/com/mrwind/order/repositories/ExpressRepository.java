@@ -14,7 +14,7 @@ import org.springframework.data.repository.query.QueryByExampleExecutor;
 
 import com.mrwind.order.entity.Express;
 
-public interface ExpressRepository extends QueryByExampleExecutor<Express>,PagingAndSortingRepository<Express,String>{
+public interface  ExpressRepository extends QueryByExampleExecutor<Express>,PagingAndSortingRepository<Express,String>{
 
 	Express findFirstByExpressNo(String expressNo);
 

@@ -73,7 +73,9 @@ public class AppExpressController {
         lines.add(line);
 
         express.setLines(lines);
+
         express.setExcutorId(executorUser != null? executorUser.getId() : null);
+        express.setOperaTime(new Date());
 
         Express initExpress;
         if (App.ORDER_TYPE_AFTER.equals(express.getType())) {

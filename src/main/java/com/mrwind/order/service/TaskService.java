@@ -13,6 +13,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.mrwind.common.request.FenceBo;
+import com.mrwind.common.request.Man;
+import com.mrwind.common.util.QueryDateUtils;
+import com.mrwind.order.entity.User;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -244,21 +249,21 @@ public class TaskService {
 				userIds.add(entry.getKey());
 				String content = "";
 
+				String result = HttpUtil.short_url(ConfigConstant.API_WECHAT_HOST + "#/accountDetail?shopId=" + entry.getKey());
 				if (balanceAmountMap.containsKey(entry.getKey())) {
 					BigDecimal amount = balanceAmountMap.get(entry.getKey());
 					if (amount.compareTo(BigDecimal.ZERO) != -1) {
-						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，账户余额为" + amount + "元。请点击链接立即查看消费明细或充值"
-								+ ConfigConstant.API_WECHAT_HOST + "#/accountDetail?shopId=" + entry.getKey();
+						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，账户余额为" + amount + "元。请点击链接立即查看消费明细或充值 "
+								+ result;
 
 					} else {
 						content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，实际账户已欠费" + amount
-								+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值" + ConfigConstant.API_WECHAT_HOST
-								+ "#/accountDetail?shopId=" + entry.getKey();
+								+ "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值 " + result;
 					}
 				} else {
 					// 没有该商户的余额信息
-					content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值"
-							+ ConfigConstant.API_WECHAT_HOST + "#/accountDetail?shopId=" + entry.getKey();
+					content = "你的账户" + date + "运力消费金额为" + totalPrice + "元，请尽快充值，以免影响您的信用。请点击链接立即查看消费明细或充值 "
+							+ result;
 				}
 				HttpUtil.sendSMSToShopId(content, userIds);
 			}
@@ -306,12 +311,15 @@ public class TaskService {
 			String shopId = entry.getKey();
 			Set<String> userIds = new HashSet<>();
 			userIds.add(shopId);
+
+			String result = HttpUtil.short_url(ConfigConstant.API_WECHAT_HOST + "#/summary/1");
 			String content = "尊敬的客户您好！为您呈上风先生" + date + "的服务汇总报告，请检阅！今日您的发件" + tmp.getInteger("count") + "个，已送达"
-					+ tmp.getInteger("receiveCount") + "个，好评" + tmp.getInteger("goodCount") + "个。查看报告详情，请点击"
-					+ ConfigConstant.API_WECHAT_HOST + "#/summary/1";
+					+ tmp.getInteger("receiveCount") + "个，好评" + tmp.getInteger("goodCount") + "个。查看报告详情，请点击 "
+					+ result;
 			HttpUtil.sendSMSToShopId(content, userIds);
 		}
 	}
+
 
 	@Deprecated
 	@QuartzSync(key="sendWarning")
@@ -362,6 +370,53 @@ public class TaskService {
 		String jsonString = JSONObject.toJSONString(map);
 		redisCache.set(App.RDKEY_AFTER_ORDER, 3600 * 4, jsonString);
 		System.out.println("sendWarning");
+	}
+
+	@Deprecated
+	@QuartzSync(key="updateOrderStatus")
+	public void updateOrderStatus() {
+		Date date  = new Date();
+		Date queryDate  = QueryDateUtils.changeMins(date, -5);
+		List<Express> expressList = expressDao.findByStatusAndCreateTime(App.ORDER_PICK, queryDate);
+		if(expressList != null){
+			for(Express express : expressList){
+				String status = App.ORDER_SENDING;
+				String excutorId = express.getExcutorId();
+				User receiver = express.getReceiver();
+				if(receiver != null){
+					boolean isTransfering = false;
+					if(receiver != null){
+						Double lat = receiver.getLat();
+						Double lng = receiver.getLng();
+						isTransfering = isTransfer(lat, lng, excutorId);
+					}
+					if(isTransfering){
+						status = App.ORDER_TRANSFER;
+					}
+				}
+				expressDao.updateStatus(express.getExpressNo(), status);
+			}
+		}
+
+	}
+
+	private boolean isTransfer(Double lat, Double lng, String executorUserId){
+		boolean isTransfering = false;
+		if(lng != null && !lng.equals(0.0) && lat != null && !lat.equals(0.0)){
+			FenceBo fenceBo = HttpUtil.getFence(lat, lng);
+			if(fenceBo != null){
+				List<Man> manList = fenceBo.getMans();
+				if(manList != null){
+					for(Man man : manList){
+						if(man.getUserId().equals(executorUserId)){
+							isTransfering = true;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return isTransfering;
 	}
 
 	@Deprecated
@@ -463,7 +518,7 @@ public class TaskService {
 
 	private String getContent(String date, Integer count, BigDecimal price) {
 		return "尊敬的风先生用户，截止到" + date + "，您还有" + count + "订单尚未支付，总计" + price
-				+ "元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。http://vip.123feng.com";
+				+ "元。我们将于21:00在您的账户余额中进行扣款，订单详情请登录风先生VIP 网页发货端进行查询。 http://vip.123feng.com ";
 	}
 	/***
 	 * 商户 后录单

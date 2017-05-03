@@ -49,6 +49,7 @@ public class Express extends OrderBase {
 	private boolean isDelete = false;
 	private String origin = "批量导入";
 	private String excutorId;
+	private Date operaTime;
 
 	public List<Line> getLines() {
 		return lines;
@@ -212,5 +213,13 @@ public class Express extends OrderBase {
 
 	public void setExcutorId(String excutorId) {
 		this.excutorId = excutorId;
+	}
+
+	public Date getOperaTime() {
+		return operaTime;
+	}
+
+	public void setOperaTime(Date operaTime) {
+		this.operaTime = operaTime;
 	}
 }
