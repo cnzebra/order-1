@@ -396,6 +396,28 @@ public class HttpUtil {
 		}
 	}
 
+	/**
+	 * 商户token验证
+	 * @param token
+	 * @return
+	 */
+	public static String getMerchantInfoByToken(String token) {
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "merchant/shop/findByToken");
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED)
+				.header("Authorization", token).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			JSONObject json = JSONObject.parseObject(textEntity);
+			if("1".equals(json.getString("code"))){
+				return json.getJSONObject("data").getString("id");
+			}
+			return "";
+		} else {
+			return "";
+		}
+	}
+
 	public static Boolean selectUserProtocol(String uid, String protocolNumber) {
 		// TODO Auto-generated method stub
 		Client client = Client.create();

@@ -233,7 +233,7 @@ public class ExpressController {
 			JSONFactory.getErrorJSON("没有登录信息");
 		}
 		token = token.substring(6);
-		String adminUserId = HttpUtil.getUserIdByToken(token);
+		String adminUserId = HttpUtil.getMerchantInfoByToken(token);
 		if (StringUtils.isEmpty(adminUserId)) {
 			response.setStatus(401);
 			return JSONFactory.getErrorJSON("请登录!");
