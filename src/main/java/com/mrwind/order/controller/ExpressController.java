@@ -241,6 +241,7 @@ public class ExpressController {
 
 		Express express = new Express();
 		express.setExpressNo(json.getString("expressNo"));
+		express.setRemark(json.getString("remark"));
 
 		if (express.getExpressNo() == null) {
 			return JSONFactory.getErrorJSON("运单号不能为空");
