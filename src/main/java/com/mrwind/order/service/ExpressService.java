@@ -981,6 +981,20 @@ public class ExpressService {
 		return JSONFactory.getfailJSON("更新失败");
 	}
 
+	/**
+	 * 批量保存express
+	 * @param expressList
+	 * @return
+	 */
+	public JSONObject saveExpressByBatch(List<Express> expressList){
+		try{
+			expressDao.saveExpressByBatch(expressList);
+			return JSONFactory.getSuccessJSON();
+		}catch(Exception ex){
+			return JSONFactory.getfailJSON("保存失败");
+		}
+	}
+
 	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date,
 			Integer pageIndex, Integer pageSize) {
 		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC, "tel"));

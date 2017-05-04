@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.request.CallNewEX;
 import com.mrwind.order.entity.*;
+import com.mrwind.order.service.ExpressService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -47,6 +48,9 @@ public class WebOrderController {
 
     @Autowired
     RedisCache redisCache;
+
+    @Autowired
+    private ExpressService expressService;
 
     @ResponseBody
     @RequestMapping(value = "/create", method = RequestMethod.POST)
@@ -199,6 +203,53 @@ public class WebOrderController {
         JSONObject successJSON = JSONFactory.getSuccessJSON();
         successJSON.put("list", list);
         return successJSON;
+    }
+
+    /**
+     * 批量保存初始信息
+     * @param jsonArray
+     * @param shopId
+     * @return
+     */
+    @ResponseBody
+    @RequestMapping(value = "/saveByBatch", method = RequestMethod.POST)
+    public JSONObject saveByBatch(@RequestBody JSONArray jsonArray,HttpServletResponse response,
+                              @RequestParam(value = "shopId",required = true) String shopId){
+        List<Express> expressList = new ArrayList<>();
+        if(StringUtils.isBlank(shopId)){
+            return JSONFactory.getfailJSON("shopId不能为空！");
+        }
+
+        JSONObject res = HttpUtil.findShopById(shopId);
+        if (res == null) {
+            response.setStatus(401);
+            return JSONFactory.getErrorJSON("请重新登录！");
+        }
+
+        for(Object expressObject : jsonArray){
+            JSONObject expressInfo = (JSONObject)expressObject;
+            Express express = new Express();
+            User receiver = new User();
+            receiver.setAddress(expressInfo.getString("receiverAddress"));
+            receiver.setName(expressInfo.getString("receiverUserName"));
+            receiver.setTel(expressInfo.getString("receiverTel"));
+
+            Category category = new Category();
+            category.setWeight(expressInfo.getDouble("weight"));
+
+            ShopUser shop = new ShopUser();
+            shop.setId(shopId);
+
+            express.setExpressNo(expressInfo.getString("expressNo"));
+            express.setRemark(expressInfo.getString("remark"));
+            express.setReceiver(receiver);
+            express.setCategory(category);
+            express.setShop(shop);
+            express.setStatus("begin");
+
+            expressList.add(express);
+        }
+        return expressService.saveExpressByBatch(expressList);
     }
 
     @ResponseBody

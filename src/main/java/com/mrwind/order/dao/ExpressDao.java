@@ -545,6 +545,14 @@ public class ExpressDao extends BaseDao {
 		return new PageImpl<>(mongoTemplate.find(query, Express.class), page, count);
 	}
 
+	public void saveExpressByBatch(final List<Express> expressList){
+		Date time = Calendar.getInstance().getTime();
+		for(Express express : expressList){
+			express.setCreateTime(time);
+			express.setUpdateTime(time);
+		}
+		mongoTemplate.insert(expressList, "express");
+	}
 
 	public int updateExpressReceiverAddress(String expressNo, String recevierName,String receiverAddress,Double lat,Double lng) {
 		// TODO Auto-generated method stub
