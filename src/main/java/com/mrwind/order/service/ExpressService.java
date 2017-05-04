@@ -69,6 +69,9 @@ public class ExpressService {
 	@Autowired
 	ExpressDao expressDao;
 
+	@Autowired
+	OrderService orderService;
+
 	public List<Express> createExpress(Order order) {
 		List<Express> list = new ArrayList<>();
 
@@ -879,7 +882,7 @@ public class ExpressService {
 		}
 		express.setRealEndTime(sysDate);
 		expressDao.updateExpress(express);
-
+		orderService.payOne( express);
 		String nowDate = DateUtils.getDate("yyyy年MM月dd日 HH时mm分");
 		if (express.getSender() != null) {
 			String fromStr = "您发送的快递【" + expressNo + "】已经被【" + user.getName() + user.getTel() + "】签收，签收方式为：【" + endType

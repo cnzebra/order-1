@@ -359,6 +359,15 @@ public class HttpUtil {
 		return clientResponse.getStatus() == 200;
 	}
 
+	public static Boolean balancePay(JSONObject json) {
+		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "merchant/account/accountBalance/balancePay";
+		Client client = Client.create();
+		WebResource webResource = client.resource(ACCOUNT_TOKEN_URL);
+		ClientResponse clientResponse = webResource.type(javax.ws.rs.core.MediaType.APPLICATION_JSON_TYPE).post(
+				ClientResponse.class, JSONObject.toJSONString(json, SerializerFeature.DisableCircularReferenceDetect));
+		return clientResponse.getStatus() == 200;
+	}
+
 	public static Boolean pushJsonDateToPhone(JSONObject json) {
 		String ACCOUNT_TOKEN_URL = ConfigConstant.API_JAVA_HOST + "WindChat/order/task/push";
 		Client client = Client.create();
