@@ -1000,7 +1000,7 @@ public class ExpressService {
 
 	public Page<Express> selectByShopIdAndMode(String shopId, String status, String tel, String expressNo, Date date,
 			Integer pageIndex, Integer pageSize) {
-		Sort sort = new Sort(Direction.DESC, "dueTime").and(new Sort(Direction.DESC, "tel"));
+		Sort sort = new Sort(Direction.DESC,"createTime").and(new Sort(Direction.DESC, "dueTime")).and(new Sort(Direction.DESC, "tel"));
 		PageRequest page = new PageRequest(pageIndex, pageSize, sort);
 		return expressDao.selectByShopIdAndMode(shopId, status, tel, expressNo, date, page);
 	}
