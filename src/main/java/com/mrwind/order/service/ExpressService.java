@@ -72,6 +72,9 @@ public class ExpressService {
 	@Autowired
 	OrderService orderService;
 
+	@Autowired
+	OrderTransferService orderTransferService;
+
 	public List<Express> createExpress(Order order) {
 		List<Express> list = new ArrayList<>();
 
@@ -247,7 +250,7 @@ public class ExpressService {
 		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
-
+		orderTransferService.save(express);
 		if (App.ORDER_TYPE_AFTER.equals(express.getType())) {
 			return express;
 		}
@@ -276,7 +279,7 @@ public class ExpressService {
 		express.setCreateTime(Calendar.getInstance().getTime());
 		express.setDueTime(DateUtils.getDateInMinute());
 		expressRepository.save(express);
-
+		orderTransferService.save(express);
 		return express;
 	}
 
@@ -767,6 +770,7 @@ public class ExpressService {
 				express.setCurrentLine(lines.size());
 				express.setLines(lines);
 				expressDao.updateExpress(express);
+				orderTransferService.save(express);
 			}
 
 		}
@@ -896,6 +900,7 @@ public class ExpressService {
 			// + "#/phone/orderTrace/"+expressNo;
 			HttpUtil.sendSMSToUserTel(toStr, express.getReceiver().getTel());
 		}
+		orderTransferService.save(express);
 		return JSONFactory.getSuccessJSON();
 	}
 

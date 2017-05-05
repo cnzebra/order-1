@@ -259,6 +259,23 @@ public class HttpUtil {
 		return null;
 	}
 
+	public static JSONArray findConveyanceTool(String userId) {
+
+		Client client = Client.create();
+		WebResource webResource = client.resource(ConfigConstant.API_JAVA_HOST + "WindCloud/conveyanceTool/user?userId=" + userId);
+		ClientResponse clientResponse = webResource.type(MediaType.APPLICATION_FORM_URLENCODED).get(ClientResponse.class);
+		if (clientResponse.getStatus() == 200) {
+			String textEntity = clientResponse.getEntity(String.class);
+			if (textEntity != null) {
+				JSONObject parseObject = JSONObject.parseObject(textEntity);
+				if (parseObject.getString("code").equals("1")) {
+					return parseObject.getJSONArray("result");
+				}
+			}
+		}
+		return null;
+	}
+
 	/***
 	 * 查询内部用户的方法
 	 * 
