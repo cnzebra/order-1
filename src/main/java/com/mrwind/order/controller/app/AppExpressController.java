@@ -67,6 +67,7 @@ public class AppExpressController {
 
         Line line = new Line();
         line.setPlanTime(express.getCreateTime());
+        line.setRealTime(new Date());
         line.setExecutorUser(executorUser);
         line.setNode(express.getSender().getAddress());
         line.setIndex(1);

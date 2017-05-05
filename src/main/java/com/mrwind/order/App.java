@@ -11,17 +11,17 @@ public class App {
 
     public static String ORDER_BEGIN = "begin";             //已发单
 
-    public static String ORDER_PICK = "picked";             //已取件
+    public final static String ORDER_PICK = "picked";             //已取件
 
-    public static String ORDER_SENDING = "sending";         //配送中
+    public final static String ORDER_SENDING = "sending";         //配送中
 
-    public static String ORDER_TRANSFER = "transfering";    //派件中
+    public final static String ORDER_TRANSFER = "transfering";    //派件中
 
     public static String ORDER_END = "end";  //已经结束
 
-    public static String ORDER_WAIT_COMPLETE = "wait_complete";
+    public final static String ORDER_WAIT_COMPLETE = "wait_complete";
 
-    public static String ORDER_COMPLETE = "complete";  //完成订单
+    public final static String ORDER_COMPLETE = "complete";  //完成订单
 
     public static String ORDER_ERROR_COMPLETE = "pre_error_complete";  //异常妥投
 

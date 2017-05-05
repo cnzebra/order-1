@@ -13,7 +13,7 @@ public class Line {
 	private Fence fence;
 	private String node;
 	private Date planTime;
-	private Date realTime;
+	private Date realTime = new Date();
 	private User executorUser;
 	private String title;
 	private Double lat;
@@ -40,8 +40,6 @@ public class Line {
 	public void setExecutorUser(User executorUser) {
 		this.executorUser = executorUser;
 	}
-
-
 
 	public String getTitle() {
 		return title;

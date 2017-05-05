@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.mrwind.common.cache.RedisCache;
 import com.mrwind.common.request.CallNewEX;
+import com.mrwind.order.App;
 import com.mrwind.order.entity.*;
 import com.mrwind.order.service.ExpressService;
 import org.apache.commons.lang3.StringUtils;
@@ -215,6 +216,7 @@ public class WebOrderController {
     @RequestMapping(value = "/saveByBatch", method = RequestMethod.POST)
     public JSONObject saveByBatch(@RequestBody JSONArray jsonArray,HttpServletResponse response,
                               @RequestParam(value = "shopId",required = true) String shopId){
+        logger.info("saveByBatch--" + jsonArray.toJSONString());
         List<Express> expressList = new ArrayList<>();
         if(StringUtils.isBlank(shopId)){
             return JSONFactory.getfailJSON("shopId不能为空！");
@@ -245,7 +247,7 @@ public class WebOrderController {
             express.setReceiver(receiver);
             express.setCategory(category);
             express.setShop(shop);
-            express.setStatus("begin");
+            express.setStatus(App.ORDER_BEGIN);
 
             expressList.add(express);
         }
